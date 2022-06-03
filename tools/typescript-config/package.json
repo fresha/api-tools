@@ -1,0 +1,22 @@
+{
+  "name": "@fresha/typescript-config",
+  "version": "0.1.0",
+  "description": "Configuration for TypeScript projects",
+  "author": "Fresha Engineering",
+  "contributors": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "license": "MIT",
+  "main": "tsconfig.json"
+}

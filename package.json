@@ -1,0 +1,54 @@
+{
+  "name": "@fresha/api-tools",
+  "version": "0.1.0",
+  "description": "Next generation tools for Web API development.",
+  "scripts": {
+    "check": "npm run -ws --if-present check",
+    "check:fix": "npm run -ws --if-present check:fix",
+    "test": "npm run -ws --if-present test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git"
+  },
+  "keywords": [
+    "API design",
+    "RESTful API",
+    "schema-first API development",
+    "OpenAPI",
+    "AsyncAPI",
+    "JSON:API"
+  ],
+  "author": "Fresha Engineering",
+  "contributors": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/surgeventures/api-tools/issues"
+  },
+  "homepage": "https://github.com/surgeventures/api-tools#readme",
+  "workspaces": {
+    "packages": [
+      "packages/*",
+      "tools/*"
+    ]
+  },
+  "devDependencies": {
+    "@types/jest": "^28.1.0",
+    "jest": "^28.1.0",
+    "npm-run-all": "^4.1.5",
+    "ts-jest": "^28.0.4"
+  }
+}

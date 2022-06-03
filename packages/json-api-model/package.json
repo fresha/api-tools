@@ -1,0 +1,43 @@
+{
+  "name": "@fresha/json-api-model",
+  "version": "0.1.0",
+  "description": "JSON:API object model",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "check": "run-s lint test",
+    "check:fix": "run-s lint:fix test",
+    "eslint": "eslint ./src",
+    "eslint:fix": "eslint ./src --fix",
+    "lint": "run-s eslint typecheck",
+    "lint:fix": "run-s eslint:fix typecheck",
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "JSON:API"
+  ],
+  "author": "Fresha Engineering",
+  "contributors": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@fresha/eslint-config": "0.1.0",
+    "@fresha/jest-config": "0.1.0",
+    "@fresha/typescript-config": "0.1.0",
+    "typescript": "^4.7.2"
+  }
+}
