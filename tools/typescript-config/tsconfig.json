@@ -6,6 +6,7 @@
       "es2020",
     ],
     "types": [
+      "node",
       "jest"
     ],
     "jsx": "react",
