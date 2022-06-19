@@ -9,4 +9,4 @@ export type {
   URLString,
   VersionString,
 } from './types';
-export { TreeNode } from './TreeNode';
+export { ITreeParent, TreeNode } from './TreeNode';
