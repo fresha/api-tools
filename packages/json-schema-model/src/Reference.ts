@@ -1,7 +1,7 @@
 import { JSONValue, TreeNode } from '@fresha/api-tools-core';
-import { ITreeParent } from '@fresha/api-tools-core/build/TreeNode';
 
-import { IReference, ISchemaRegistry, JSONSchema } from './types';
+import type { IReference, ISchemaRegistry, JSONSchema } from './types';
+import type { ITreeParent } from '@fresha/api-tools-core/build/TreeNode';
 
 type ReferenceParent = ITreeParent<ISchemaRegistry> | JSONSchema;
 

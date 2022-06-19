@@ -1,14 +1,14 @@
 import { SchemaBase, SchemaParent } from './SchemaBase';
 
-import type { IBooleanSchema } from './types';
+import type { AddBooleanSchemaOptions, IBooleanSchema } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
 
 export class BooleanSchema extends SchemaBase implements IBooleanSchema {
-  enum: Nullable<boolean[]>;
+  allowed: Nullable<boolean[]>;
 
-  constructor(parent: SchemaParent) {
+  constructor(parent: SchemaParent, options?: AddBooleanSchemaOptions) {
     super(parent, 'boolean');
-    this.enum = null;
+    this.allowed = options?.allowed?.length ? options.allowed.slice() : null;
   }
 
   declare readonly type: 'boolean';

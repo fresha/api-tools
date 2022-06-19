@@ -11,10 +11,13 @@ import type {
 
 export type SchemaParent = ITreeParent<ISchemaRegistry> | JSONSchema;
 
+const randomString = () => (Math.random() + 1).toString(36).substring(7);
+
 export abstract class SchemaBase
   extends TreeNode<ISchemaRegistry, SchemaParent>
   implements ISchemaBase
 {
+  readonly id: string;
   readonly parent: SchemaParent;
   readonly type: JSONSchemaType;
   title: Nullable<string>;
@@ -27,6 +30,7 @@ export abstract class SchemaBase
 
   constructor(parent: SchemaParent, type: JSONSchemaType) {
     super(parent);
+    this.id = randomString();
     this.parent = parent;
     this.type = type;
     this.title = null;

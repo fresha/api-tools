@@ -1,5 +1,3 @@
-import { JSONObject } from '@fresha/api-tools-core';
-
 import { AllOfSchema } from './AllOfSchema';
 import { AnyOfSchema } from './AnyOfSchema';
 import { ArraySchema } from './ArraySchema';
@@ -11,9 +9,10 @@ import { OneOfSchema } from './OneOfSchema';
 import { StringSchema } from './StringSchema';
 
 import type { ExtensionFields, JSONSchema, JSONSchemaOrReference } from './types';
+import type { JSONObject } from '@fresha/api-tools-core';
 
 export class SchemaWriter {
-  private writeSchema(schema: JSONSchemaOrReference): JSONObject {
+  write(schema: JSONSchemaOrReference): JSONObject {
     const isSchema = (arg: JSONSchemaOrReference): arg is JSONSchema =>
       Object.prototype.hasOwnProperty.call(arg, 'type');
 
@@ -53,7 +52,8 @@ export class SchemaWriter {
           this.writeStringSchema(result, schema);
           break;
         default:
-          throw new Error(`Unsupported schema type ${String(schema.type)}`);
+          break;
+        // throw new Error(`Unsupported schema type ${String(schema.type)}`);
       }
     }
     return result;
@@ -89,33 +89,33 @@ export class SchemaWriter {
   private writeAllOfSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const allOfSchema = schema as AllOfSchema;
     if (allOfSchema.alternatives.length) {
-      json.allOf = allOfSchema.alternatives.map(item => this.writeSchema(item));
+      json.allOf = allOfSchema.alternatives.map(item => this.write(item));
     }
   }
 
   private writeAnyOfSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const anyOfSchema = schema as AnyOfSchema;
     if (anyOfSchema.alternatives.length) {
-      json.anyOf = anyOfSchema.alternatives.map(item => this.writeSchema(item));
+      json.anyOf = anyOfSchema.alternatives.map(item => this.write(item));
     }
   }
 
   private writeOneOfSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const oneOfSchema = schema as OneOfSchema;
     if (oneOfSchema.alternatives.length) {
-      json.oneOf = oneOfSchema.alternatives.map(item => this.writeSchema(item));
+      json.oneOf = oneOfSchema.alternatives.map(item => this.write(item));
     }
   }
 
   private writeNotSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const notSchema = schema as NotSchema;
-    json.not = this.writeSchema(notSchema.baseSchema);
+    json.not = this.write(notSchema.baseSchema);
   }
 
   private writeArraySchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const arraySchema = schema as ArraySchema;
     json.type = arraySchema.type;
-    json.items = this.writeSchema(arraySchema.itemSchema);
+    json.items = this.write(arraySchema.itemSchema);
   }
 
   private writeObjectSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
@@ -127,11 +127,11 @@ export class SchemaWriter {
     if (objectSchema.properties.size) {
       json.properties = {};
       for (const [propName, propValue] of objectSchema.properties) {
-        json.properties[propName] = this.writeSchema(propValue);
+        json.properties[propName] = this.write(propValue);
       }
     }
     if (typeof objectSchema.additionalProperties === 'object') {
-      json.additionalProperties = this.writeSchema(objectSchema.additionalProperties);
+      json.additionalProperties = this.write(objectSchema.additionalProperties);
     } else if (!objectSchema.additionalProperties) {
       json.additionalProperties = false;
     }
@@ -141,8 +141,8 @@ export class SchemaWriter {
   private writeBooleanSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const booleanSchema = schema as BooleanSchema;
     json.type = booleanSchema.type;
-    if (booleanSchema.enum) {
-      json.enum = booleanSchema.enum;
+    if (booleanSchema.allowed) {
+      json.enum = booleanSchema.allowed;
     }
   }
 
@@ -150,8 +150,8 @@ export class SchemaWriter {
   private writeNumericSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const numericSchema = schema as NumberSchema;
     json.type = numericSchema.type;
-    if (numericSchema.enum != null) {
-      json.enum = numericSchema.enum;
+    if (numericSchema.allowed != null) {
+      json.enum = numericSchema.allowed;
     }
     if (numericSchema.format != null) {
       json.format = numericSchema.format;
@@ -174,8 +174,8 @@ export class SchemaWriter {
   private writeStringSchema(json: JSONObject, schema: JSONSchemaOrReference): void {
     const stringSchema = schema as StringSchema;
     json.type = stringSchema.type;
-    if (stringSchema.enum) {
-      json.enum = stringSchema.enum;
+    if (stringSchema.allowed) {
+      json.enum = stringSchema.allowed;
     }
     if (stringSchema.minLength != null) {
       json.minLength = stringSchema.minLength;

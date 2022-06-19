@@ -204,7 +204,7 @@ export class SchemaReader {
     const result = new BooleanSchema(parent);
     this.parseSchemaCommon(json, result);
     if (Array.isArray(json.enum) && json.enum.length) {
-      result.enum = json.enum.map(elem => !!elem);
+      result.allowed = json.enum.map(elem => !!elem);
     }
     return result;
   }
@@ -217,7 +217,7 @@ export class SchemaReader {
     const result = new NumberSchema(parent);
     this.parseSchemaCommon(json, result);
     if (Array.isArray(json.enum) && json.enum.length) {
-      result.enum = json.enum.map(elem => Number(elem));
+      result.allowed = json.enum.map(elem => Number(elem));
     }
     if (json.format) {
       result.format = json.format as SchemaFormat;
@@ -248,7 +248,7 @@ export class SchemaReader {
     const result = new StringSchema(parent);
     this.parseSchemaCommon(json, result);
     if (Array.isArray(json.enum) && json.enum.length) {
-      result.enum = json.enum.map(elem => String(elem));
+      result.allowed = json.enum.map(elem => String(elem));
     }
     if (json.maxLength) {
       result.maxLength = json.maxLength as number;
