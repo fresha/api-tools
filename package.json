@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "description": "Next generation tools for Web API development.",
   "scripts": {
+    "lint": "npm run -ws --if-present lint",
+    "lint:fix": "npm run -ws --if-present lint:fix",
     "check": "npm run -ws --if-present check",
     "check:fix": "npm run -ws --if-present check:fix",
     "test": "npm run -ws --if-present test"
