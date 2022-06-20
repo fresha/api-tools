@@ -38,7 +38,7 @@ export abstract class SchemaBase
     this.format = null;
     this.extensionFields = new Map<string, JSONValue>();
     this.format = null;
-    this.nullable = true;
+    this.nullable = false;
     this.default = null;
     this.example = null;
   }

@@ -33,6 +33,18 @@ export class Attribute extends TreeNode<IRegistry, AttributeParent> implements I
       case 'boolean':
         this.schema = parent.root.schemaRegistry.add(type, options as AddBooleanSchemaOptions);
         break;
+      case 'number':
+        this.schema = parent.root.schemaRegistry.add(type, options as AddNumberSchemaOptions);
+        break;
+      case 'string':
+        this.schema = parent.root.schemaRegistry.add(type, options as AddStringSchemaOptions);
+        break;
+      case 'object':
+        this.schema = parent.root.schemaRegistry.add(type);
+        break;
+      case 'array':
+        this.schema = parent.root.schemaRegistry.add(type);
+        break;
       default:
         throw new Error(`Unsupported schema type ${type}`);
     }

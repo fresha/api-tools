@@ -10,9 +10,9 @@
     "check:fix": "run-s lint:fix test",
     "eslint": "eslint ./src",
     "eslint:fix": "eslint ./src --fix",
-    "lint": "run-s eslint typecheck",
-    "lint:fix": "run-s eslint:fix typecheck",
-    "test": "jest",
+    "_lint": "run-s eslint typecheck",
+    "_lint:fix": "run-s eslint:fix typecheck",
+    "_test": "jest",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
