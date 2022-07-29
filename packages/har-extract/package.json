@@ -1,9 +1,11 @@
 {
-  "name": "@fresha/api-tools-core",
-  "version": "0.1.1",
-  "description": "Core project functionality",
+  "name": "@fresha/har-extract",
+  "version": "0.1.0",
+  "description": "CLI for extracting API data from HAR files",
   "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "bin": {
+    "fresha-har-extract": "./bin/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -16,13 +18,8 @@
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
-  "files": [
-    "build/",
-    "package.json",
-    "LICENSE",
-    "README.md"
-  ],
   "keywords": [
+    "HAR",
     "API"
   ],
   "author": "Fresha Engineering",
@@ -41,6 +38,10 @@
     }
   ],
   "license": "MIT",
+  "dependencies": {
+    "@fresha/api-tools-core": "0.1.1",
+    "yargs": "^17.5.1"
+  },
   "devDependencies": {
     "@fresha/eslint-config": "0.1.0",
     "@fresha/jest-config": "0.1.0",

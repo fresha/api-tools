@@ -25,6 +25,25 @@ export type EmailString = string;
  */
 export type VersionString = string;
 
+/**
+ * String representing a date/time in ISO8601 format.
+ */
+export type DateTimeString = string;
+
+/**
+ * Enumerates well-known HTTP request methods.
+ */
+export type HTTPMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'PATCH'
+  | 'DELETE'
+  | 'OPTIONS'
+  | 'HEAD'
+  | 'CONNECT'
+  | 'TRACE';
+
 //
 // JSON spec
 //
