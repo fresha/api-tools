@@ -3,30 +3,15 @@ import fs from 'fs';
 import { isJSONAPIDataDocument, JSONAPIDocument } from '@fresha/api-tools-core';
 import yargs from 'yargs';
 
-import type { HARFile, HARRequest, HARResponse } from './types';
-
-type HostName = string;
-type PathName = string;
-
-type JSONAPIResourceType = string;
-
-type JSONAPIDocumentStructure = {
-  data: JSONAPIResourceType | JSONAPIResourceType[];
-  included: JSONAPIResourceType[];
-};
-
-type OutputEntry = {
-  url: {
-    host: string;
-    pathname: string;
-    searchParams?: string[];
-  };
-  request: JSONAPIDocumentStructure | null;
-  response: JSONAPIDocumentStructure;
-};
-
-type HostEntries = Map<PathName, OutputEntry[]>;
-type AllEntries = Map<HostName, HostEntries>;
+import type {
+  AggregatedAPICalls,
+  AggregatedAPIHostCalls,
+  APICallStructure,
+  HARFile,
+  HARRequest,
+  HARResponse,
+  JSONAPIDocumentStructure,
+} from './types';
 
 const isJsonApi = (requestOrResponse: HARRequest | HARResponse): boolean => {
   const contentTypeHeader = requestOrResponse.headers.find(
@@ -101,7 +86,7 @@ const main = (args: string[]) => {
     .usage('Usage: $0 <dir>')
     .parseSync();
 
-  const allEntries: AllEntries = new Map<HostName, HostEntries>();
+  const allEntries: AggregatedAPICalls = new Map<string, AggregatedAPIHostCalls>();
 
   for (const harPath of argv._) {
     const harData = JSON.parse(fs.readFileSync(harPath, 'utf-8')) as HARFile;
@@ -113,13 +98,13 @@ const main = (args: string[]) => {
 
         let hostEntries = allEntries.get(host);
         if (!hostEntries) {
-          hostEntries = new Map<HostName, OutputEntry[]>();
+          hostEntries = new Map<string, APICallStructure[]>();
           allEntries.set(host, hostEntries);
         }
 
         let pathEntries = hostEntries.get(pathname);
         if (!pathEntries) {
-          pathEntries = [] as OutputEntry[];
+          pathEntries = [] as APICallStructure[];
           hostEntries.set(pathname, pathEntries);
         }
 

@@ -209,3 +209,31 @@ export type HARLog = {
 export type HARFile = {
   log: HARLog;
 };
+
+//
+// Aggregated data types
+//
+
+// this for readability
+type HostName = string;
+type PathName = string;
+
+export type JSONAPIResourceType = string;
+
+export type JSONAPIDocumentStructure = {
+  data: JSONAPIResourceType | JSONAPIResourceType[];
+  included: JSONAPIResourceType[];
+};
+
+export type APICallStructure = {
+  url: {
+    host: string;
+    pathname: string;
+    searchParams?: string[];
+  };
+  request: JSONAPIDocumentStructure | null;
+  response: JSONAPIDocumentStructure;
+};
+
+export type AggregatedAPIHostCalls = Map<PathName, APICallStructure[]>;
+export type AggregatedAPICalls = Map<HostName, AggregatedAPIHostCalls>;
