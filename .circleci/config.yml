@@ -1,10 +1,53 @@
-version: 2.1
+version: "2.1"
 orbs:
   node: circleci/node@5.0.2
+jobs:
+  check-pr:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - node/install:
+          install-yarn: false
+          node-version: "16.14"
+      - run: npm run -w @fresha/eslint-config --if-present build && exit 0
+      - run: npm run -w @fresha/jest-config --if-present build && exit 0
+      - run: npm run -w @fresha/typescript-config --if-present build && exit 0
+      - run: npm run -w @fresha/api-tools-core --if-present build && exit 0
+      - run: npm run -w @fresha/asyncapi-codegen --if-present build && exit 0
+      - run: npm run -w @fresha/async-codegen-client-typescript --if-present build &&
+          exit 0
+      - run: npm run -w @fresha/asyncapi-codegen-server-elixir --if-present build &&
+          exit 0
+      - run: npm run -w @fresha/asyncapi-codegen-server-nestjs --if-present build &&
+          exit 0
+      - run: npm run -w @fresha/asyncapi-diff --if-present build && exit 0
+      - run: npm run -w @fresha/asyncapi-lint --if-present build && exit 0
+      - run: npm run -w @fresha/asyncapi-model --if-present build && exit 0
+      - run: npm run -w @fresha/asyncapi-validator --if-present build && exit 0
+      - run: npm run -w @fresha/designer-app --if-present build && exit 0
+      - run: npm run -w @fresha/browser-extension --if-present build && exit 0
+      - run: npm run -w @fresha/designer-web --if-present build && exit 0
+      - run: npm run -w @fresha/har-extract --if-present build && exit 0
+      - run: npm run -w @fresha/json-api-codegen --if-present build && exit 0
+      - run: npm run -w @fresha/json-schema-model --if-present build && exit 0
+      - run: npm run -w @fresha/json-api-model --if-present build && exit 0
+      - run: npm run -w @fresha/json-schema-codegen --if-present build && exit 0
+      - run: npm run -w @fresha/openapi-codegen --if-present build && exit 0
+      - run: npm run -w @fresha/openapi-codegen-client-typescript --if-present build &&
+          exit 0
+      - run: npm run -w @fresha/openapi-codegen-server-elixir --if-present build && exit
+          0
+      - run: npm run -w @fresha/openapi-codegen-server-nestjs --if-present build && exit
+          0
+      - run: npm run -w @fresha/openapi-diff --if-present build && exit 0
+      - run: npm run -w @fresha/openapi-lint --if-present build && exit 0
+      - run: npm run -w @fresha/openapi-model --if-present build && exit 0
+      - run: npm run -w @fresha/openapi-validator --if-present build && exit 0
+      - run: npm run -w @fresha/ci-config --if-present build && exit 0
+      - run: npm install
+      - run: npm run check
 workflows:
   node-tests:
     jobs:
-      - node/run:
-          npm-run: lint:fix
-      - node/test:
-          test-results-for: jest
+      - check-pr
