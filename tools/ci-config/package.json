@@ -2,13 +2,11 @@
   "name": "@fresha/ci-config",
   "version": "0.1.1",
   "description": "Generates CI configuration",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "check": "run-s lint test",
-    "check:fix": "run-s lint:fix test",
+    "check": "run-s lint",
+    "check:fix": "run-s lint:fix",
     "clean": "rimraf ./build",
     "eslint": "eslint ./src",
     "eslint:fix": "eslint ./src --fix",
@@ -16,7 +14,6 @@
     "lint:fix": "run-s eslint:fix typecheck",
     "prebuild": "npm run clean",
     "prebuild:watch": "npm run clean",
-    "test": "jest",
     "typecheck": "tsc --noEmit"
   },
   "bin": {
