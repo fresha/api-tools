@@ -10,6 +10,7 @@ jobs:
       - node/install:
           install-yarn: false
           node-version: "16.14"
+      - run: npm install
       - run: npm run -w @fresha/eslint-config --if-present build && exit 0
       - run: npm run -w @fresha/jest-config --if-present build && exit 0
       - run: npm run -w @fresha/typescript-config --if-present build && exit 0
@@ -45,7 +46,6 @@ jobs:
       - run: npm run -w @fresha/openapi-model --if-present build && exit 0
       - run: npm run -w @fresha/openapi-validator --if-present build && exit 0
       - run: npm run -w @fresha/ci-config --if-present build && exit 0
-      - run: npm install
       - run: npm run check
 workflows:
   node-tests:

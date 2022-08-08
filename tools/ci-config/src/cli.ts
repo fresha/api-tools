@@ -112,7 +112,7 @@ const buildConfig = (packageDeps: Map<string, Set<string>>): unknown => {
   const visited = new Set<string>();
   for (const name of packageDeps.keys()) {
     for (const localPackage of sortDependenciesFirst(name, packageDeps, visited)) {
-      result.jobs['check-pr'].steps.splice(-2, 0, {
+      result.jobs['check-pr'].steps.splice(-1, 0, {
         run: `npm run -w ${localPackage} --if-present build && exit 0`,
       });
     }
