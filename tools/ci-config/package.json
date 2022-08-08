@@ -1,0 +1,53 @@
+{
+  "name": "@fresha/ci-config",
+  "version": "0.1.1",
+  "description": "Generates CI configuration",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "check": "run-s lint",
+    "check:fix": "run-s lint:fix",
+    "clean": "rimraf ./build",
+    "eslint": "eslint ./src",
+    "eslint:fix": "eslint ./src --fix",
+    "lint": "run-s eslint typecheck",
+    "lint:fix": "run-s eslint:fix typecheck",
+    "prebuild": "npm run clean",
+    "prebuild:watch": "npm run clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "bin": {
+    "fresha-generate-ci-config": "./bin/cli.js"
+  },
+  "keywords": [
+    "API"
+  ],
+  "author": "Fresha Engineering",
+  "contributors": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@fresha/eslint-config": "0.1.0",
+    "@fresha/jest-config": "0.1.0",
+    "@fresha/typescript-config": "0.1.0",
+    "@types/glob": "^7.2.0",
+    "typescript": "^4.7.2"
+  },
+  "dependencies": {
+    "glob": "^8.0.3",
+    "yaml": "^2.1.1",
+    "yargs": "^17.5.1"
+  }
+}
