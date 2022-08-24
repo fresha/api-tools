@@ -1,0 +1,36 @@
+/*
+  Global App CSS
+  ----------------------
+  Use this file for styles that should be applied to all components.
+  For example, "font-family" within the "body" selector is a CSS property
+  most apps will want applied to all components.
+
+  Any global CSS variables should also be applied here.
+*/
+
+@font-face {
+	font-family: "codicon";
+	font-display: block;
+	src: url("/assets/codicon.ttf?cf7c934d80b848ad1f605163f19e2dd5") format("truetype");
+}
+
+body {
+  margin: 0px;
+  padding: 0px;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+/*---------------------
+ *  Theme Variables
+ *-------------------*/
+
+:root {
+  --ui-button-background: #007acc;
+  --ui-button-foreground: #fff;
+  --ui-status-bar-background: #007acc;
+  --ui-font-size: 13px;
+  --ui-font-weight: normal;
+}

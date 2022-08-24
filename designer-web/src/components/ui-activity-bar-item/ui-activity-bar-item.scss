@@ -1,0 +1,23 @@
+:host {
+  display: flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  color: #ccc;
+  transition: color 200ms;
+}
+
+:host(:hover) {
+  color: white;
+}
+
+.active-indicator {
+  display: block;
+  position: absolute;
+  width: 4px;
+  height: 100%;
+  background-color: white;
+  opacity: 0;
+}

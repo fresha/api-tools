@@ -1,0 +1,33 @@
+:host {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+.layout {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    "app-bar      app-bar    app-bar"
+    "activity-bar side-bar   editor"
+    "status-bar   status-bar status-bar";
+}
+
+#app-bar {
+  grid-area: app-bar;
+}
+
+#activity-bar {
+  grid-area: activity-bar;
+}
+
+#status-bar {
+  grid-area: status-bar;
+}
+
+#editor {
+  grid-area: editor;
+}

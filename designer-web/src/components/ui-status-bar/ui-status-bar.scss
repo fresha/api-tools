@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  justify-content: space-between;
+  height: 22px;
+  background-color: var(--ui-status-bar-background);
+}
+
+.left, .right {
+  display: flex;
+}

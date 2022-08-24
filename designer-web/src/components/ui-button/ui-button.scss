@@ -1,0 +1,40 @@
+:host {
+  background-color: var(--ui-button-background);
+  border: 0;
+  border-radius: 0;
+  color: var(--ui-button-foreground);
+  font-size: var(--ui-font-size);
+  font-weight: var(--ui-font-weight);
+  line-height: 26px;
+  user-select: none;
+
+  box-sizing: border-box;
+  padding: 4px;
+  border-radius: 2px;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+:host:focus {
+	outline-offset: 2px !important;
+}
+
+:host([disabled]) {
+	opacity: 0.4 !important;
+	cursor: default;
+}
+
+:host([kind=default]) {
+  background-color: #ccc;
+}
+
+:host([kind=primary]) {
+  background-color: #333;
+}
+
+:host([kind=secondary]) {
+  background-color: #666;
+}
