@@ -28,9 +28,101 @@ body {
  *-------------------*/
 
 :root {
-  --ui-button-background: #007acc;
-  --ui-button-foreground: #fff;
-  --ui-status-bar-background: #007acc;
+  //
+  // colors
+  //
+  --ui-color-base-01: #fff;
+  --ui-color-base-02: #f0f0f0;
+  --ui-color-base-03: #e7e7e7;
+  --ui-color-base-04: #e5e5e5;
+  --ui-color-base-05: #d4d4d4;
+  --ui-color-base-06: #ccc;
+  --ui-color-base-07: #c6c6c6;
+  --ui-color-base-08: #bbb;
+  --ui-color-base-09: #a0a0a0;
+  --ui-color-base-10: #808080;
+  --ui-color-base-11: #7f7f7f;
+  --ui-color-base-12: #606060;
+  --ui-color-base-13: #454545;
+  --ui-color-base-14: #3c3c3c;
+  --ui-color-base-15: #3a3d41;
+  --ui-color-base-16: #333;
+  --ui-color-base-17: #303031;
+  --ui-color-base-18: #292929;
+  --ui-color-base-19: #252526;
+  --ui-color-base-20: #1e1e1e;
+  --ui-color-base-21: #000;
+
+  --ui-color-accent-blue-01: #75beff;
+  --ui-color-accent-blue-02: #40a6ff;
+  --ui-color-accent-blue-03: #3399cc;
+  --ui-color-accent-blue-04: #3794ff;
+  --ui-color-accent-blue-05: #0097fb;
+  --ui-color-accent-blue-06: #007acc;
+  --ui-color-accent-blue-07: #0e639c;
+  --ui-color-accent-blue-08: #264f78;
+  --ui-color-accent-blue-09: #094771;
+  --ui-color-accent-blue-10: #062f4a;
+  --ui-color-accent-blue-11: #001f33;
+
+  --ui-color-accent-red-01: #f14c4c;
+  --ui-color-accent-red-02: #c74e39;
+  --ui-color-accent-red-03: #ff0000;
+  --ui-color-accent-red-04: #264f78;
+
+  --ui-color-accent-green-01: #73c991;
+  --ui-color-accent-green-02: #40c8ae;
+  --ui-color-accent-green-03: #16825d;
+  --ui-color-accent-green-04: #327e36;
+  --ui-color-accent-green-05: #28632b;
+
+  --ui-color-accent-purple-01: #6c6cc4;
+  --ui-color-accent-purple-02: #b180d7;
+  --ui-color-accent-purple-03: #bc3fbc;
+  --ui-color-accent-purple-04: #68217a;
+
+  --ui-color-accent-yellow-01: #d7ba7d;
+  --ui-color-accent-yellow-02: #cca700;
+  --ui-color-accent-yellow-03: #b89500;
+  --ui-color-accent-yellow-04: #bf8803;
+  --ui-color-accent-yellow-05: #ffff00;
+
+  --ui-color-accent-orange-01: #cc6633;
+  --ui-color-accent-orange-02: #ee9d28;
+  --ui-color-accent-orange-03: #ea5c00;
+
+  --ui-color-accent-gray-01: #e4e6f1;
+  --ui-color-accent-gray-02: #5f6a79;
+  --ui-color-accent-gray-03: #424750;
+
+  --ui-color-seti-blue: #519aba;
+  --ui-color-seti-green: #8dc149;
+  --ui-color-seti-orange: #e37933;
+  --ui-color-seti-pink: #f55385;
+  --ui-color-seti-red: #cc3e44;
+  --ui-color-seti-steel: #7494a3;
+  --ui-color-seti-yellow: #cbcb41;
+  --ui-color-seti-purple: #a074c4;
+  --ui-color-seti-ignore: #41535b;
+  --ui-color-seti-white: #d4d7d6;
+  --ui-color-seti-gray: #6d8086;
+
+  //
+  // typography
+  //
+  --ui-font-heading-01: medium 26px;
+  --ui-font-heading-02: medium 14px;
+  --ui-font-heading-03: bold 13px;
+  --ui-font-heading-04: bold 11px;
+
+  // fonts
   --ui-font-size: 13px;
   --ui-font-weight: normal;
+
+  // buttons
+  --ui-button-background: #007acc;
+  --ui-button-foreground: #fff;
+
+  // status base
+  --ui-status-bar-background: #007acc;
 }
