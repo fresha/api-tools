@@ -5,6 +5,7 @@
     "rootDir": "./src"
   },
   "include": [
+    "src/jest.d.ts",
     "./src/**/*.ts"
   ],
   "exclude": [
