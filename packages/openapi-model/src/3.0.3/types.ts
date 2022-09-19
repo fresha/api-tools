@@ -33,12 +33,14 @@ export type {
   APIKeySecuritySchemeObject,
   ContactObject,
   CookieParameterSerializationStyle,
+  DiscriminatorObject,
   ExampleObject,
   ExternalDocumentationObject,
   InfoObject,
   LicenseObject,
   LinkObject,
   OAuth2SecuritySchemeObject,
+  ObjectOrRef,
   OpenIdConnectSecuritySchemeObject,
   PathParameterSerializationStyle,
   QueryParameterSerializationStyle,
@@ -47,6 +49,7 @@ export type {
   ServerObject,
   ServerVariableObject,
   TagObject,
+  XMLObject,
 } from '../baseTypes';
 
 /**
@@ -153,13 +156,13 @@ export type SchemaObject = {
   required?: string[];
   enum?: JSONValue[];
   type?: SchemaType;
-  allOf?: SchemaObject[];
-  oneOf?: SchemaObject[];
-  anyOf?: SchemaObject[];
-  not?: SchemaObject;
-  items?: SchemaObject;
-  properties?: Record<string, SchemaObject>;
-  additionalProperties?: SchemaObject | boolean;
+  allOf?: ObjectOrRef<SchemaObject>[];
+  oneOf?: ObjectOrRef<SchemaObject>[];
+  anyOf?: ObjectOrRef<SchemaObject>[];
+  not?: ObjectOrRef<SchemaObject>;
+  items?: ObjectOrRef<SchemaObject>;
+  properties?: Record<string, ObjectOrRef<SchemaObject>>;
+  additionalProperties?: ObjectOrRef<SchemaObject> | boolean;
   description?: CommonMarkString;
   format?: SchemaFormat;
   default?: JSONValue;
