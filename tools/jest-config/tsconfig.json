@@ -1,0 +1,13 @@
+{
+  "extends": "@fresha/typescript-config",
+  "compilerOptions": {
+    "outDir": "./build",
+    "rootDir": "./src"
+  },
+  "include": [
+    "./src/*.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts"
+  ]
+}
