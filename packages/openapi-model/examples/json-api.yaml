@@ -1,0 +1,179 @@
+openapi: 3.0.3
+info:
+  title: json-api-with-shared-objects
+  description: JSON:API contract with shared request bodies and responses
+  contact:
+    name: developers
+    url: https://github.com/orgs/surgeventures/teams/developers
+  version: 0.1.0
+servers:
+  - url: http://localhost:{port}
+    description: local
+    variables:
+      port:
+        default: "8791"
+paths:
+  x-root-url: API_URL
+  /features:
+    get:
+      operationId: readFeatures
+      x-entry-key: features
+      responses:
+        default:
+          $ref: "#/components/responses/JSONAPIDataResponse"
+  /provider:
+    get:
+      operationId: readProvider
+      x-entry-key: provider
+      responses:
+        default:
+          $ref: "#/components/responses/JSONAPIDataResponse"
+  /provider/account-settings:
+    put:
+      operationId: updateProviderAccountSettings
+      x-entry-key: provider
+      requestBody:
+        $ref: "#/components/requestBodies/JSONAPIRequest"
+      responses:
+        default:
+          $ref: "#/components/responses/JSONAPIDataResponse"
+components:
+  schemas:
+    JSONAPIVersion:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          default: "1.0"
+          enum:
+            - "1.0"
+    JSONAPIResourceId:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+    JSONAPIResourceIdList:
+      type: array
+      items:
+        $ref: "#/components/schemas/JSONAPIResourceId"
+    JSONAPIRelationship:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          oneOf:
+            - $ref: "#/components/schemas/JSONAPIResourceId"
+            - $ref: "#/components/schemas/JSONAPIResourceIdList"
+    JSONAPIResource:
+      type: object
+      required:
+        - type
+        - id
+        - attributes
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+        attributes:
+          type: object
+        relationships:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/JSONAPIRelationship"
+    JSONAPIResourceList:
+      type: array
+      items:
+        $ref: "#/components/schemas/JSONAPIResource"
+    JSONAPIDataDocument:
+      type: object
+      required:
+        - data
+      properties:
+        jsonapi:
+          $ref: "#/components/schemas/JSONAPIVersion"
+        data:
+          oneOf:
+            - $ref: "#/components/schemas/JSONAPIResourceId"
+            - $ref: "#/components/schemas/JSONAPIResourceIdList"
+            - $ref: "#/components/schemas/JSONAPIResource"
+            - $ref: "#/components/schemas/JSONAPIResourceList"
+        included:
+          type: array
+          items:
+            $ref: "#/components/schemas/JSONAPIResource"
+    JSONAPIError:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+        code:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+        source:
+          type: object
+          properties:
+            pointer:
+              type: string
+            parameter:
+              type: string
+    JSONAPIErrorList:
+      type: array
+      items:
+        $ref: "#/components/schemas/JSONAPIError"
+    JSONAPIErrorDocument:
+      type: object
+      required:
+        - errors
+      properties:
+        jsonapi:
+          $ref: "#/components/schemas/JSONAPIVersion"
+        errors:
+          $ref: "#/components/schemas/JSONAPIErrorList"
+  requestBodies:
+    JSONAPIRequest:
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: "#/components/schemas/JSONAPIDataDocument"
+      required: true
+  responses:
+    JSONAPIDataResponse:
+      description: Generic success response
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: "#/components/schemas/JSONAPIDataDocument"
+    JSONAPIErrorResponse:
+      description: Generic error response
+      content:
+        application/vnd.api+json:
+          schema:
+            $ref: "#/components/schemas/JSONAPIErrorDocument"
+  securitySchemes:
+    cookieAuthStaging:
+      description: Use this if you connect to staging environment
+      type: apiKey
+      in: cookie
+      name: _partners_session_staging
+    cookieAuthProduction:
+      description: Use this if you connect to production
+      type: apiKey
+      in: cookie
+      name: _partners_session
+security:
+  - cookieAuthStaging: []
+    cookieAuthProduction: []

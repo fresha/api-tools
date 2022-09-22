@@ -11,8 +11,9 @@ import type { MediaType } from './MediaType';
 import type { Parameter } from './Parameter';
 import type { HttpScheme } from './SecurityScheme/HttpScheme';
 import type {
-  SchemaCreateArrayParams,
-  SchemaCreatePropertyParams,
+  SchemaCreateArrayObject,
+  SchemaCreateArrayOptions,
+  SchemaCreateOptions,
   SchemaCreateType,
   SchemaModel,
   SchemaModelFactory,
@@ -29,9 +30,9 @@ export class Schema extends BasicNode<SchemaParent> implements SchemaModel {
   title: Nullable<string>;
   multipleOf: Nullable<number>;
   maximum: Nullable<number>;
-  exclusiveMaximum: boolean;
+  exclusiveMaximum: Nullable<number>;
   minimum: Nullable<number>;
-  exclusiveMinimum: boolean;
+  exclusiveMinimum: Nullable<number>;
   maxLength: Nullable<number>;
   minLength: Nullable<number>;
   pattern: Nullable<string>;
@@ -99,42 +100,48 @@ export class Schema extends BasicNode<SchemaParent> implements SchemaModel {
     return result;
   }
 
-  static createArray(
-    parent: SchemaParent,
-    params: SchemaCreateType | SchemaCreateArrayParams | Schema,
-  ): Schema {
+  static createArray(parent: SchemaParent, options: SchemaCreateArrayOptions): Schema {
     const result = Schema.create(parent, 'array');
 
-    if (typeof params === 'string' || params == null) {
-      result.items = Schema.create(result, params);
-    } else if (params instanceof Schema) {
-      result.items = params;
+    if (typeof options === 'string' || options == null) {
+      result.items = Schema.create(result, options);
+    } else if (options instanceof Schema) {
+      result.items = options;
     } else {
-      if (typeof params.type === 'string' || params.type == null) {
-        result.items = Schema.create(result, params.type);
-      } else if (params.type instanceof Schema) {
-        result.items = params.type;
+      const { itemsOptions } = options as SchemaCreateArrayObject;
+      if (typeof itemsOptions === 'string' || itemsOptions == null) {
+        result.items = Schema.create(result, itemsOptions);
+      } else if (itemsOptions instanceof Schema) {
+        result.items = itemsOptions;
       } else {
-        assert.fail(`Unsupported schema type ${String(params.type)}`);
+        assert.fail(`Unsupported schema type ${String(itemsOptions)}`);
       }
-
-      if (params.minItems) {
-        result.minItems = params.minItems;
+      if (options.minItems) {
+        result.minItems = options.minItems;
       }
-      if (params.maxItems) {
-        result.maxItems = params.maxItems;
+      if (options.maxItems) {
+        result.maxItems = options.maxItems;
       }
     }
     return result;
   }
 
-  static createObject(
-    parent: SchemaParent,
-    props: Record<string, SchemaCreateType | SchemaCreatePropertyParams>,
-  ): Schema {
+  static createObject(parent: SchemaParent, props: Record<string, SchemaCreateOptions>): Schema {
     const result = Schema.create(parent, 'object');
     result.setProperties(props);
     return result;
+  }
+
+  private static internalCreate(parent: SchemaParent, params: SchemaCreateOptions): SchemaModel {
+    let propertyType: SchemaCreateType | SchemaModel = null;
+    if (typeof params === 'string' || params instanceof Schema) {
+      propertyType = params;
+    } else if (params && typeof params === 'object') {
+      propertyType = params.type;
+    }
+    return propertyType instanceof Schema
+      ? propertyType
+      : Schema.create(parent, propertyType as SchemaCreateType);
   }
 
   constructor(parent: SchemaParent) {
@@ -142,9 +149,9 @@ export class Schema extends BasicNode<SchemaParent> implements SchemaModel {
     this.title = null;
     this.multipleOf = null;
     this.maximum = null;
-    this.exclusiveMaximum = false;
+    this.exclusiveMaximum = null;
     this.minimum = null;
-    this.exclusiveMinimum = false;
+    this.exclusiveMinimum = null;
     this.minLength = null;
     this.maxLength = null;
     this.pattern = null;
@@ -176,19 +183,16 @@ export class Schema extends BasicNode<SchemaParent> implements SchemaModel {
     this.deprecated = false;
   }
 
-  setProperty(name: string, params: SchemaCreateType | SchemaCreatePropertyParams): Schema {
-    const propertySchema = Schema.create(
-      this,
-      typeof params === 'string' || params == null ? params : params.type,
-    );
+  setProperty(name: string, params: SchemaCreateOptions): Schema {
+    const propertySchema = Schema.internalCreate(this, params);
     this.properties.set(name, propertySchema);
-    if (typeof params !== 'string' && params != null && params.required) {
-      this.required.add(name);
-    }
-    return propertySchema;
+    this.setPropertyRequired(name, !!(params && typeof params === 'object' && params.required));
+    return propertySchema as Schema;
   }
 
-  setProperties(props: Record<string, SchemaCreateType | SchemaCreatePropertyParams>): Schema {
+  setProperties(
+    props: Record<string, SchemaCreateType | SchemaCreateOptions | SchemaModel>,
+  ): Schema {
     for (const [propName, propDef] of Object.entries(props)) {
       this.setProperty(propName, propDef);
     }
@@ -213,17 +217,13 @@ export class Schema extends BasicNode<SchemaParent> implements SchemaModel {
     }
   }
 
-  addAllOf(typeOrSchema: SchemaCreateType | SchemaModel): SchemaModel {
+  addAllOf(typeOrSchema: SchemaCreateOptions): SchemaModel {
     if (this.allOf == null) {
       this.allOf = [];
     }
-    if (typeOrSchema == null || typeof typeOrSchema === 'string') {
-      const schema = Schema.create(this, typeOrSchema);
-      this.allOf.push(schema);
-      return schema;
-    }
-    this.allOf.push(typeOrSchema);
-    return typeOrSchema;
+    const schema = Schema.internalCreate(this, typeOrSchema);
+    this.allOf.push(schema);
+    return schema;
   }
 
   deleteAllOfAt(index: number): void {
@@ -241,6 +241,33 @@ export class Schema extends BasicNode<SchemaParent> implements SchemaModel {
         item.dispose();
       }
       this.allOf = null;
+    }
+  }
+
+  addOneOf(typeOrSchema: SchemaCreateOptions): SchemaModel {
+    if (this.oneOf == null) {
+      this.oneOf = [];
+    }
+    const schema = Schema.internalCreate(this, typeOrSchema);
+    this.oneOf.push(schema);
+    return schema;
+  }
+
+  deleteOneOfAt(index: number): void {
+    if (this.oneOf) {
+      this.oneOf.splice(index, 1);
+      if (!this.oneOf.length) {
+        this.oneOf = null;
+      }
+    }
+  }
+
+  clearOneOf(): void {
+    if (this.oneOf) {
+      for (const item of this.oneOf) {
+        item.dispose();
+      }
+      this.oneOf = null;
     }
   }
 

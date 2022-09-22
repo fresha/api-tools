@@ -28,7 +28,7 @@ test('how easy is to use this class', () => {
   api.addServer('https://partners-app.fresha.com');
 
   const pathItem = api.setPathItem('/api/v1');
-  const operation = pathItem.addOperation('get');
+  const operation = pathItem.setOperation('get');
 
   expect(pathItem.get).toBe(operation);
 });
@@ -38,7 +38,7 @@ test('build schema - simple', () => {
   api.info.description = 'A sample API to illustrate OpenAPI concepts';
 
   const pathItem = api.setPathItem('/list');
-  const operation = pathItem.addOperation('get');
+  const operation = pathItem.setOperation('get');
   operation.description = 'Returns a list of stuff';
   operation.responses.setResponse(200, 'Successful response');
 
@@ -100,7 +100,7 @@ test('build schema - petstore', () => {
   // findPets
   //
 
-  const findPetsOperation = collectionPathItem.addOperation('get');
+  const findPetsOperation = collectionPathItem.setOperation('get');
   findPetsOperation.description = `Returns all pets from the system that the user has access to
 Nam sed condimentum est. Maecenas tempor sagittis sapien, nec rhoncus sem sagittis sit amet. Aenean at gravida augue, ac iaculis sem. Curabitur odio lorem, ornare eget elementum nec, cursus id lectus. Duis mi turpis, pulvinar ac eros ac, tincidunt varius justo. In hac habitasse platea dictumst. Integer at adipiscing ante, a sagittis ligula. Aenean pharetra tempor ante molestie imperdiet. Vivamus id aliquam diam. Cras quis velit non tortor eleifend sagittis. Praesent at enim pharetra urna volutpat venenatis eget eget mauris. In eleifend fermentum facilisis. Praesent enim enim, gravida ac sodales sed, placerat id erat. Suspendisse lacus dolor, consectetur non augue vel, vehicula interdum libero. Morbi euismod sagittis libero sed lacinia.
 
@@ -131,7 +131,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
   // addPet
   //
 
-  const addPetOperation = collectionPathItem.addOperation('post');
+  const addPetOperation = collectionPathItem.setOperation('post');
   addPetOperation.description = 'Creates a new pet in the store. Duplicates are allowed';
   addPetOperation.operationId = 'addPet';
 
@@ -159,7 +159,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
   // find pet by id
   //
 
-  const getPetOperation = itemPathItem.addOperation('get');
+  const getPetOperation = itemPathItem.setOperation('get');
   getPetOperation.description =
     'Returns a user based on a single ID, if the user does not have access to the pet';
   getPetOperation.operationId = 'find pet by id';
@@ -180,7 +180,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
   // deletePet
   //
 
-  const deletePetOperation = itemPathItem.addOperation('delete');
+  const deletePetOperation = itemPathItem.setOperation('delete');
   deletePetOperation.description = 'deletes a single pet based on the ID supplied';
   deletePetOperation.operationId = 'deletePet';
 

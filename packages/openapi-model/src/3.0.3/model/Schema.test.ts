@@ -32,7 +32,7 @@ describe('SchemaFactory', () => {
     expect(stringArraySchema.items?.type).toBe('string');
 
     const numberArraySchema = SchemaFactory.createArray(openapi.components, {
-      type: 'number',
+      itemsOptions: 'number',
       minItems: 10,
       maxItems: 12,
     });
@@ -191,6 +191,54 @@ describe('Schema', () => {
     schema.clearAllOf();
 
     expect(schema.allOf).toBeNull();
+  });
+
+  test('addOneOf', () => {
+    const openapi = new OpenAPI('example', '0.1.0');
+
+    const schema = SchemaFactory.create(openapi.components, null);
+    expect(schema.allOf).toBeNull();
+
+    const option1 = schema.addOneOf('integer');
+
+    const anotherSchema = SchemaFactory.create(openapi.components, null);
+    const option2 = schema.addOneOf(anotherSchema);
+
+    expect(option1).toHaveProperty('parent', schema);
+    expect(option2).toBe(anotherSchema);
+
+    expect(schema.oneOf?.length).toBe(2);
+    expect(schema.oneOf?.[0]).toBe(option1);
+    expect(schema.oneOf?.[1]).toBe(option2);
+  });
+
+  test('deleteOneOfAt', () => {
+    const openapi = new OpenAPI('example', '0.1.0');
+    const schema = SchemaFactory.create(openapi.components, null);
+    schema.addOneOf('integer');
+    schema.addOneOf('double');
+
+    schema.deleteOneOfAt(0);
+
+    expect(schema.oneOf).toHaveLength(1);
+    expect(schema.oneOf?.[0]).toHaveProperty('type', 'number');
+
+    schema.deleteOneOfAt(0);
+
+    expect(schema.oneOf).toBeNull();
+  });
+
+  test('clearOneOf', () => {
+    const openapi = new OpenAPI('example', '0.1.0');
+    const schema = SchemaFactory.create(openapi.components, null);
+    schema.addOneOf('integer');
+    schema.addOneOf('double');
+
+    expect(schema.oneOf).toHaveLength(2);
+
+    schema.clearOneOf();
+
+    expect(schema.oneOf).toBeNull();
   });
 
   test('arrayOf', () => {

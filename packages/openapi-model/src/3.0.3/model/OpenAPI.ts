@@ -15,6 +15,7 @@ import type {
   PathItemModel,
   TagModel,
   SpecificationExtensionsModel,
+  OpenAPIModelFactory,
 } from './types';
 import type { CommonMarkString, Nullable, VersionString, JSONValue } from '@fresha/api-tools-core';
 
@@ -22,6 +23,12 @@ import type { CommonMarkString, Nullable, VersionString, JSONValue } from '@fres
  * @see http://spec.openapis.org/oas/v3.0.3#openapi-object
  */
 export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
+  static create(): OpenAPI;
+  static create(title: string, version: string): OpenAPI;
+  static create(title?: string, version?: string): OpenAPI {
+    return new OpenAPI(title ?? 'New API', version ?? '0.1.0');
+  }
+
   readonly openapi: OpenApiVersion;
   info: Info;
   servers: ServerImpl[];
@@ -129,3 +136,5 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
   // eslint-disable-next-line class-methods-use-this
   dispose(): void {}
 }
+
+export const OpenAPIFactory: OpenAPIModelFactory = OpenAPI;

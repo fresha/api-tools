@@ -61,8 +61,8 @@ import type { PathParameter } from './Parameter/PathParameter';
 import type { QueryParameter } from './Parameter/QueryParameter';
 import type { PathItem } from './PathItem';
 import type { Paths } from './Paths';
-import type { RequestBody } from './RequestBody';
-import type { Response } from './Response';
+import type { RequestBody, RequestBodyParent } from './RequestBody';
+import type { Response, ResponseParent } from './Response';
 import type { Responses } from './Responses';
 import type { Schema, SchemaParent } from './Schema';
 import type { SecurityRequirement } from './SecurityRequirement';
@@ -142,8 +142,8 @@ export class OpenAPIWriter {
     for (const [key, value] of openapi.components.headers) {
       this.schemaPointers.set(value, `#/components/headers/${key}`);
     }
-    for (const [key, value] of openapi.components.securitySchemas) {
-      this.schemaPointers.set(value, `#/components/securitySchemas/${key}`);
+    for (const [key, value] of openapi.components.securitySchemes) {
+      this.schemaPointers.set(value, `#/components/securitySchemes/${key}`);
     }
     for (const [key, value] of openapi.components.links) {
       this.schemaPointers.set(value, `#/components/links/${key}`);
@@ -159,7 +159,7 @@ export class OpenAPIWriter {
     out: Record<string, unknown>,
   ): void {
     for (const [key, value] of extensionFields) {
-      out[key] = value;
+      out[`x-${key}`] = value;
     }
   }
 
@@ -252,7 +252,7 @@ export class OpenAPIWriter {
     if (components.responses.size) {
       result.responses = {};
       for (const [key, response] of components.responses) {
-        result.responses[key] = this.writeResponse(response);
+        result.responses[key] = this.writeResponse(response, components);
       }
     }
     if (components.parameters.size) {
@@ -270,7 +270,7 @@ export class OpenAPIWriter {
     if (components.requestBodies.size) {
       result.requestBodies = {};
       for (const [key, requestBody] of components.requestBodies) {
-        result.requestBodies[key] = this.writeRequestBody(requestBody);
+        result.requestBodies[key] = this.writeRequestBody(requestBody, components);
       }
     }
     if (components.headers.size) {
@@ -279,10 +279,10 @@ export class OpenAPIWriter {
         result.headers[key] = this.writeHeader(header);
       }
     }
-    if (components.securitySchemas.size) {
-      result.securitySchemas = {};
-      for (const [key, securitySchemas] of components.securitySchemas) {
-        result.securitySchemas[key] = this.writeSecuritySchema(securitySchemas);
+    if (components.securitySchemes.size) {
+      result.securitySchemes = {};
+      for (const [key, securitySchemes] of components.securitySchemes) {
+        result.securitySchemes[key] = this.writeSecuritySchema(securitySchemes);
       }
     }
     if (components.links.size) {
@@ -300,7 +300,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeSchema(schema: SchemaModel, node?: SchemaParent): ObjectOrRef<SchemaObject> {
+  private writeSchema(schema: SchemaModel, node: SchemaParent): ObjectOrRef<SchemaObject> {
     if (node !== (schema as Schema).parent) {
       const pointer = this.schemaPointers.get(schema);
       if (pointer) {
@@ -322,13 +322,13 @@ export class OpenAPIWriter {
     if (schema.maximum != null) {
       result.maximum = schema.maximum;
     }
-    if (schema.exclusiveMaximum === true) {
-      result.exclusiveMaximum = true;
+    if (schema.exclusiveMaximum != null) {
+      result.exclusiveMaximum = schema.exclusiveMaximum;
     }
     if (schema.minimum != null) {
       result.minimum = schema.minimum;
     }
-    if (schema.exclusiveMinimum === true) {
+    if (schema.exclusiveMinimum != null) {
       result.exclusiveMinimum = schema.exclusiveMinimum;
     }
     if (schema.maxLength != null) {
@@ -365,29 +365,38 @@ export class OpenAPIWriter {
       result.type = schema.type;
     }
     if (schema.allOf != null) {
-      result.allOf = schema.allOf.map((subschema: SchemaModel) => this.writeSchema(subschema));
+      result.allOf = schema.allOf.map((subschema: SchemaModel) =>
+        this.writeSchema(subschema, schema as Schema),
+      );
     }
     if (schema.oneOf != null) {
-      result.oneOf = schema.oneOf.map((subschema: SchemaModel) => this.writeSchema(subschema));
+      result.oneOf = schema.oneOf.map((subschema: SchemaModel) =>
+        this.writeSchema(subschema, schema as Schema),
+      );
     }
     if (schema.anyOf != null) {
-      result.anyOf = schema.anyOf.map((subschema: SchemaModel) => this.writeSchema(subschema));
+      result.anyOf = schema.anyOf.map((subschema: SchemaModel) =>
+        this.writeSchema(subschema, schema as Schema),
+      );
     }
     if (schema.not != null) {
-      result.not = this.writeSchema(schema.not);
+      result.not = this.writeSchema(schema.not, schema as Schema);
     }
     if (schema.items != null) {
-      result.items = this.writeSchema(schema.items);
+      result.items = this.writeSchema(schema.items, schema as Schema);
     }
     if (schema.properties.size) {
       result.properties = {};
       for (const [key, value] of schema.properties) {
-        result.properties[key] = this.writeSchema(value);
+        result.properties[key] = this.writeSchema(value, schema as Schema);
       }
     }
     if (schema.additionalProperties != null) {
       if (typeof schema.additionalProperties !== 'boolean') {
-        result.additionalProperties = this.writeSchema(schema.additionalProperties);
+        result.additionalProperties = this.writeSchema(
+          schema.additionalProperties,
+          schema as Schema,
+        );
       } else if (schema.additionalProperties === false) {
         result.additionalProperties = false;
       }
@@ -410,7 +419,14 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeResponse(response: Response): ResponseObject {
+  private writeResponse(response: Response, node: ResponseParent): ObjectOrRef<ResponseObject> {
+    if (node !== response.parent) {
+      const pointer = this.schemaPointers.get(response);
+      if (pointer) {
+        return { $ref: pointer };
+      }
+    }
+
     const result: ResponseObject = { description: response.description };
     this.writeExtensionFields(response.extensions, result);
     if (response.headers.size) {
@@ -453,7 +469,7 @@ export class OpenAPIWriter {
       result.explode = true;
     }
     if (header.schema) {
-      result.schema = this.writeSchema(header.schema);
+      result.schema = this.writeSchema(header.schema, header);
     }
     if (header.example) {
       result.example = header.example;
@@ -586,7 +602,7 @@ export class OpenAPIWriter {
       result.deprecated = true;
     }
     if (parameter.schema) {
-      result.schema = this.writeSchema(parameter.schema);
+      result.schema = this.writeSchema(parameter.schema, result as unknown as CookieParameter);
     }
     if (parameter.content.size) {
       result.content = {};
@@ -686,7 +702,17 @@ export class OpenAPIWriter {
     }
   }
 
-  private writeRequestBody(requestBody: RequestBody): RequestBodyObject {
+  private writeRequestBody(
+    requestBody: RequestBody,
+    node: RequestBodyParent,
+  ): ObjectOrRef<RequestBodyObject> {
+    if (node !== requestBody.parent) {
+      const pointer = this.schemaPointers.get(requestBody);
+      if (pointer) {
+        return { $ref: pointer };
+      }
+    }
+
     const result: RequestBodyObject = {
       content: {},
     };
@@ -733,7 +759,7 @@ export class OpenAPIWriter {
   private writeHttpSecuritySchema(scheme: HttpScheme): HTTPSecuritySchemeObject {
     const result: HTTPSecuritySchemeObject = {
       type: scheme.type,
-      scheme: this.writeSchema(scheme.scheme),
+      scheme: this.writeSchema(scheme.scheme, scheme),
     };
     this.writeSecuritySchemaCommon(scheme, result);
     if (scheme.bearerFormat) {
@@ -853,7 +879,7 @@ export class OpenAPIWriter {
       result.parameters = operation.parameters.map(arg => this.writeParameter(arg));
     }
     if (operation.requestBody) {
-      result.requestBody = this.writeRequestBody(operation.requestBody);
+      result.requestBody = this.writeRequestBody(operation.requestBody, operation);
     }
     if (operation.callbacks.size) {
       result.callbacks = {};
@@ -887,11 +913,11 @@ export class OpenAPIWriter {
     this.writeExtensionFields(responses.extensions, result);
     if (responses.codes.size) {
       for (const [httpStatus, response] of responses.codes) {
-        result[Number(httpStatus)] = this.writeResponse(response);
+        result[Number(httpStatus)] = this.writeResponse(response, responses);
       }
     }
     if (responses.default) {
-      result.default = this.writeResponse(responses.default);
+      result.default = this.writeResponse(responses.default, responses);
     }
     return result;
   }

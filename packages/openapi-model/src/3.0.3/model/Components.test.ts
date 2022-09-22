@@ -191,30 +191,30 @@ describe('headers', () => {
   });
 });
 
-describe('securitySchemas', () => {
+describe('securitySchemes', () => {
   beforeEach(() => {
     components.setSecuritySchema('local', 'apiKey');
     components.setSecuritySchema('google', 'oauth2');
   });
 
   test('setSecuritySchema', () => {
-    expect(components.securitySchemas.size).toBe(2);
-    expect(components.securitySchemas.get('local')).toHaveProperty('parent', components);
-    expect(components.securitySchemas.get('google')).toHaveProperty('parent', components);
+    expect(components.securitySchemes.size).toBe(2);
+    expect(components.securitySchemes.get('local')).toHaveProperty('parent', components);
+    expect(components.securitySchemes.get('google')).toHaveProperty('parent', components);
   });
 
   test('deleteSecuritySchema', () => {
     components.deleteSecuritySchema('local');
 
-    expect(components.securitySchemas.size).toBe(1);
-    expect(components.securitySchemas.get('google')).toBeTruthy();
-    expect(components.securitySchemas.get('google')).toHaveProperty('type', 'oauth2');
+    expect(components.securitySchemes.size).toBe(1);
+    expect(components.securitySchemes.get('google')).toBeTruthy();
+    expect(components.securitySchemes.get('google')).toHaveProperty('type', 'oauth2');
   });
 
-  test('clearSecuritySchemas', () => {
-    components.clearSecuritySchemas();
+  test('clearsecuritySchemes', () => {
+    components.clearSecuritySchemes();
 
-    expect(components.securitySchemas.size).toBe(0);
+    expect(components.securitySchemes.size).toBe(0);
   });
 });
 
