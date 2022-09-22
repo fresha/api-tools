@@ -55,6 +55,7 @@
   },
   "dependencies": {
     "@fresha/openapi-codegen-server-nestjs": "^0.1.0",
+    "@fresha/openapi-codegen-server-elixir": "^0.1.0",
     "yargs": "^17.5.1"
   }
 }
