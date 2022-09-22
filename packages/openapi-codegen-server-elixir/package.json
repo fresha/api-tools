@@ -35,6 +35,9 @@
     }
   ],
   "license": "MIT",
+  "dependencies": {
+    "@fresha/openapi-model": "0.2.1"
+  },
   "devDependencies": {
     "@fresha/eslint-config": "0.1.0",
     "@fresha/jest-config": "0.1.0",
