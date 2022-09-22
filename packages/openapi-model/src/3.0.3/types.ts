@@ -142,9 +142,9 @@ export type SchemaObject = {
   title?: string;
   multipleOf?: number;
   maximum?: number;
-  exclusiveMaximum?: boolean;
+  exclusiveMaximum?: number;
   minimum?: number;
-  exclusiveMinimum?: boolean;
+  exclusiveMinimum?: number;
   maxLength?: number;
   minLength?: number;
   pattern?: string;
@@ -211,7 +211,7 @@ export type ComponentsObject = {
   examples?: Record<string, ObjectOrRef<ExampleObject>>;
   requestBodies?: Record<string, ObjectOrRef<RequestBodyObject>>;
   headers?: Record<string, ObjectOrRef<HeaderObject>>;
-  securitySchemas?: Record<string, ObjectOrRef<SecuritySchemeObject>>;
+  securitySchemes?: Record<string, ObjectOrRef<SecuritySchemeObject>>;
   links?: Record<string, ObjectOrRef<LinkObject>>;
   callbacks?: Record<string, ObjectOrRef<CallbackObject>>;
 } & SpecificationExtensions;

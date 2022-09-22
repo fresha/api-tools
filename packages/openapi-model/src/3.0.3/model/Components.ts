@@ -44,7 +44,7 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
   readonly examples: Map<string, Example>;
   readonly requestBodies: Map<string, RequestBody>;
   readonly headers: Map<string, Header>;
-  readonly securitySchemas: Map<string, SecurityScheme>;
+  readonly securitySchemes: Map<string, SecurityScheme>;
   readonly links: Map<string, Link>;
   readonly callbacks: Map<string, Callback>;
 
@@ -56,7 +56,7 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
     this.examples = new Map<string, Example>();
     this.requestBodies = new Map<string, RequestBody>();
     this.headers = new Map<string, Header>();
-    this.securitySchemas = new Map<string, SecurityScheme>();
+    this.securitySchemes = new Map<string, SecurityScheme>();
     this.links = new Map<string, Link>();
     this.callbacks = new Map<string, Callback>();
   }
@@ -69,7 +69,7 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
       !this.examples.size &&
       !this.requestBodies.size &&
       !this.headers.size &&
-      !this.securitySchemas.size &&
+      !this.securitySchemes.size &&
       !this.links.size &&
       !this.callbacks.size
     );
@@ -193,16 +193,16 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
       default:
         throw new Error(`Unsupported security scheme type ${String(kind)}`);
     }
-    this.securitySchemas.set(name, result);
+    this.securitySchemes.set(name, result);
     return result;
   }
 
   deleteSecuritySchema(name: string): void {
-    this.securitySchemas.delete(name);
+    this.securitySchemes.delete(name);
   }
 
-  clearSecuritySchemas(): void {
-    this.securitySchemas.clear();
+  clearSecuritySchemes(): void {
+    this.securitySchemes.clear();
   }
 
   setLink(name: string): LinkModel {

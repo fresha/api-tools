@@ -108,7 +108,7 @@ export class PathItem extends BasicNode<PathItemParent> implements PathItemModel
     return this.operations2.get('trace') ?? null;
   }
 
-  addOperation(method: HTTPMethod): OperationModel {
+  setOperation(method: HTTPMethod): OperationModel {
     if (this.operations2.has(method)) {
       throw new Error(`Duplicate ${method} operation`);
     }

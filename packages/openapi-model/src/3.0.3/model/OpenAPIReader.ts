@@ -62,6 +62,8 @@ import type {
   ObjectOrRef,
   OpenAPIObject,
   Ref,
+  RequestBodyObject,
+  ResponseObject,
   SchemaFormat,
   SchemaObject,
   SchemaType,
@@ -132,6 +134,8 @@ export class OpenAPIReader {
 
   private components?: Components;
   private componentsSchemas?: Record<string, ObjectOrRef<SchemaObject>>;
+  private componentsResponses?: Record<string, ObjectOrRef<ResponseObject>>;
+  private componentsRequestBodies?: Record<string, ObjectOrRef<RequestBodyObject>>;
   private componentsLinks?: Record<string, ObjectOrRef<LinkObject>>;
 
   constructor() {
@@ -148,6 +152,8 @@ export class OpenAPIReader {
     this.schemaPointers.clear();
     this.components = undefined;
     this.componentsSchemas = undefined;
+    this.componentsResponses = undefined;
+    this.componentsRequestBodies = undefined;
     this.componentsLinks = undefined;
 
     const result = new OpenAPI(json.info.title, json.info.version);
@@ -163,6 +169,7 @@ export class OpenAPIReader {
 
     this.parseComponents(result.components, json.components);
 
+    this.parseExtensionFields(result.paths.extensions, json.paths);
     for (const [path, pathItemJson] of Object.entries(json.paths)) {
       if (!path.startsWith('x-')) {
         const pathItem = this.parsePathItem(pathItemJson as JSONObject, result.paths);
@@ -292,6 +299,8 @@ export class OpenAPIReader {
       }
     }
     if (json.responses) {
+      this.componentsResponses = json.responses;
+
       for (const [key, responseJson] of Object.entries(json.responses)) {
         const response = this.parseResponse(responseJson, result);
         result.responses.set(key, response);
@@ -313,8 +322,10 @@ export class OpenAPIReader {
       }
     }
     if (json.requestBodies) {
+      this.componentsRequestBodies = json.requestBodies;
+
       for (const [key, requestBodyJson] of Object.entries(json.requestBodies)) {
-        const requestBody = this.parseRequestBody(requestBodyJson as JSONObject, result);
+        const requestBody = this.parseRequestBody(requestBodyJson, result);
         result.requestBodies.set(key, requestBody);
         this.schemaPointers.set(`#/components/requestBodies/${key}`, requestBody);
       }
@@ -326,11 +337,11 @@ export class OpenAPIReader {
         this.schemaPointers.set(`#/components/headers/${key}`, header);
       }
     }
-    if (json.securitySchemas) {
-      for (const [key, securitySchemeJson] of Object.entries(json.securitySchemas)) {
+    if (json.securitySchemes) {
+      for (const [key, securitySchemeJson] of Object.entries(json.securitySchemes)) {
         const securityScheme = this.parseSecurityScheme(securitySchemeJson as JSONObject, result);
-        result.securitySchemas.set(key, securityScheme);
-        this.schemaPointers.set(`#/components/securitySchemas/${key}`, securityScheme);
+        result.securitySchemes.set(key, securityScheme);
+        this.schemaPointers.set(`#/components/securitySchemes/${key}`, securityScheme);
       }
     }
     if (json.links) {
@@ -386,9 +397,9 @@ export class OpenAPIReader {
     schema.title = getStringAttribute(json, 'title', false);
     schema.multipleOf = getNumericAttribute(json, 'multipleOf', false);
     schema.maximum = getNumericAttribute(json, 'maximum', false);
-    schema.exclusiveMaximum = !!json.exclusiveMaximum;
+    schema.exclusiveMaximum = json.exclusiveMaximum ?? null;
     schema.minimum = getNumericAttribute(json, 'minimum', false);
-    schema.exclusiveMinimum = !!json.exclusiveMinimum;
+    schema.exclusiveMinimum = json.exclusiveMinimum ?? null;
     schema.minLength = getNumericAttribute(json, 'minLength', false);
     schema.maxLength = getNumericAttribute(json, 'maxLength', false);
     schema.pattern = getStringAttribute(json, 'pattern', false);
@@ -454,7 +465,32 @@ export class OpenAPIReader {
     return schema;
   }
 
+  private resolveResponseFromRef(ref: string): Response {
+    let result = this.schemaPointers.get(ref);
+    if (result) {
+      assert(result instanceof Response, `Resolved reference ${ref} is not a Schema instance`);
+      return result;
+    }
+
+    const key = ref.split('/').at(-1);
+    assert(typeof key === 'string');
+
+    assert(this.components);
+    assert(this.componentsResponses);
+    const json = this.componentsResponses[key];
+
+    result = this.parseSchema(json, this.components);
+    this.components.responses.set(key, result as Response);
+    this.schemaPointers.set(`#/components/responses/${key}`, result);
+
+    return result as Response;
+  }
+
   private parseResponse(json: JSONObject, parent: ResponseParent): Response {
+    if (isRef(json)) {
+      return this.resolveResponseFromRef(json.$ref);
+    }
+
     const result = new Response(
       parent,
       (getStringAttribute(json, 'description', false) as string) ?? 'x',
@@ -750,7 +786,38 @@ export class OpenAPIReader {
     return result;
   }
 
-  private parseRequestBody(json: JSONObject, parent: RequestBodyParent): RequestBody {
+  private resolveRequestBodyFromRef(ref: string): RequestBody {
+    let result = this.schemaPointers.get(ref);
+    if (result) {
+      assert(
+        result instanceof RequestBody,
+        `Resolved reference ${ref} is not a RequestBody instance`,
+      );
+      return result;
+    }
+
+    const key = ref.split('/').at(-1);
+    assert(typeof key === 'string');
+
+    assert(this.components);
+    assert(this.componentsRequestBodies);
+    const json = this.componentsRequestBodies[key];
+
+    result = this.parseRequestBody(json, this.components);
+    this.components.requestBodies.set(key, result as RequestBody);
+    this.schemaPointers.set(`#/components/requestBodies/${key}`, result);
+
+    return result as RequestBody;
+  }
+
+  private parseRequestBody(
+    json: ObjectOrRef<RequestBodyObject>,
+    parent: RequestBodyParent,
+  ): RequestBody {
+    if (isRef(json)) {
+      return this.resolveRequestBodyFromRef(json.$ref);
+    }
+
     const result = new RequestBody(parent);
     result.description = getStringAttribute(json, 'description', false) as string;
     if (json.content) {
@@ -954,6 +1021,7 @@ export class OpenAPIReader {
     }
 
     const result = new Operation(parent);
+    this.parseExtensionFields(result.extensions, json);
     if (Array.isArray(json.tags)) {
       json.tags.forEach(tag => result.tags.push(tag as string));
     }
@@ -977,7 +1045,10 @@ export class OpenAPIReader {
       }
     }
     if (json.requestBody) {
-      result.requestBody = this.parseRequestBody(json.requestBody as JSONObject, result);
+      result.requestBody = this.parseRequestBody(
+        json.requestBody as ObjectOrRef<RequestBodyObject>,
+        result,
+      );
     }
 
     for (const [key, responseJson] of Object.entries(json.responses as JSONObject)) {
@@ -1025,15 +1096,13 @@ export class OpenAPIReader {
     for (const itemJson of json) {
       const item = new SecurityRequirement(parent);
       this.parseExtensionFields(item.extensions, itemJson);
-      for (const [schemeName, requiredScopes] of Object.entries(json)) {
+      for (const [schemeName, requiredScopes] of Object.entries(itemJson)) {
         assert(
-          !(
-            Array.isArray(requiredScopes) &&
-            (!requiredScopes.length || requiredScopes.every(s => typeof s === 'string'))
-          ),
+          !requiredScopes ||
+            (Array.isArray(requiredScopes) && requiredScopes.every(s => typeof s === 'string')),
           'SeecurityRequirement scopes must be an array of strings',
         );
-        item.scopes.set(schemeName, requiredScopes as unknown as string[]);
+        item.scopes.set(schemeName, requiredScopes as string[]);
       }
       result.push(item);
     }

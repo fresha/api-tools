@@ -82,7 +82,7 @@ test('serialises operation with inline schemas', () => {
   const openapi = new OpenAPI('Operation test', '0.1.0');
 
   const pathItem = openapi.setPathItem('/employees');
-  const operation = pathItem.addOperation('post');
+  const operation = pathItem.setOperation('post');
   const response = operation.responses.setDefaultResponse('Error response');
   const responseMediaType = response.setContent('application/json') as MediaType;
   const responseSchema = responseMediaType.setSchema('object');
@@ -124,7 +124,7 @@ test('serialises operation with shared schemas', () => {
 
   const employeesPathItem = openapi.setPathItem('/employees');
 
-  const createEmployeeOperation = employeesPathItem.addOperation('post');
+  const createEmployeeOperation = employeesPathItem.setOperation('post');
   const createEmployeeResponse =
     createEmployeeOperation.responses.setDefaultResponse('Error response');
   const createEmployeeResponseJson = createEmployeeResponse.setContent('application/json');
@@ -165,19 +165,22 @@ test('serialises operation with shared schemas', () => {
   });
 });
 
-test.each(['api', 'callback', 'link', 'petstore', 'simple', 'uspto'])('example - %s', stem => {
-  const reader = new OpenAPIReader();
+test.each(['api', 'callback', 'link', 'petstore', 'simple', 'uspto', 'json-api'])(
+  'example - %s',
+  stem => {
+    const reader = new OpenAPIReader();
 
-  const inputText = fs.readFileSync(
-    path.join(__dirname, '..', '..', '..', 'examples', `${stem}.yaml`),
-    'utf-8',
-  );
-  const inputData = yaml.parse(inputText) as OpenAPIObject;
+    const inputText = fs.readFileSync(
+      path.join(__dirname, '..', '..', '..', 'examples', `${stem}.yaml`),
+      'utf-8',
+    );
+    const inputData = yaml.parse(inputText) as OpenAPIObject;
 
-  const openapi = reader.parse(inputData);
+    const openapi = reader.parse(inputData);
 
-  const writer = new OpenAPIWriter();
-  const outputData = writer.write(openapi);
+    const writer = new OpenAPIWriter();
+    const outputData = writer.write(openapi);
 
-  expect(outputData).toStrictEqual(inputData);
-});
+    expect(outputData).toStrictEqual(inputData);
+  },
+);

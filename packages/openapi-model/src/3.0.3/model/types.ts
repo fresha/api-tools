@@ -46,12 +46,17 @@ export interface DiscriminatorModel extends Disposable, SpecificationExtensionsM
   readonly mapping: ReadonlyMap<string, string>;
 }
 
+/**
+ * Convenience type, used during schema creation.
+ */
 export type SchemaCreateType = null | SchemaType | SchemaFormat;
 
-export type SchemaCreatePropertyParams = {
-  type: SchemaCreateType;
+export type SchemaCreateObject = {
+  type: SchemaCreateType | SchemaModel;
   required?: boolean;
 };
+
+export type SchemaCreateOptions = SchemaCreateType | SchemaModel | SchemaCreateObject;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#schema-object
@@ -60,9 +65,9 @@ export interface SchemaModel extends Disposable, SpecificationExtensionsModel {
   title: Nullable<string>;
   multipleOf: Nullable<number>;
   maximum: Nullable<number>;
-  exclusiveMaximum: boolean;
+  exclusiveMaximum: Nullable<number>;
   minimum: Nullable<number>;
-  exclusiveMinimum: boolean;
+  exclusiveMinimum: Nullable<number>;
   maxLength: Nullable<number>;
   minLength: Nullable<number>;
   pattern: Nullable<string>;
@@ -93,39 +98,39 @@ export interface SchemaModel extends Disposable, SpecificationExtensionsModel {
   example: Nullable<JSONValue>;
   deprecated: boolean;
 
-  setProperty(name: string, type: SchemaCreateType | SchemaCreatePropertyParams): SchemaModel;
-  setProperties(props: Record<string, SchemaCreateType | SchemaCreatePropertyParams>): SchemaModel;
+  setProperty(name: string, options: SchemaCreateOptions): SchemaModel;
+  setProperties(props: Record<string, SchemaCreateOptions>): SchemaModel;
   deleteProperty(name: string): void;
   clearProperties(): void;
 
   setPropertyRequired(name: string, value: boolean): void;
 
-  addAllOf(typeOrSchema: SchemaCreateType | SchemaModel): SchemaModel;
+  addAllOf(options: SchemaCreateOptions): SchemaModel;
   deleteAllOfAt(index: number): void;
   clearAllOf(): void;
+
+  addOneOf(options: SchemaCreateOptions): SchemaModel;
+  deleteOneOfAt(index: number): void;
+  clearOneOf(): void;
 
   arrayOf(parent: SchemaParent): SchemaModel;
 }
 
-export type SchemaCreateArrayParams = {
-  type: SchemaCreateType | SchemaModel;
+export type SchemaCreateArrayObject = {
+  itemsOptions: SchemaCreateOptions;
   minItems?: number;
   maxItems?: number;
 };
+
+export type SchemaCreateArrayOptions = SchemaCreateType | SchemaModel | SchemaCreateArrayObject;
 
 /**
  * This class provides convenience methods for creating SchemaObject-s.
  */
 export interface SchemaModelFactory {
-  create(parent: SchemaParent, params: SchemaCreateType): SchemaModel;
-  createArray(
-    parent: SchemaParent,
-    params: SchemaCreateType | SchemaCreateArrayParams | SchemaModel,
-  ): SchemaModel;
-  createObject(
-    parent: SchemaParent,
-    props: Record<string, SchemaCreateType | SchemaCreatePropertyParams>,
-  ): SchemaModel;
+  create(parent: SchemaParent, params: Exclude<SchemaCreateType, SchemaModel>): SchemaModel;
+  createArray(parent: SchemaParent, options: SchemaCreateArrayOptions): SchemaModel;
+  createObject(parent: SchemaParent, props: Record<string, SchemaCreateOptions>): SchemaModel;
 }
 
 /**
@@ -381,7 +386,7 @@ export interface PathItemModel extends Disposable, SpecificationExtensionsModel 
 
   operations(): IterableIterator<[HTTPMethod, OperationModel]>;
 
-  addOperation(method: HTTPMethod): OperationModel;
+  setOperation(method: HTTPMethod): OperationModel;
   removeOperation(method: HTTPMethod): void;
   clearOperations(): void;
 }
@@ -523,7 +528,7 @@ export interface ComponentsModel extends Disposable, SpecificationExtensionsMode
   readonly examples: ReadonlyMap<string, ExampleModel>;
   readonly requestBodies: ReadonlyMap<string, RequestBodyModel>;
   readonly headers: ReadonlyMap<string, HeaderModel>;
-  readonly securitySchemas: ReadonlyMap<string, SecuritySchemaModel>;
+  readonly securitySchemes: ReadonlyMap<string, SecuritySchemaModel>;
   readonly links: ReadonlyMap<string, LinkModel>;
   readonly callbacks: ReadonlyMap<string, CallbackModel>;
 
@@ -553,7 +558,7 @@ export interface ComponentsModel extends Disposable, SpecificationExtensionsMode
 
   setSecuritySchema(name: string, kind: SecuritySchemaModel['type']): SecuritySchemaModel;
   deleteSecuritySchema(name: string): void;
-  clearSecuritySchemas(): void;
+  clearSecuritySchemes(): void;
 
   setLink(name: string): LinkModel;
   deleteLink(name: string): void;
@@ -619,4 +624,9 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
   deleteTag(name: string): void;
   deleteTagAt(index: number): void;
   clearTags(): void;
+}
+
+export interface OpenAPIModelFactory {
+  create(): OpenAPIModel;
+  create(title: string, version: string): OpenAPIModel;
 }
