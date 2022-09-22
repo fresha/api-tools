@@ -18,6 +18,12 @@
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "build/",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
   "keywords": ["OpenAPI", "code generator", "TypeScript"],
   "author": "Fresha Engineering",
   "contributors": [
@@ -35,6 +41,10 @@
     }
   ],
   "license": "MIT",
+  "dependencies": {
+    "@fresha/openapi-model": "0.2.1",
+    "ts-morph": "^16.0.0"
+  },
   "devDependencies": {
     "@fresha/eslint-config": "0.1.0",
     "@fresha/jest-config": "0.1.0",
