@@ -18,6 +18,12 @@
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "build/",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
   "keywords": ["OpenAPI", "code generator", "Elixir"],
   "author": "Fresha Engineering",
   "contributors": [
