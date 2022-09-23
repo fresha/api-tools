@@ -36,6 +36,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
+    "@fresha/api-tools-core": "^0.1.1",
     "@fresha/eslint-config": "0.1.0",
     "@fresha/jest-config": "0.1.0",
     "@fresha/typescript-config": "0.1.0",
