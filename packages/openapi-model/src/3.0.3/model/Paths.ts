@@ -1,20 +1,17 @@
 import { BasicNode } from './BasicNode';
 
-import type { OpenAPI } from './OpenAPI';
-import type { PathItem } from './PathItem';
-import type { ParametrisedURLString, PathsModel } from './types';
-
-export type PathsParent = OpenAPI;
+import type { PathItemModel, PathsModel, PathsModelParent } from './types';
+import type { ParametrisedURLString } from '@fresha/api-tools-core';
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#paths-object
  */
-export class Paths extends BasicNode<PathsParent> implements PathsModel {
-  items: Map<ParametrisedURLString, PathItem>;
+export class Paths extends BasicNode<PathsModelParent> implements PathsModel {
+  readonly items: Map<ParametrisedURLString, PathItemModel>;
 
-  constructor(parent: OpenAPI) {
+  constructor(parent: PathsModelParent) {
     super(parent);
-    this.items = new Map<ParametrisedURLString, PathItem>();
+    this.items = new Map<ParametrisedURLString, PathItemModel>();
   }
 
   clear(): void {
@@ -26,13 +23,13 @@ export class Paths extends BasicNode<PathsParent> implements PathsModel {
   }
 
   forEach(
-    callbackfn: (value: PathItem, key: string, map: Map<string, PathItem>) => void,
+    callbackfn: (value: PathItemModel, key: string, map: Map<string, PathItemModel>) => void,
     thisArg?: unknown,
   ): void {
     this.items.forEach(callbackfn, thisArg);
   }
 
-  get(key: string): PathItem | undefined {
+  get(key: string): PathItemModel | undefined {
     return this.items.get(key);
   }
 
@@ -40,7 +37,7 @@ export class Paths extends BasicNode<PathsParent> implements PathsModel {
     return this.items.has(key);
   }
 
-  set(key: string, value: PathItem): this {
+  set(key: string, value: PathItemModel): this {
     this.items.set(key, value);
     return this;
   }
@@ -49,7 +46,7 @@ export class Paths extends BasicNode<PathsParent> implements PathsModel {
     return this.items.size;
   }
 
-  entries(): IterableIterator<[string, PathItem]> {
+  entries(): IterableIterator<[string, PathItemModel]> {
     return this.items.entries();
   }
 
@@ -57,11 +54,11 @@ export class Paths extends BasicNode<PathsParent> implements PathsModel {
     return this.items.keys();
   }
 
-  values(): IterableIterator<PathItem> {
+  values(): IterableIterator<PathItemModel> {
     return this.items.values();
   }
 
-  [Symbol.iterator](): IterableIterator<[string, PathItem]> {
+  [Symbol.iterator](): IterableIterator<[string, PathItemModel]> {
     return this.items.entries();
   }
 

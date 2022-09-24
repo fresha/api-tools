@@ -1,25 +1,25 @@
 import { BasicNode } from '../BasicNode';
 
-import type { OAuth2Scheme } from '../SecurityScheme/OAuth2Scheme';
-import type { OAuthFlowsModel } from '../types';
-import type { OAuthAuthorisationCodeFlow } from './OAuthAuthorisationCodeFlow';
-import type { OAuthClientCredentialsFlow } from './OAuthClientCredentialsFlow';
-import type { OAuthImplicitFlow } from './OAuthImplicitFlow';
-import type { OAuthPasswordFlow } from './OAuthPasswordFlow';
+import type {
+  OAuthAuthorizationCodeFlowModel,
+  OAuthClientCredentialsFlowModel,
+  OAuthFlowsModel,
+  OAuthFlowsModelParent,
+  OAuthImplicitFlowModel,
+  OAuthPasswordFlowModel,
+} from '../types';
 import type { Nullable } from '@fresha/api-tools-core';
-
-export type OAuthFlowsParent = OAuth2Scheme;
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#oauth-flows-object
  */
-export class OAuthFlows extends BasicNode<OAuthFlowsParent> implements OAuthFlowsModel {
-  implicit: Nullable<OAuthImplicitFlow>;
-  password: Nullable<OAuthPasswordFlow>;
-  clientCredentials: Nullable<OAuthClientCredentialsFlow>;
-  authorizationCode: Nullable<OAuthAuthorisationCodeFlow>;
+export class OAuthFlows extends BasicNode<OAuthFlowsModelParent> implements OAuthFlowsModel {
+  implicit: Nullable<OAuthImplicitFlowModel>;
+  password: Nullable<OAuthPasswordFlowModel>;
+  clientCredentials: Nullable<OAuthClientCredentialsFlowModel>;
+  authorizationCode: Nullable<OAuthAuthorizationCodeFlowModel>;
 
-  constructor(parent: OAuthFlowsParent) {
+  constructor(parent: OAuthFlowsModelParent) {
     super(parent);
     this.implicit = null;
     this.password = null;

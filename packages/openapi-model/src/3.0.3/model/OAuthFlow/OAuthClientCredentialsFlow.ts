@@ -1,6 +1,6 @@
-import { OAuthFlowBase, OAuthFlowParent } from './OAuthFlowBase';
+import { OAuthFlowBase } from './OAuthFlowBase';
 
-import type { OAuthClientCredentialsFlowModel } from '../types';
+import type { OAuthClientCredentialsFlowModel, OAuthFlowModelParent } from '../types';
 import type { URLString } from '@fresha/api-tools-core';
 
 /**
@@ -10,9 +10,10 @@ export class OAuthClientCredentialsFlow
   extends OAuthFlowBase
   implements OAuthClientCredentialsFlowModel
 {
+  declare readonly type: 'clientCredentials';
   tokenUrl: URLString;
 
-  constructor(parent: OAuthFlowParent, tokenUrl: URLString) {
+  constructor(parent: OAuthFlowModelParent, tokenUrl: URLString) {
     super(parent, 'clientCredentials');
     this.tokenUrl = tokenUrl;
   }

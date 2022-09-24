@@ -1,7 +1,6 @@
 import { OpenAPIReader } from './OpenAPIReader';
-import { Schema } from './Schema';
-import { SchemaModel } from './types';
 
+import type { SchemaModel } from './types';
 import type { JSONValue } from '@fresha/api-tools-core';
 
 test('barebones', () => {
@@ -59,9 +58,9 @@ describe('SchemaModel', () => {
     expect(emptySchema).toHaveProperty('required', new Set<string>());
     expect(emptySchema).toHaveProperty('enum', null);
     expect(emptySchema).toHaveProperty('type', null);
-    expect(emptySchema).toHaveProperty('allOf', null);
-    expect(emptySchema).toHaveProperty('oneOf', null);
-    expect(emptySchema).toHaveProperty('anyOf', null);
+    expect(emptySchema).toHaveProperty('allOf', []);
+    expect(emptySchema).toHaveProperty('oneOf', []);
+    expect(emptySchema).toHaveProperty('anyOf', []);
     expect(emptySchema).toHaveProperty('not', null);
     expect(emptySchema).toHaveProperty('items', null);
     expect(emptySchema).toHaveProperty('properties', new Map<string, SchemaModel>());
@@ -277,7 +276,7 @@ describe('ComponentsModel', () => {
     expect(errorSchema).toHaveProperty('parent', openapi.components);
     expect(errorSchema?.properties.get('message')).toBe(errorMessageSchema);
 
-    const errorCodeSchema = errorSchema?.properties.get('code') as Schema;
+    const errorCodeSchema = errorSchema?.properties.get('code');
     expect(errorCodeSchema).toBeTruthy();
     expect(errorCodeSchema).toHaveProperty('root', openapi);
     expect(errorCodeSchema).toHaveProperty('parent', errorSchema);

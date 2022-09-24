@@ -1,6 +1,12 @@
-import { isJSONAPIDataDocument, isJSONAPIErrorDocument } from './typeGuards';
+import { isJSONAPIDataDocument, isJSONAPIErrorDocument, isJSONRef } from './typeGuards';
 
 import type { JSONAPIDocument } from './types';
+
+test('isJSONRef', () => {
+  expect(isJSONRef({})).toBeFalsy();
+  expect(isJSONRef({ $ref: 'a' })).toBeTruthy();
+  expect(isJSONRef({ $ref: 1 })).toBeFalsy();
+});
 
 test('JSON:API document types', () => {
   const doc1: JSONAPIDocument = {

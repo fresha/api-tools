@@ -1,18 +1,18 @@
 import { BasicNode } from '../BasicNode';
 
-import type { Components } from '../Components';
+import type { SecuritySchemaModelParent, SecuritySchemeType } from '../types';
 import type { Nullable } from '@fresha/api-tools-core';
-
-export type SecuritySchemeParent = Components;
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#security-scheme-object
  */
-export abstract class SecuritySchemeBase extends BasicNode<SecuritySchemeParent> {
+export abstract class SecuritySchemeBase extends BasicNode<SecuritySchemaModelParent> {
+  readonly type: SecuritySchemeType;
   description: Nullable<string>;
 
-  constructor(parent: SecuritySchemeParent) {
+  constructor(parent: SecuritySchemaModelParent, type: SecuritySchemeType) {
     super(parent);
+    this.type = type;
     this.description = null;
   }
 }

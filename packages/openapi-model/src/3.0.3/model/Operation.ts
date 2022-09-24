@@ -1,57 +1,79 @@
 import assert from 'assert';
 
 import { BasicNode } from './BasicNode';
-import {
-  PathParameter,
-  QueryParameter,
-  HeaderParameter,
-  CookieParameter,
-  Parameter,
-} from './Parameter';
+import { Callback } from './Callback';
+import { PathParameter, QueryParameter, HeaderParameter, CookieParameter } from './Parameter';
 import { Responses } from './Responses';
+import { SecurityRequirement } from './SecurityRequirement';
+import { Server } from './Server';
 
-import type { Callback } from './Callback';
-import type { ExternalDocumentation } from './ExternalDocumentation';
-import type { PathItem } from './PathItem';
-import type { RequestBody } from './RequestBody';
-import type { SecurityRequirement } from './SecurityRequirement';
-import type { Server } from './Server';
-import type { OperationModel, ParameterLocation } from './types';
+import type {
+  CallbackModel,
+  ExternalDocumentationModel,
+  HTTPStatusCode,
+  OperationModel,
+  OperationModelParent,
+  ParameterLocation,
+  ParameterModel,
+  RequestBodyModel,
+  ResponseModel,
+  SecurityRequirementModel,
+  ServerModel,
+} from './types';
 import type { CommonMarkString, Nullable } from '@fresha/api-tools-core';
-
-export type OperationParent = PathItem;
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#operation-object
  */
-export class Operation extends BasicNode<OperationParent> implements OperationModel {
+export class Operation extends BasicNode<OperationModelParent> implements OperationModel {
   readonly tags: string[];
   summary: Nullable<string>;
   description: Nullable<CommonMarkString>;
-  externalDocs: Nullable<ExternalDocumentation>;
+  externalDocumentation: Nullable<ExternalDocumentationModel>;
   operationId: Nullable<string>;
-  readonly parameters: Parameter[];
-  requestBody: Nullable<RequestBody>;
+  readonly parameters: ParameterModel[];
+  requestBody: Nullable<RequestBodyModel>;
   readonly responses: Responses;
-  readonly callbacks: Map<string, Callback>;
+  readonly callbacks: Map<string, CallbackModel>;
   deprecated: boolean;
-  security: Nullable<SecurityRequirement[]>;
-  readonly servers: Server[];
+  readonly security: SecurityRequirementModel[];
+  readonly servers: ServerModel[];
 
-  constructor(parent: OperationParent) {
+  constructor(parent: OperationModelParent) {
     super(parent);
     this.tags = [];
     this.summary = null;
     this.description = null;
-    this.externalDocs = null;
+    this.externalDocumentation = null;
     this.operationId = null;
     this.parameters = [];
     this.requestBody = null;
     this.responses = new Responses(this);
-    this.callbacks = new Map<string, Callback>();
+    this.callbacks = new Map<string, CallbackModel>();
     this.deprecated = false;
-    this.security = null;
+    this.security = [];
     this.servers = [];
+  }
+
+  addTag(name: string): void {
+    assert(!this.tags.includes(name));
+    assert(this.root.tags.some(t => t.name === name));
+    this.tags.push(name);
+  }
+
+  deleteTag(name: string): void {
+    const index = this.tags.indexOf(name);
+    if (index >= 0) {
+      this.deleteTagAt(index);
+    }
+  }
+
+  deleteTagAt(index: number): void {
+    this.tags.splice(index, 1);
+  }
+
+  clearTags(): void {
+    this.tags.splice(0, this.tags.length);
   }
 
   addParameter(name: string, location: 'path'): PathParameter;
@@ -59,7 +81,8 @@ export class Operation extends BasicNode<OperationParent> implements OperationMo
   addParameter(name: string, location: 'header'): HeaderParameter;
   addParameter(name: string, location: 'cookie'): CookieParameter;
   // eslint-disable-next-line consistent-return
-  addParameter(name: string, location: ParameterLocation): Parameter {
+  addParameter(name: string, location: ParameterLocation): ParameterModel {
+    assert(this.parameters.every(p => p.name !== name));
     switch (location) {
       case 'path': {
         const param = new PathParameter(this, name);
@@ -98,25 +121,73 @@ export class Operation extends BasicNode<OperationParent> implements OperationMo
     this.parameters.splice(0, this.parameters.length);
   }
 
-  addTag(name: string): void {
-    if (this.tags.includes(name)) {
-      throw new Error(`Duplicate tag ${name}`);
-    }
-    this.tags.push(name);
+  setDefaultResponse(description: CommonMarkString): ResponseModel {
+    return this.responses.setDefaultResponse(description);
   }
 
-  deleteTag(name: string): void {
-    const index = this.tags.indexOf(name);
+  deleteDefaultResponse(): void {
+    this.responses.deleteDefaultResponse();
+  }
+
+  setResponse(code: HTTPStatusCode, description: CommonMarkString): ResponseModel {
+    return this.responses.setResponse(code, description);
+  }
+
+  deleteResponse(code: HTTPStatusCode): void {
+    this.responses.deleteResponse(code);
+  }
+
+  clearResponses(): void {
+    this.responses.clearResponses();
+  }
+
+  setCallback(key: string): CallbackModel {
+    const result = new Callback(this);
+    this.callbacks.set(key, result);
+    return result;
+  }
+
+  deleteCallback(key: string): void {
+    this.callbacks.delete(key);
+  }
+
+  clearCallbacks(): void {
+    this.callbacks.clear();
+  }
+
+  addSecurityRequirement(): SecurityRequirementModel {
+    const result = new SecurityRequirement(this);
+    this.security.push(result);
+    return result;
+  }
+
+  deleteSecurityRequirementAt(index: number): void {
+    this.security.splice(index, 1);
+  }
+
+  clearSecurityRequirements(): void {
+    this.security.splice(0, this.security.length);
+  }
+
+  addServer(url: string): ServerModel {
+    assert(this.servers.every(s => s.url !== url));
+    const result = new Server(this, url);
+    this.servers.push(result);
+    return result;
+  }
+
+  deleteServer(url: string): void {
+    const index = this.servers.findIndex(server => server.url === url);
     if (index >= 0) {
-      this.deleteTagAt(index);
+      this.deleteServerAt(index);
     }
   }
 
-  deleteTagAt(index: number): void {
-    this.tags.splice(index, 1);
+  deleteServerAt(index: number): void {
+    this.servers.splice(index, 1);
   }
 
-  clearTags(): void {
-    this.tags.splice(0, this.tags.length);
+  clearServers(): void {
+    this.servers.splice(0, this.servers.length);
   }
 }

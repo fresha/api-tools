@@ -1,25 +1,25 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 import { Callback } from './Callback';
 import { Example } from './Example';
 import { Header } from './Header';
 import { Link } from './Link';
-import { CookieParameter } from './Parameter/CookieParameter';
-import { HeaderParameter } from './Parameter/HeaderParameter';
-import { PathParameter } from './Parameter/PathParameter';
-import { QueryParameter } from './Parameter/QueryParameter';
+import { CookieParameter, HeaderParameter, PathParameter, QueryParameter } from './Parameter';
 import { RequestBody } from './RequestBody';
 import { Response } from './Response';
 import { Schema, SchemaFactory } from './Schema';
-import { ApiKeyScheme } from './SecurityScheme/ApiKeyScheme';
-import { HttpScheme } from './SecurityScheme/HttpScheme';
-import { OAuth2Scheme } from './SecurityScheme/OAuth2Scheme';
-import { OpenIdConnectScheme } from './SecurityScheme/OpenIdConnectScheme';
+import {
+  APIKeySecurityScheme,
+  HTTPSecurityScheme,
+  OAuth2SecurityScheme,
+  OpenIdConnectSecurityScheme,
+} from './SecurityScheme';
 
-import type { OpenAPI } from './OpenAPI';
-import type { SecurityScheme } from './SecurityScheme';
 import type {
   CallbackModel,
   ComponentsModel,
+  ComponentsModelParent,
   ExampleModel,
   HeaderModel,
   LinkModel,
@@ -32,33 +32,31 @@ import type {
 } from './types';
 import type { CommonMarkString } from '@fresha/api-tools-core';
 
-type AllParameters = PathParameter | QueryParameter | HeaderParameter | CookieParameter;
-
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#components-object
  */
-export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
-  readonly schemas: Map<string, Schema>;
-  readonly responses: Map<string, Response>;
-  readonly parameters: Map<string, AllParameters>;
-  readonly examples: Map<string, Example>;
-  readonly requestBodies: Map<string, RequestBody>;
-  readonly headers: Map<string, Header>;
-  readonly securitySchemes: Map<string, SecurityScheme>;
-  readonly links: Map<string, Link>;
-  readonly callbacks: Map<string, Callback>;
+export class Components extends BasicNode<ComponentsModelParent> implements ComponentsModel {
+  readonly schemas: Map<string, SchemaModel>;
+  readonly responses: Map<string, ResponseModel>;
+  readonly parameters: Map<string, ParameterModel>;
+  readonly examples: Map<string, ExampleModel>;
+  readonly requestBodies: Map<string, RequestBodyModel>;
+  readonly headers: Map<string, HeaderModel>;
+  readonly securitySchemes: Map<string, SecuritySchemaModel>;
+  readonly links: Map<string, LinkModel>;
+  readonly callbacks: Map<string, CallbackModel>;
 
-  constructor(parent: OpenAPI) {
+  constructor(parent: ComponentsModelParent) {
     super(parent);
-    this.schemas = new Map<string, Schema>();
-    this.responses = new Map<string, Response>();
-    this.parameters = new Map<string, AllParameters>();
-    this.examples = new Map<string, Example>();
-    this.requestBodies = new Map<string, RequestBody>();
-    this.headers = new Map<string, Header>();
-    this.securitySchemes = new Map<string, SecurityScheme>();
-    this.links = new Map<string, Link>();
-    this.callbacks = new Map<string, Callback>();
+    this.schemas = new Map<string, SchemaModel>();
+    this.responses = new Map<string, ResponseModel>();
+    this.parameters = new Map<string, ParameterModel>();
+    this.examples = new Map<string, ExampleModel>();
+    this.requestBodies = new Map<string, RequestBodyModel>();
+    this.headers = new Map<string, HeaderModel>();
+    this.securitySchemes = new Map<string, SecuritySchemaModel>();
+    this.links = new Map<string, LinkModel>();
+    this.callbacks = new Map<string, CallbackModel>();
   }
 
   isEmpty(): boolean {
@@ -75,8 +73,16 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
     );
   }
 
+  setSchemaModel(name: string, model: SchemaModel): void {
+    assert(!this.schemas.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.schemas.values()).includes(model));
+    this.schemas.set(name, model);
+  }
+
   setSchema(name: string, type?: SchemaCreateType): SchemaModel {
-    const result = SchemaFactory.create(this, type ?? null) as Schema;
+    assert(!this.schemas.has(name));
+    const result = SchemaFactory.create(this, type ?? null);
     this.schemas.set(name, result);
     return result;
   }
@@ -87,6 +93,13 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
 
   clearSchemas(): void {
     this.schemas.clear();
+  }
+
+  setResponseModel(name: string, model: ResponseModel): void {
+    assert(!this.responses.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.responses.values()).includes(model));
+    this.responses.set(name, model);
   }
 
   setResponse(name: string, description: CommonMarkString): ResponseModel {
@@ -101,6 +114,13 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
 
   clearResponses(): void {
     this.responses.clear();
+  }
+
+  setParameterModel(name: string, model: ParameterModel): void {
+    assert(!this.parameters.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.parameters.values()).includes(model));
+    this.parameters.set(name, model);
   }
 
   setParameter(name: string, kind: ParameterModel['in'], paramName: string): ParameterModel {
@@ -133,6 +153,13 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
     this.parameters.clear();
   }
 
+  setExampleModel(name: string, model: ExampleModel): void {
+    assert(!this.examples.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.examples.values()).includes(model));
+    this.examples.set(name, model);
+  }
+
   setExample(name: string): ExampleModel {
     const example = new Example(this);
     this.examples.set(name, example);
@@ -145,6 +172,13 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
 
   clearExamples(): void {
     this.examples.clear();
+  }
+
+  setRequestBodyModel(name: string, model: RequestBodyModel): void {
+    assert(!this.requestBodies.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.requestBodies.values()).includes(model));
+    this.requestBodies.set(name, model);
   }
 
   setRequestBody(name: string): RequestBodyModel {
@@ -161,6 +195,13 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
     this.requestBodies.clear();
   }
 
+  setHeaderModel(name: string, model: HeaderModel): void {
+    assert(!this.headers.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.headers.values()).includes(model));
+    this.headers.set(name, model);
+  }
+
   setHeader(name: string): HeaderModel {
     const result = new Header(this);
     this.headers.set(name, result);
@@ -175,23 +216,30 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
     this.headers.clear();
   }
 
+  setSecuritySchemaModel(name: string, model: SecuritySchemaModel): void {
+    assert(!this.securitySchemes.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.securitySchemes.values()).includes(model));
+    this.securitySchemes.set(name, model);
+  }
+
   setSecuritySchema(name: string, kind: SecuritySchemaModel['type']): SecuritySchemaModel {
-    let result: SecurityScheme;
+    let result: SecuritySchemaModel;
     switch (kind) {
       case 'apiKey':
-        result = new ApiKeyScheme(this, 'x', 'header');
+        result = new APIKeySecurityScheme(this, 'x', 'header');
         break;
       case 'http':
-        result = new HttpScheme(this, Schema.create(this));
+        result = new HTTPSecurityScheme(this, Schema.create(this));
         break;
       case 'oauth2':
-        result = new OAuth2Scheme(this);
+        result = new OAuth2SecurityScheme(this);
         break;
       case 'openIdConnect':
-        result = new OpenIdConnectScheme(this, 'http://www.example.com');
+        result = new OpenIdConnectSecurityScheme(this, 'http://www.example.com');
         break;
       default:
-        throw new Error(`Unsupported security scheme type ${String(kind)}`);
+        assert.fail(`Unsupported security scheme type ${String(kind)}`);
     }
     this.securitySchemes.set(name, result);
     return result;
@@ -203,6 +251,13 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
 
   clearSecuritySchemes(): void {
     this.securitySchemes.clear();
+  }
+
+  setLinkModel(name: string, model: LinkModel): void {
+    assert(!this.links.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.links.values()).includes(model));
+    this.links.set(name, model);
   }
 
   setLink(name: string): LinkModel {
@@ -217,6 +272,13 @@ export class Components extends BasicNode<OpenAPI> implements ComponentsModel {
 
   clearLinks(): void {
     this.links.clear();
+  }
+
+  setCallbackModel(name: string, model: CallbackModel): void {
+    assert(!this.callbacks.has(name));
+    assert.equal(model.parent, this);
+    assert(!Array.from(this.callbacks.values()).includes(model));
+    this.callbacks.set(name, model);
   }
 
   setCallback(name: string): CallbackModel {

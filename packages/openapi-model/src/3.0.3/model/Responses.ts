@@ -1,23 +1,20 @@
 import { BasicNode } from './BasicNode';
 import { Response } from './Response';
 
-import type { Operation } from './Operation';
-import type { HTTPStatusCode, ResponseModel, ResponsesModel } from './types';
+import type { HTTPStatusCode, ResponseModel, ResponsesModel, ResponsesModelParent } from './types';
 import type { CommonMarkString, Nullable } from '@fresha/api-tools-core';
-
-export type ResponsesParent = Operation;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#responses-object
  */
-export class Responses extends BasicNode<ResponsesParent> implements ResponsesModel {
-  default: Nullable<Response>;
-  codes: Map<HTTPStatusCode, Response>;
+export class Responses extends BasicNode<ResponsesModelParent> implements ResponsesModel {
+  default: Nullable<ResponseModel>;
+  codes: Map<HTTPStatusCode, ResponseModel>;
 
-  constructor(parent: ResponsesParent) {
+  constructor(parent: ResponsesModelParent) {
     super(parent);
-    this.default = null; // new Response(this, 'Default');
-    this.codes = new Map<HTTPStatusCode, Response>();
+    this.default = null;
+    this.codes = new Map<HTTPStatusCode, ResponseModel>();
   }
 
   setDefaultResponse(description: string): ResponseModel {

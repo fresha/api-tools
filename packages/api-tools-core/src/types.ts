@@ -16,6 +16,11 @@ export type CommonMarkString = string;
 export type URLString = string;
 
 /**
+ * URI template string, like /list/{from}/{to}
+ */
+export type ParametrisedURLString = string;
+
+/**
  * String representing an e-mail address.
  */
 export type EmailString = string;
@@ -31,6 +36,11 @@ export type VersionString = string;
 export type DateTimeString = string;
 
 /**
+ * String representing MIME types.
+ */
+export type MIMETypeString = string;
+
+/**
  * Enumerates well-known HTTP request methods.
  */
 export type HTTPMethod =
@@ -43,6 +53,11 @@ export type HTTPMethod =
   | 'HEAD'
   | 'CONNECT'
   | 'TRACE';
+
+/**
+ * Integer, representing HTTP status code.
+ */
+export type HTTPStatusCode = number;
 
 //
 // JSON spec
@@ -86,6 +101,20 @@ export type JSONObjectArray = JSONObject[];
  * @see https://datatracker.ietf.org/doc/html/rfc6901
  */
 export type JSONPointerString = string;
+
+/**
+ * JSON Schema reference.
+ *
+ * @see https://json-schema.org/understanding-json-schema/structuring.html#ref
+ */
+export type JSONRef = {
+  $ref: string;
+};
+
+/**
+ * Use this if you need to declare some type or a reference to it.
+ */
+export type ObjectOrRef<T> = T | JSONRef;
 
 //
 // JSON:API spec
@@ -243,3 +272,11 @@ export type JSONAPIErrorDocument = JSONAPIDocumentBase & {
  * @see https://jsonapi.org/format/#document-top-level
  */
 export type JSONAPIDocument = JSONAPIDataDocument | JSONAPIErrorDocument;
+
+//
+// General purpose
+//
+
+export interface Disposable {
+  dispose(): void;
+}

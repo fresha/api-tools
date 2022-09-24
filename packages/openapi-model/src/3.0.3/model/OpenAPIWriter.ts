@@ -9,7 +9,6 @@ import type {
   ComponentsObject,
   ContactObject,
   CookieParameterObject,
-  CookieParameterSerializationStyle,
   ExampleObject,
   ExternalDocumentationObject,
   HTTPSecuritySchemeObject,
@@ -38,43 +37,50 @@ import type {
   OpenIdConnectSecuritySchemeObject,
   EncodingObject,
   LinkObject,
-  ObjectOrRef,
 } from '../types';
-import type { ExtensionFields } from './BasicNode';
-import type { Callback } from './Callback';
-import type { Components } from './Components';
-import type { Contact } from './Contact';
-import type { Encoding } from './Encoding';
-import type { Example } from './Example';
-import type { ExternalDocumentation } from './ExternalDocumentation';
-import type { Header } from './Header';
-import type { Info } from './Info';
-import type { License } from './License';
-import type { Link, LinkParent } from './Link';
-import type { MediaType } from './MediaType';
-import type { OpenAPI } from './OpenAPI';
-import type { Operation } from './Operation';
-import type { Parameter } from './Parameter';
-import type { CookieParameter } from './Parameter/CookieParameter';
-import type { HeaderParameter } from './Parameter/HeaderParameter';
-import type { PathParameter } from './Parameter/PathParameter';
-import type { QueryParameter } from './Parameter/QueryParameter';
-import type { PathItem } from './PathItem';
-import type { Paths } from './Paths';
-import type { RequestBody, RequestBodyParent } from './RequestBody';
-import type { Response, ResponseParent } from './Response';
-import type { Responses } from './Responses';
-import type { Schema, SchemaParent } from './Schema';
-import type { SecurityRequirement } from './SecurityRequirement';
-import type { SecurityScheme } from './SecurityScheme';
-import type { ApiKeyScheme } from './SecurityScheme/ApiKeyScheme';
-import type { HttpScheme } from './SecurityScheme/HttpScheme';
-import type { OAuth2Scheme } from './SecurityScheme/OAuth2Scheme';
-import type { OpenIdConnectScheme } from './SecurityScheme/OpenIdConnectScheme';
-import type { Server } from './Server';
-import type { ServerVariable } from './ServerVariable';
-import type { Tag } from './Tag';
-import type { SchemaModel } from './types';
+import type {
+  APIKeySecuritySchemaModel,
+  CallbackModel,
+  ComponentsModel,
+  ContactModel,
+  CookieParameterModel,
+  CookieParameterSerializationStyle,
+  EncodingModel,
+  ExampleModel,
+  ExtensionFields,
+  ExternalDocumentationModel,
+  HeaderModel,
+  HeaderParameterModel,
+  HTTPSecuritySchemaModel,
+  InfoModel,
+  LicenseModel,
+  LinkModel,
+  LinkModelParent,
+  MediaTypeModel,
+  OAuth2SecuritySchemaModel,
+  OpenAPIModel,
+  OpenIDConnectSecuritySchemaModel,
+  OperationModel,
+  ParameterModel,
+  PathItemModel,
+  PathParameterModel,
+  PathsModel,
+  QueryParameterModel,
+  QueryParameterSerializationStyle,
+  RequestBodyModel,
+  RequestBodyModelParent,
+  ResponseModel,
+  ResponseModelParent,
+  ResponsesModel,
+  SchemaModel,
+  SchemaModelParent,
+  SecurityRequirementModel,
+  SecuritySchemaModel,
+  ServerModel,
+  ServerVariableModel,
+  TagModel,
+} from './types';
+import type { ObjectOrRef } from '@fresha/api-tools-core';
 
 export class OpenAPIWriter {
   // maps OpenAPI schema objects to JSON pointers
@@ -84,38 +90,38 @@ export class OpenAPIWriter {
     this.schemaPointers = new Map<unknown, string>();
   }
 
-  writeToFile(schema: OpenAPI, fileName: string): void {
+  writeToFile(schema: OpenAPIModel, fileName: string): void {
     const openapiObject = this.write(schema);
     const text = yaml.stringify(openapiObject);
     fs.writeFileSync(fileName, text, 'utf-8');
   }
 
-  write(schema: OpenAPI): OpenAPIObject {
-    this.collectSchemaPointers(schema);
+  write(openapi: OpenAPIModel): OpenAPIObject {
+    this.collectSchemaPointers(openapi);
 
     const result: OpenAPIObject = {
       openapi: '3.0.3',
-      info: this.writeInfo(schema.info),
+      info: this.writeInfo(openapi.info),
       paths: {},
     };
-    this.writeExtensionFields(schema.extensions, result);
-    if (schema.servers.length) {
-      result.servers = schema.servers.map(arg => this.writeServer(arg));
+    this.writeExtensionFields(openapi.extensions, result);
+    if (openapi.servers.length) {
+      result.servers = openapi.servers.map(arg => this.writeServer(arg));
     }
-    if (!schema.components.isEmpty()) {
-      result.components = this.writeComponents(schema.components);
+    if (!openapi.components.isEmpty()) {
+      result.components = this.writeComponents(openapi.components);
     }
-    result.paths = this.writePaths(schema.paths);
-    if (schema.security) {
-      result.security = this.writeSecurityRequirementArray(schema.security);
+    result.paths = this.writePaths(openapi.paths);
+    if (openapi.security.length) {
+      result.security = this.writeSecurityRequirementArray(openapi.security);
     }
-    if (schema.tags.length) {
-      result.tags = schema.tags.map(arg => this.writeTag(arg));
+    if (openapi.tags.length) {
+      result.tags = openapi.tags.map(arg => this.writeTag(arg));
     }
     return result;
   }
 
-  private collectSchemaPointers(openapi: OpenAPI): void {
+  private collectSchemaPointers(openapi: OpenAPIModel): void {
     this.schemaPointers.clear();
 
     this.schemaPointers.set(openapi, '#/');
@@ -163,7 +169,7 @@ export class OpenAPIWriter {
     }
   }
 
-  private writeInfo(info: Info): InfoObject {
+  private writeInfo(info: InfoModel): InfoObject {
     const result: InfoObject = {
       title: info.title,
       version: info.version,
@@ -186,7 +192,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeContact(contact: Contact): ContactObject | null {
+  private writeContact(contact: ContactModel): ContactObject | null {
     const result: ContactObject = {};
     this.writeExtensionFields(contact.extensions, result);
     if (contact.name) {
@@ -201,7 +207,7 @@ export class OpenAPIWriter {
     return Object.keys(result).length ? result : null;
   }
 
-  private writeLicense(license: License): LicenseObject | null {
+  private writeLicense(license: LicenseModel): LicenseObject | null {
     if (license.name === 'UNLICENSED') {
       return null;
     }
@@ -213,7 +219,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeServer(server: Server): ServerObject {
+  private writeServer(server: ServerModel): ServerObject {
     const result: ServerObject = { url: server.url };
     this.writeExtensionFields(server.extensions, result);
     if (server.description) {
@@ -228,11 +234,11 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeServerVariable(serverVar: ServerVariable): ServerVariableObject {
+  private writeServerVariable(serverVar: ServerVariableModel): ServerVariableObject {
     const result: ServerVariableObject = { default: serverVar.default };
     this.writeExtensionFields(serverVar.extensions, result);
-    if (serverVar.enum) {
-      result.enum = serverVar.enum;
+    if (serverVar.enum.size) {
+      result.enum = Array.from(serverVar.enum);
     }
     if (serverVar.description) {
       result.description = serverVar.description;
@@ -240,7 +246,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeComponents(components: Components): ComponentsObject {
+  private writeComponents(components: ComponentsModel): ComponentsObject {
     const result: ComponentsObject = {};
     this.writeExtensionFields(components.extensions, result);
     if (components.schemas.size) {
@@ -300,8 +306,8 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeSchema(schema: SchemaModel, node: SchemaParent): ObjectOrRef<SchemaObject> {
-    if (node !== (schema as Schema).parent) {
+  private writeSchema(schema: SchemaModel, node: SchemaModelParent): ObjectOrRef<SchemaObject> {
+    if (node !== schema.parent) {
       const pointer = this.schemaPointers.get(schema);
       if (pointer) {
         return { $ref: pointer };
@@ -309,7 +315,7 @@ export class OpenAPIWriter {
     }
 
     const result: SchemaObject = {};
-    this.writeExtensionFields(schema.extensions as ExtensionFields, result);
+    this.writeExtensionFields(schema.extensions, result);
     if (schema.type) {
       result.type = schema.type;
     }
@@ -364,39 +370,36 @@ export class OpenAPIWriter {
     if (schema.type != null) {
       result.type = schema.type;
     }
-    if (schema.allOf != null) {
+    if (schema.allOf?.length) {
       result.allOf = schema.allOf.map((subschema: SchemaModel) =>
-        this.writeSchema(subschema, schema as Schema),
+        this.writeSchema(subschema, schema),
       );
     }
-    if (schema.oneOf != null) {
+    if (schema.oneOf?.length) {
       result.oneOf = schema.oneOf.map((subschema: SchemaModel) =>
-        this.writeSchema(subschema, schema as Schema),
+        this.writeSchema(subschema, schema),
       );
     }
-    if (schema.anyOf != null) {
+    if (schema.anyOf?.length) {
       result.anyOf = schema.anyOf.map((subschema: SchemaModel) =>
-        this.writeSchema(subschema, schema as Schema),
+        this.writeSchema(subschema, schema),
       );
     }
     if (schema.not != null) {
-      result.not = this.writeSchema(schema.not, schema as Schema);
+      result.not = this.writeSchema(schema.not, schema);
     }
     if (schema.items != null) {
-      result.items = this.writeSchema(schema.items, schema as Schema);
+      result.items = this.writeSchema(schema.items, schema);
     }
     if (schema.properties.size) {
       result.properties = {};
       for (const [key, value] of schema.properties) {
-        result.properties[key] = this.writeSchema(value, schema as Schema);
+        result.properties[key] = this.writeSchema(value, schema);
       }
     }
     if (schema.additionalProperties != null) {
       if (typeof schema.additionalProperties !== 'boolean') {
-        result.additionalProperties = this.writeSchema(
-          schema.additionalProperties,
-          schema as Schema,
-        );
+        result.additionalProperties = this.writeSchema(schema.additionalProperties, schema);
       } else if (schema.additionalProperties === false) {
         result.additionalProperties = false;
       }
@@ -419,7 +422,10 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeResponse(response: Response, node: ResponseParent): ObjectOrRef<ResponseObject> {
+  private writeResponse(
+    response: ResponseModel,
+    node: ResponseModelParent,
+  ): ObjectOrRef<ResponseObject> {
     if (node !== response.parent) {
       const pointer = this.schemaPointers.get(response);
       if (pointer) {
@@ -450,7 +456,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeHeader(header: Header): HeaderObject {
+  private writeHeader(header: HeaderModel): HeaderObject {
     const result: HeaderObject = {};
     this.writeExtensionFields(header.extensions, result);
     if (header.description) {
@@ -489,7 +495,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeExample(example: Example): ExampleObject {
+  private writeExample(example: ExampleModel): ExampleObject {
     const result: ExampleObject = {};
     this.writeExtensionFields(example.extensions, result);
     if (example.summary) {
@@ -507,7 +513,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeMediaType(mediaType: MediaType): MediaTypeObject {
+  private writeMediaType(mediaType: MediaTypeModel): MediaTypeObject {
     const result: MediaTypeObject = {};
     this.writeExtensionFields(mediaType.extensions, result);
     if (mediaType.schema) {
@@ -531,7 +537,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeEncoding(encoding: Encoding): EncodingObject {
+  private writeEncoding(encoding: EncodingModel): EncodingObject {
     const result: EncodingObject = {};
     this.writeExtensionFields(encoding.extensions, result);
     if (encoding.contentType) {
@@ -544,14 +550,14 @@ export class OpenAPIWriter {
       }
     }
     if (encoding.style) {
-      result.style = encoding.style;
+      result.style = encoding.style as QueryParameterSerializationStyle;
     }
     result.explode = encoding.explode;
     result.allowReserved = encoding.allowReserved;
     return result;
   }
 
-  private writeLink(link: Link, node: LinkParent): ObjectOrRef<LinkObject> {
+  private writeLink(link: LinkModel, node: LinkModelParent): ObjectOrRef<LinkObject> {
     if (node !== link.parent) {
       const pointer = this.schemaPointers.get(link);
       if (pointer) {
@@ -582,12 +588,24 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeParameterCommon(parameter: PathParameter, result: PathParameterObject): void;
-  private writeParameterCommon(parameter: QueryParameter, result: QueryParameterObject): void;
-  private writeParameterCommon(parameter: HeaderParameter, result: HeaderParameterObject): void;
-  private writeParameterCommon(parameter: CookieParameter, result: CookieParameterObject): void;
+  private writeParameterCommon(parameter: PathParameterModel, result: PathParameterObject): void;
+  private writeParameterCommon(parameter: QueryParameterModel, result: QueryParameterObject): void;
   private writeParameterCommon(
-    parameter: PathParameter | QueryParameter | HeaderParameter | CookieParameter,
+    parameter: HeaderParameterModel,
+    result: HeaderParameterObject,
+  ): void;
+
+  private writeParameterCommon(
+    parameter: CookieParameterModel,
+    result: CookieParameterObject,
+  ): void;
+
+  private writeParameterCommon(
+    parameter:
+      | PathParameterModel
+      | QueryParameterModel
+      | HeaderParameterModel
+      | CookieParameterModel,
     result:
       | PathParameterObject
       | QueryParameterObject
@@ -602,7 +620,7 @@ export class OpenAPIWriter {
       result.deprecated = true;
     }
     if (parameter.schema) {
-      result.schema = this.writeSchema(parameter.schema, result as unknown as CookieParameter);
+      result.schema = this.writeSchema(parameter.schema, result as unknown as CookieParameterModel);
     }
     if (parameter.content.size) {
       result.content = {};
@@ -621,7 +639,7 @@ export class OpenAPIWriter {
     }
   }
 
-  private writePathParameter(param: PathParameter): PathParameterObject {
+  private writePathParameter(param: PathParameterModel): PathParameterObject {
     const result: PathParameterObject = { name: param.name, in: param.in, required: true };
     this.writeParameterCommon(param, result);
     if (param.style !== 'simple') {
@@ -633,7 +651,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeQueryParameter(param: QueryParameter): QueryParameterObject {
+  private writeQueryParameter(param: QueryParameterModel): QueryParameterObject {
     const result: QueryParameterObject = { name: param.name, in: param.in };
     this.writeParameterCommon(param, result);
     if (param.required) {
@@ -654,7 +672,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeHeaderParameter(param: HeaderParameter): HeaderParameterObject {
+  private writeHeaderParameter(param: HeaderParameterModel): HeaderParameterObject {
     const result: HeaderParameterObject = { name: param.name, in: param.in };
     this.writeParameterCommon(param, result);
     if (param.required) {
@@ -669,7 +687,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeCookieParameter(param: CookieParameter): CookieParameterObject {
+  private writeCookieParameter(param: CookieParameterModel): CookieParameterObject {
     const result: CookieParameterObject = { name: param.name, in: param.in };
     this.writeParameterCommon(param, result);
     if (param.required) {
@@ -685,7 +703,7 @@ export class OpenAPIWriter {
   }
 
   // eslint-disable-next-line consistent-return
-  private writeParameter(parameter: Parameter): ParameterObject {
+  private writeParameter(parameter: ParameterModel): ParameterObject {
     switch (parameter.in) {
       case 'path':
         return this.writePathParameter(parameter);
@@ -703,8 +721,8 @@ export class OpenAPIWriter {
   }
 
   private writeRequestBody(
-    requestBody: RequestBody,
-    node: RequestBodyParent,
+    requestBody: RequestBodyModel,
+    node: RequestBodyModelParent,
   ): ObjectOrRef<RequestBodyObject> {
     if (node !== requestBody.parent) {
       const pointer = this.schemaPointers.get(requestBody);
@@ -733,7 +751,11 @@ export class OpenAPIWriter {
   }
 
   private writeSecuritySchemaCommon(
-    scheme: ApiKeyScheme | HttpScheme | OAuth2Scheme | OpenIdConnectScheme,
+    scheme:
+      | APIKeySecuritySchemaModel
+      | HTTPSecuritySchemaModel
+      | OAuth2SecuritySchemaModel
+      | OpenIDConnectSecuritySchemaModel,
     result:
       | APIKeySecuritySchemeObject
       | HTTPSecuritySchemeObject
@@ -746,7 +768,7 @@ export class OpenAPIWriter {
     }
   }
 
-  private writeApiKeySecuritySchema(scheme: ApiKeyScheme): APIKeySecuritySchemeObject {
+  private writeApiKeySecuritySchema(scheme: APIKeySecuritySchemaModel): APIKeySecuritySchemeObject {
     const result: APIKeySecuritySchemeObject = {
       type: scheme.type,
       name: scheme.name,
@@ -756,7 +778,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeHttpSecuritySchema(scheme: HttpScheme): HTTPSecuritySchemeObject {
+  private writeHttpSecuritySchema(scheme: HTTPSecuritySchemaModel): HTTPSecuritySchemeObject {
     const result: HTTPSecuritySchemeObject = {
       type: scheme.type,
       scheme: this.writeSchema(scheme.scheme, scheme),
@@ -768,7 +790,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeOAuth2SecuritySchema(scheme: OAuth2Scheme): OAuth2SecuritySchemeObject {
+  private writeOAuth2SecuritySchema(scheme: OAuth2SecuritySchemaModel): OAuth2SecuritySchemeObject {
     const result: OAuth2SecuritySchemeObject = { type: scheme.type, flows: {} };
     this.writeSecuritySchemaCommon(scheme, result);
     if (scheme.flows.authorizationCode) {
@@ -800,7 +822,7 @@ export class OpenAPIWriter {
   }
 
   private writeOpenIdConnectSecuritySchema(
-    scheme: OpenIdConnectScheme,
+    scheme: OpenIDConnectSecuritySchemaModel,
   ): OpenIdConnectSecuritySchemeObject {
     const result: OpenIdConnectSecuritySchemeObject = {
       type: scheme.type,
@@ -810,7 +832,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeSecuritySchema(securitySchema: SecurityScheme): SecuritySchemeObject {
+  private writeSecuritySchema(securitySchema: SecuritySchemaModel): SecuritySchemeObject {
     switch (securitySchema.type) {
       case 'apiKey':
         return this.writeApiKeySecuritySchema(securitySchema);
@@ -825,7 +847,7 @@ export class OpenAPIWriter {
     }
   }
 
-  private writeCallback(callback: Callback): CallbackObject {
+  private writeCallback(callback: CallbackModel): CallbackObject {
     const result: CallbackObject = {};
     this.writeExtensionFields(callback.extensions, result);
     for (const [expr, pathItem] of callback.paths) {
@@ -834,7 +856,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writePathItem(pathItem: PathItem): PathItemObject {
+  private writePathItem(pathItem: PathItemModel): PathItemObject {
     const result: PathItemObject = {};
     this.writeExtensionFields(pathItem.extensions, result);
     if (pathItem.summary) {
@@ -843,10 +865,10 @@ export class OpenAPIWriter {
     if (pathItem.description) {
       result.description = pathItem.description;
     }
-    for (const [operName, operDesc] of pathItem.operations2) {
+    for (const [operName, operDesc] of pathItem.operations()) {
       result[operName] = this.writeOperation(operDesc);
     }
-    if (pathItem.servers.length) {
+    if (pathItem.servers?.length) {
       result.servers = pathItem.servers.map(arg => this.writeServer(arg));
     }
     if (pathItem.parameters.length) {
@@ -855,13 +877,13 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeOperation(operation: Operation): OperationObject {
+  private writeOperation(operation: OperationModel): OperationObject {
     const result: OperationObject = {
       responses: this.writeResponses(operation.responses),
     };
     this.writeExtensionFields(operation.extensions, result);
     if (operation.tags.length) {
-      result.tags = operation.tags;
+      result.tags = operation.tags.slice();
     }
     if (operation.summary) {
       result.summary = operation.summary;
@@ -869,8 +891,8 @@ export class OpenAPIWriter {
     if (operation.description) {
       result.description = operation.description;
     }
-    if (operation.externalDocs) {
-      result.externalDocumentation = this.writeExternalDocs(operation.externalDocs);
+    if (operation.externalDocumentation) {
+      result.externalDocumentation = this.writeExternalDocs(operation.externalDocumentation);
     }
     if (operation.operationId) {
       result.operationId = operation.operationId;
@@ -881,7 +903,7 @@ export class OpenAPIWriter {
     if (operation.requestBody) {
       result.requestBody = this.writeRequestBody(operation.requestBody, operation);
     }
-    if (operation.callbacks.size) {
+    if (operation.callbacks?.size) {
       result.callbacks = {};
       for (const [name, callback] of operation.callbacks) {
         result.callbacks[name] = this.writeCallback(callback);
@@ -890,16 +912,16 @@ export class OpenAPIWriter {
     if (operation.deprecated) {
       result.deprecated = operation.deprecated;
     }
-    if (operation.security) {
+    if (operation.security.length) {
       result.security = this.writeSecurityRequirementArray(operation.security);
     }
-    if (operation.servers.length) {
+    if (operation.servers?.length) {
       result.servers = operation.servers.map(arg => this.writeServer(arg));
     }
     return result;
   }
 
-  private writeExternalDocs(externalDocs: ExternalDocumentation): ExternalDocumentationObject {
+  private writeExternalDocs(externalDocs: ExternalDocumentationModel): ExternalDocumentationObject {
     const result: ExternalDocumentationObject = { url: externalDocs.url };
     this.writeExtensionFields(externalDocs.extensions, result);
     if (externalDocs.description) {
@@ -908,7 +930,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeResponses(responses: Responses): ResponsesObject {
+  private writeResponses(responses: ResponsesModel): ResponsesObject {
     const result: ResponsesObject = {};
     this.writeExtensionFields(responses.extensions, result);
     if (responses.codes.size) {
@@ -923,21 +945,23 @@ export class OpenAPIWriter {
   }
 
   private writeSecurityRequirementArray(
-    security: SecurityRequirement[],
+    security: ReadonlyArray<SecurityRequirementModel>,
   ): SecurityRequirementObject[] {
     return security.map(item => this.writeSecurityRequirement(item));
   }
 
-  private writeSecurityRequirement(securityItem: SecurityRequirement): SecurityRequirementObject {
+  private writeSecurityRequirement(
+    securityItem: SecurityRequirementModel,
+  ): SecurityRequirementObject {
     const result: SecurityRequirementObject = {};
     this.writeExtensionFields(securityItem.extensions, result);
     for (const [key, scopes] of securityItem.scopes) {
-      result[key] = scopes;
+      result[key] = scopes.slice();
     }
     return result;
   }
 
-  private writePaths(paths: Paths): PathsObject {
+  private writePaths(paths: PathsModel): PathsObject {
     const result: PathsObject = {};
     this.writeExtensionFields(paths.extensions, result);
     for (const [pathUrlExp, pathItem] of paths) {
@@ -946,7 +970,7 @@ export class OpenAPIWriter {
     return result;
   }
 
-  private writeTag(tag: Tag): TagObject {
+  private writeTag(tag: TagModel): TagObject {
     const result: TagObject = { name: tag.name };
     if (tag.description) {
       result.description = tag.description;

@@ -1,18 +1,23 @@
-import { Parameter, ParameterParent } from './Parameter';
+import { ParameterBase } from './ParameterBase';
 import { defaultRequired, defaultExplode } from './utils';
 
-import type { QueryParameterModel, QueryParameterSerializationStyle } from '../types';
+import type {
+  ParameterModelParent,
+  QueryParameterModel,
+  QueryParameterSerializationStyle,
+} from '../types';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#parameter-object
  */
-export class QueryParameter extends Parameter implements QueryParameterModel {
+export class QueryParameter extends ParameterBase implements QueryParameterModel {
+  declare readonly in: 'query';
   allowEmptyValue: boolean;
   style: QueryParameterSerializationStyle;
   explode: boolean;
   allowReserved: boolean;
 
-  constructor(parent: ParameterParent, name: string) {
+  constructor(parent: ParameterModelParent, name: string) {
     super(parent, 'query', name);
     this.required = defaultRequired.query;
     this.allowEmptyValue = false; // since it is deprecated, always set to false
@@ -20,6 +25,4 @@ export class QueryParameter extends Parameter implements QueryParameterModel {
     this.explode = defaultExplode[this.style];
     this.allowReserved = false;
   }
-
-  declare readonly in: 'query';
 }

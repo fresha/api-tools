@@ -1,23 +1,24 @@
-import { Parameter, ParameterParent } from './Parameter';
-import { defaultExplode, defaultRequired, defaultSerializationStyles } from './utils';
+import { ParameterBase } from './ParameterBase';
+import { defaultExplode, defaultRequired } from './utils';
 
-import type { CookieParameterModel } from '../types';
-
-export type SerializationStyle = 'form' | 'spaceDelimited' | 'pipeDelimited' | 'deepObject';
+import type {
+  CookieParameterModel,
+  CookieParameterSerializationStyle,
+  ParameterModelParent,
+} from '../types';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#parameter-object
  */
-export class CookieParameter extends Parameter implements CookieParameterModel {
-  style: SerializationStyle;
+export class CookieParameter extends ParameterBase implements CookieParameterModel {
+  declare readonly in: 'cookie';
+  style: CookieParameterSerializationStyle;
   explode: boolean;
 
-  constructor(parent: ParameterParent, name: string) {
+  constructor(parent: ParameterModelParent, name: string) {
     super(parent, 'cookie', name);
     this.required = defaultRequired.cookie;
-    this.style = defaultSerializationStyles.cookie as SerializationStyle;
+    this.style = 'form';
     this.explode = defaultExplode[this.style];
   }
-
-  declare readonly in: 'cookie';
 }

@@ -5,7 +5,6 @@ import type {
   HeaderParameterObject as HeaderParameterObjectBase,
   InfoObject,
   MediaTypeObject as MediaTypeObjectBase,
-  ObjectOrRef,
   ParameterObject as ParameterObjectBase,
   PathsObject as PathsObjectBase,
   RequestBodyObject as RequestBodyObjectBase,
@@ -21,7 +20,7 @@ import type {
   ExampleObject,
   LinkObject,
 } from '../baseTypes';
-import type { CommonMarkString, URLString } from '@fresha/api-tools-core';
+import type { CommonMarkString, ObjectOrRef, URLString } from '@fresha/api-tools-core';
 
 export type { InfoObject, ContactObject, LicenseObject } from '../baseTypes';
 

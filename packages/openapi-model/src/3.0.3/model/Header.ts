@@ -1,33 +1,30 @@
 import { BasicNode } from './BasicNode';
 
-import type { Components } from './Components';
-import type { Encoding } from './Encoding';
-import type { Example } from './Example';
-import type { MediaType } from './MediaType';
-import type { Response } from './Response';
-import type { Schema } from './Schema';
-import type { HeaderModel, MIMETypeString } from './types';
-import type { Nullable, JSONValue } from '@fresha/api-tools-core';
-
-export type HeaderParent = Components | Response | Encoding;
-
-export type SerializationStyle = 'simple';
+import type {
+  ExampleModel,
+  HeaderModel,
+  HeaderModelParent,
+  HeaderParameterSerializationStyle,
+  MediaTypeModel,
+  SchemaModel,
+} from './types';
+import type { Nullable, JSONValue, MIMETypeString, CommonMarkString } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#header-object
  */
-export class Header extends BasicNode<HeaderParent> implements HeaderModel {
-  description: Nullable<string>;
+export class Header extends BasicNode<HeaderModelParent> implements HeaderModel {
+  description: Nullable<CommonMarkString>;
   required: boolean;
   deprecated: boolean;
-  style: SerializationStyle;
+  style: HeaderParameterSerializationStyle;
   explode: boolean;
-  schema: Nullable<Schema>;
+  schema: Nullable<SchemaModel>;
   example: JSONValue;
-  readonly examples: Map<string, Example>;
-  readonly content: Map<MIMETypeString, MediaType>;
+  readonly examples: Map<string, ExampleModel>;
+  readonly content: Map<MIMETypeString, MediaTypeModel>;
 
-  constructor(parent: HeaderParent) {
+  constructor(parent: HeaderModelParent) {
     super(parent);
     this.description = null;
     this.required = false;
@@ -36,7 +33,7 @@ export class Header extends BasicNode<HeaderParent> implements HeaderModel {
     this.explode = false;
     this.schema = null;
     this.example = null;
-    this.examples = new Map<string, Example>();
-    this.content = new Map<MIMETypeString, MediaType>();
+    this.examples = new Map<string, ExampleModel>();
+    this.content = new Map<MIMETypeString, MediaTypeModel>();
   }
 }

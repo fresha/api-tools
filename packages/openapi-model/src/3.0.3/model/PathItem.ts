@@ -1,50 +1,34 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 import { Operation } from './Operation';
+import { Server } from './Server';
 
-import type { Callback } from './Callback';
-import type { Parameter } from './Parameter';
-import type { Paths } from './Paths';
-import type { Server } from './Server';
-import type { PathItemModel, OperationModel, HTTPMethod } from './types';
+import type {
+  PathItemModel,
+  OperationModel,
+  HTTPMethod,
+  PathItemModelParent,
+  ParameterModel,
+  ServerModel,
+} from './types';
 import type { Nullable } from '@fresha/api-tools-core';
-
-export const httpMethods: HTTPMethod[] = [
-  'get',
-  'put',
-  'post',
-  'delete',
-  'options',
-  'head',
-  'patch',
-  'trace',
-];
-
-export const whitelistedProperties = [
-  ...httpMethods,
-  '$ref',
-  'summary',
-  'description',
-  'servers',
-  'parameters',
-];
-
-export type PathItemParent = Paths | Callback;
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#path-item-object
  */
-export class PathItem extends BasicNode<PathItemParent> implements PathItemModel {
+export class PathItem extends BasicNode<PathItemModelParent> implements PathItemModel {
   summary: Nullable<string>;
   description: Nullable<string>;
-  readonly operations2: Map<HTTPMethod, Operation>;
-  servers: Server[];
-  parameters: Parameter[];
+  readonly operations2: Map<HTTPMethod, OperationModel>;
+  readonly servers: ServerModel[];
+  readonly parameters: ParameterModel[];
 
-  constructor(parent: PathItemParent) {
+  constructor(parent: PathItemModelParent) {
     super(parent);
     this.summary = null;
     this.description = null;
-    this.operations2 = new Map<HTTPMethod, Operation>();
+    this.operations2 = new Map<HTTPMethod, OperationModel>();
     this.servers = [];
     this.parameters = [];
   }
@@ -109,9 +93,7 @@ export class PathItem extends BasicNode<PathItemParent> implements PathItemModel
   }
 
   setOperation(method: HTTPMethod): OperationModel {
-    if (this.operations2.has(method)) {
-      throw new Error(`Duplicate ${method} operation`);
-    }
+    assert(!this.operations2.has(method), `Duplicate ${method} operation`);
     const operation = new Operation(this);
     this.operations2.set(method, operation);
     return operation;
@@ -123,5 +105,34 @@ export class PathItem extends BasicNode<PathItemParent> implements PathItemModel
 
   clearOperations(): void {
     this.operations2.clear();
+  }
+
+  addServer(url: string): ServerModel {
+    const result = new Server(this, url);
+    this.servers.push(result);
+    return result;
+  }
+
+  deleteServer(url: string): void {
+    const index = this.servers.findIndex(s => s.url === url);
+    if (index >= 0) {
+      this.deleteServerAt(index);
+    }
+  }
+
+  deleteServerAt(index: number): void {
+    if (index >= 0) {
+      this.servers.splice(index, 1);
+    }
+  }
+
+  clearServers(): void {
+    this.servers.splice(0, this.servers.length);
+  }
+
+  addParameterModel(model: ParameterModel): void {
+    assert(!this.parameters.includes(model));
+    assert.equal(model.parent, this);
+    this.parameters.push(model);
   }
 }
