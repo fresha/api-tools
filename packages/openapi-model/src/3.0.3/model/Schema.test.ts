@@ -1,11 +1,11 @@
 import { OpenAPI } from './OpenAPI';
-import { Schema, SchemaFactory } from './Schema';
+import { SchemaFactory } from './Schema';
 
 describe('SchemaFactory', () => {
   test('create()', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 
-    const booleanSchema = SchemaFactory.create(openapi.components, 'boolean') as Schema;
+    const booleanSchema = SchemaFactory.create(openapi.components, 'boolean');
     expect(booleanSchema.parent).toBe(openapi.components);
     expect(booleanSchema.type).toBe('boolean');
 
@@ -25,7 +25,7 @@ describe('SchemaFactory', () => {
   test('createArray()', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 
-    const stringArraySchema = SchemaFactory.createArray(openapi.components, 'string') as Schema;
+    const stringArraySchema = SchemaFactory.createArray(openapi.components, 'string');
     expect(stringArraySchema.parent).toBe(openapi.components);
     expect(stringArraySchema.minItems).toBeNull();
     expect(stringArraySchema.maxItems).toBeNull();
@@ -39,7 +39,7 @@ describe('SchemaFactory', () => {
     expect(numberArraySchema.minItems).toBe(10);
     expect(numberArraySchema.maxItems).toBe(12);
 
-    const itemSchema = SchemaFactory.create(openapi.components, 'integer') as Schema;
+    const itemSchema = SchemaFactory.create(openapi.components, 'integer');
     const integerArraySchema = SchemaFactory.createArray(openapi.components, itemSchema);
     expect(itemSchema.parent).toBe(openapi.components);
     expect(integerArraySchema.items).toBe(itemSchema);
@@ -48,7 +48,7 @@ describe('SchemaFactory', () => {
   test('createObject()', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 
-    const emptyObjectSchema = SchemaFactory.createObject(openapi.components, {}) as Schema;
+    const emptyObjectSchema = SchemaFactory.createObject(openapi.components, {});
     expect(emptyObjectSchema.parent).toBe(openapi.components);
     expect(emptyObjectSchema.properties).toHaveProperty('size', 0);
     expect(emptyObjectSchema.required.size).toBe(0);
@@ -73,14 +73,14 @@ describe('Schema', () => {
     expect(schema.properties.size).toBe(0);
     expect(schema.required.size).toBe(0);
 
-    const optionalProp = schema.setProperty('x', 'int32') as Schema;
+    const optionalProp = schema.setProperty('x', 'int32');
     expect(optionalProp.parent).toBe(schema);
     expect(optionalProp.type).toBe('integer');
     expect(optionalProp.format).toBe('int32');
     expect(schema.properties.get('x')).toBe(optionalProp);
     expect(schema.required.size).toBe(0);
 
-    const requiredProp = schema.setProperty('y', { type: 'date', required: true }) as Schema;
+    const requiredProp = schema.setProperty('y', { type: 'date', required: true });
     expect(requiredProp.parent).toBe(schema);
     expect(schema.required.has('y')).toBe(true);
   });
@@ -149,7 +149,7 @@ describe('Schema', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 
     const schema = SchemaFactory.create(openapi.components, null);
-    expect(schema.allOf).toBeNull();
+    expect(schema.allOf).toStrictEqual([]);
 
     const option1 = schema.addAllOf('integer');
 
@@ -177,7 +177,7 @@ describe('Schema', () => {
 
     schema.deleteAllOfAt(0);
 
-    expect(schema.allOf).toBeNull();
+    expect(schema.allOf).toStrictEqual([]);
   });
 
   test('clearAllOf', () => {
@@ -190,14 +190,14 @@ describe('Schema', () => {
 
     schema.clearAllOf();
 
-    expect(schema.allOf).toBeNull();
+    expect(schema.allOf).toStrictEqual([]);
   });
 
   test('addOneOf', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 
     const schema = SchemaFactory.create(openapi.components, null);
-    expect(schema.allOf).toBeNull();
+    expect(schema.allOf).toStrictEqual([]);
 
     const option1 = schema.addOneOf('integer');
 
@@ -225,7 +225,7 @@ describe('Schema', () => {
 
     schema.deleteOneOfAt(0);
 
-    expect(schema.oneOf).toBeNull();
+    expect(schema.oneOf).toStrictEqual([]);
   });
 
   test('clearOneOf', () => {
@@ -238,7 +238,7 @@ describe('Schema', () => {
 
     schema.clearOneOf();
 
-    expect(schema.oneOf).toBeNull();
+    expect(schema.oneOf).toStrictEqual([]);
   });
 
   test('arrayOf', () => {

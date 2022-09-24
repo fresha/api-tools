@@ -3,19 +3,15 @@ import path from 'path';
 
 import yaml from 'yaml';
 
-import { OpenAPI } from './OpenAPI';
+import { OpenAPI, OpenAPIFactory } from './OpenAPI';
 import { OpenAPIWriter } from './OpenAPIWriter';
-import { Operation } from './Operation';
 import { RequestBody } from './RequestBody';
 import { Schema, SchemaFactory } from './Schema';
 
-import type { MediaType } from './MediaType';
-import type { PathParameter, QueryParameter } from './Parameter';
-import type { OpenAPIModel } from './types';
 import type { JSONObject } from '@fresha/api-tools-core';
 
 test('how easy is to use this class', () => {
-  const api: OpenAPIModel = new OpenAPI('Test of this class ease of use', '0.1.0');
+  const api = OpenAPIFactory.create('Test of this class ease of use', '0.1.0');
 
   api.info.contact.name = 'developers';
   api.info.contact.url = 'https://www.examples.com';
@@ -34,7 +30,7 @@ test('how easy is to use this class', () => {
 });
 
 test('build schema - simple', () => {
-  const api: OpenAPIModel = new OpenAPI('Sample API', '1.0.0');
+  const api = OpenAPIFactory.create('Sample API', '1.0.0');
   api.info.description = 'A sample API to illustrate OpenAPI concepts';
 
   const pathItem = api.setPathItem('/list');
@@ -43,7 +39,7 @@ test('build schema - simple', () => {
   operation.responses.setResponse(200, 'Successful response');
 
   const writer = new OpenAPIWriter();
-  const outputData = writer.write(api as OpenAPI);
+  const outputData = writer.write(api);
 
   const inputText = fs.readFileSync(
     path.join(__dirname, '..', '..', '..', 'examples', 'simple.yaml'),
@@ -108,24 +104,22 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
 `;
   findPetsOperation.operationId = 'findPets';
 
-  const paramTags = findPetsOperation.addParameter('tags', 'query') as QueryParameter;
+  const paramTags = findPetsOperation.addParameter('tags', 'query');
   paramTags.description = 'tags to filter by';
   paramTags.schema = Schema.createArray(paramTags, 'string');
 
-  const paramLimit = findPetsOperation.addParameter('limit', 'query') as QueryParameter;
+  const paramLimit = findPetsOperation.addParameter('limit', 'query');
   paramLimit.description = 'maximum number of results to return';
-  paramLimit.schema = SchemaFactory.create(paramLimit, 'int32') as Schema;
+  paramLimit.schema = SchemaFactory.create(paramLimit, 'int32');
 
   const findPetsResponse200 = findPetsOperation.responses.setResponse(200, 'pet response');
-  const findPetsMediaType200 = findPetsResponse200.setContent('application/json') as MediaType;
-  findPetsMediaType200.schema = petSchema.arrayOf(findPetsMediaType200) as Schema;
+  const findPetsMediaType200 = findPetsResponse200.setContent('application/json');
+  findPetsMediaType200.schema = petSchema.arrayOf(findPetsMediaType200);
 
   const findPetsDefaultResponse =
     findPetsOperation.responses.setDefaultResponse('unexpected error');
-  const findPetsDefaultMediaType = findPetsDefaultResponse.setContent(
-    'application/json',
-  ) as MediaType;
-  findPetsDefaultMediaType.schema = errorSchema as Schema;
+  const findPetsDefaultMediaType = findPetsDefaultResponse.setContent('application/json');
+  findPetsDefaultMediaType.schema = errorSchema;
 
   //
   // addPet
@@ -135,23 +129,21 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
   addPetOperation.description = 'Creates a new pet in the store. Duplicates are allowed';
   addPetOperation.operationId = 'addPet';
 
-  const addPetRequest = new RequestBody(addPetOperation as Operation);
+  const addPetRequest = new RequestBody(addPetOperation);
   addPetRequest.description = 'Pet to add to the store';
   addPetRequest.required = true;
   addPetOperation.requestBody = addPetRequest;
 
   const addPetMediaType = addPetRequest.setContent('application/json');
-  addPetMediaType.schema = newPetSchema as Schema;
+  addPetMediaType.schema = newPetSchema;
 
   const addPetResponse200 = addPetOperation.responses.setResponse(200, 'pet response');
-  const mediaType200 = addPetResponse200.setContent('application/json') as MediaType;
-  mediaType200.schema = petSchema as Schema;
+  const mediaType200 = addPetResponse200.setContent('application/json');
+  mediaType200.schema = petSchema;
 
   const addPetDefaultResponse = addPetOperation.responses.setDefaultResponse('unexpected error');
-  const addPetDefaultResponseMediaType = addPetDefaultResponse.setContent(
-    'application/json',
-  ) as MediaType;
-  addPetDefaultResponseMediaType.schema = errorSchema as Schema;
+  const addPetDefaultResponseMediaType = addPetDefaultResponse.setContent('application/json');
+  addPetDefaultResponseMediaType.schema = errorSchema;
 
   const itemPathItem = api.setPathItem('/pets/{id}');
 
@@ -164,17 +156,17 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
     'Returns a user based on a single ID, if the user does not have access to the pet';
   getPetOperation.operationId = 'find pet by id';
 
-  const getIdParam = getPetOperation.addParameter('id', 'path') as PathParameter;
+  const getIdParam = getPetOperation.addParameter('id', 'path');
   getIdParam.description = 'ID of pet to fetch';
-  getIdParam.schema = SchemaFactory.create(getIdParam, 'int64') as Schema;
+  getIdParam.schema = SchemaFactory.create(getIdParam, 'int64');
 
   const getPetResponse200 = getPetOperation.responses.setResponse(200, 'pet response');
-  const getPetMediaType200 = getPetResponse200.setContent('application/json') as MediaType;
-  getPetMediaType200.schema = petSchema as Schema;
+  const getPetMediaType200 = getPetResponse200.setContent('application/json');
+  getPetMediaType200.schema = petSchema;
 
   const getPetDefaultResponse = getPetOperation.responses.setDefaultResponse('unexpected error');
-  const getPetDefaultMediaType = getPetDefaultResponse.setContent('application/json') as MediaType;
-  getPetDefaultMediaType.schema = errorSchema as Schema;
+  const getPetDefaultMediaType = getPetDefaultResponse.setContent('application/json');
+  getPetDefaultMediaType.schema = errorSchema;
 
   //
   // deletePet
@@ -184,7 +176,7 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
   deletePetOperation.description = 'deletes a single pet based on the ID supplied';
   deletePetOperation.operationId = 'deletePet';
 
-  const deleteIdParam = deletePetOperation.addParameter('id', 'path') as PathParameter;
+  const deleteIdParam = deletePetOperation.addParameter('id', 'path');
   deleteIdParam.description = 'ID of pet to delete';
   deleteIdParam.schema = Schema.create(deleteIdParam, 'int64');
 
@@ -193,8 +185,8 @@ Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condime
   // deleteResponse204.setContent('application/json');
 
   const deleteResponseDefault = deletePetOperation.responses.setDefaultResponse('unexpected error');
-  const deleteResponseMediaType = deleteResponseDefault.setContent('application/json') as MediaType;
-  deleteResponseMediaType.schema = errorSchema as Schema;
+  const deleteResponseMediaType = deleteResponseDefault.setContent('application/json');
+  deleteResponseMediaType.schema = errorSchema;
 
   //
   // tags

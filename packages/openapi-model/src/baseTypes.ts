@@ -1,20 +1,16 @@
-import type { CommonMarkString, JSONValue, URLString } from '@fresha/api-tools-core';
-
-type HTTPStatusCode = number;
-
-export type Ref = {
-  $ref: string;
-};
-
-export type ObjectOrRef<T> = T | Ref;
+import type {
+  CommonMarkString,
+  HTTPStatusCode,
+  JSONValue,
+  ObjectOrRef,
+  URLString,
+} from '@fresha/api-tools-core';
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#specification-extensions
  * @see https://spec.openapis.org/oas/v3.1.0#specification-extensions
  */
-export type SpecificationExtensions = {
-  [key: `x-${string}`]: JSONValue;
-};
+export type SpecificationExtensions = Record<`x-${string}`, JSONValue>;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#info-object

@@ -1,29 +1,46 @@
 import { BasicNode } from './BasicNode';
+import { Header } from './Header';
+import { Link } from './Link';
 import { MediaType } from './MediaType';
 
-import type { Components } from './Components';
-import type { Header } from './Header';
-import type { Link } from './Link';
-import type { Responses } from './Responses';
-import type { MediaTypeModel, MIMETypeString, ResponseModel } from './types';
-
-export type ResponseParent = Components | Responses;
+import type {
+  HeaderModel,
+  LinkModel,
+  MediaTypeModel,
+  ResponseModel,
+  ResponseModelParent,
+} from './types';
+import type { MIMETypeString } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#response-object
  */
-export class Response extends BasicNode<ResponseParent> implements ResponseModel {
+export class Response extends BasicNode<ResponseModelParent> implements ResponseModel {
   description: string;
-  readonly headers: Map<string, Header>;
-  readonly content: Map<MIMETypeString, MediaType>;
-  readonly links: Map<string, Link>;
+  readonly headers: Map<string, HeaderModel>;
+  readonly content: Map<MIMETypeString, MediaTypeModel>;
+  readonly links: Map<string, LinkModel>;
 
-  constructor(parent: ResponseParent, description: string) {
+  constructor(parent: ResponseModelParent, description: string) {
     super(parent);
     this.description = description;
-    this.headers = new Map<string, Header>();
-    this.content = new Map<string, MediaType>();
-    this.links = new Map<string, Link>();
+    this.headers = new Map<string, HeaderModel>();
+    this.content = new Map<string, MediaTypeModel>();
+    this.links = new Map<string, LinkModel>();
+  }
+
+  setHeader(name: string): HeaderModel {
+    const result = new Header(this);
+    this.headers.set(name, result);
+    return result;
+  }
+
+  deleteHeader(name: string): void {
+    this.headers.delete(name);
+  }
+
+  clearHeaders(): void {
+    this.headers.clear();
   }
 
   setContent(mimeType: MIMETypeString): MediaTypeModel {
@@ -41,5 +58,19 @@ export class Response extends BasicNode<ResponseParent> implements ResponseModel
 
   clearContent(): void {
     this.content.clear();
+  }
+
+  setLink(key: string): LinkModel {
+    const result = new Link(this);
+    this.links.set(key, result);
+    return result;
+  }
+
+  deleteLink(key: string): void {
+    this.links.delete(key);
+  }
+
+  clearLinks(): void {
+    this.links.clear();
   }
 }

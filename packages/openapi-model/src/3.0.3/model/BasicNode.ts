@@ -1,18 +1,20 @@
-import type { OpenAPI } from './OpenAPI';
-import type { Disposable, SpecificationExtensionsModel } from './types';
-import type { JSONValue } from '@fresha/api-tools-core';
+import type {
+  ExtensionFields,
+  OpenAPIModel,
+  SpecificationExtensionsModel,
+  TreeNode,
+} from './types';
+import type { Disposable, JSONValue } from '@fresha/api-tools-core';
 
 export interface TreeParent {
-  root: OpenAPI;
+  readonly root: OpenAPIModel;
 }
 
-export type ExtensionFields = Map<string, JSONValue>;
-
 export class BasicNode<TParent extends TreeParent>
-  implements TreeParent, Disposable, SpecificationExtensionsModel
+  implements TreeNode<TParent>, Disposable, SpecificationExtensionsModel
 {
-  root: OpenAPI;
-  parent: TParent;
+  readonly root: OpenAPIModel;
+  readonly parent: TParent;
   readonly extensions: ExtensionFields;
 
   constructor(parent: TParent) {

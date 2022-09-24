@@ -4,20 +4,26 @@ import { Info } from './Info';
 import { PathItem } from './PathItem';
 import { Paths } from './Paths';
 import { SecurityRequirement } from './SecurityRequirement';
-import { Server as ServerImpl } from './Server';
+import { Server } from './Server';
 import { Tag } from './Tag';
 
 import type {
   OpenApiVersion,
   OpenAPIModel,
-  ParametrisedURLString,
   ServerModel,
   PathItemModel,
   TagModel,
   SpecificationExtensionsModel,
   OpenAPIModelFactory,
+  SecurityRequirementModel,
 } from './types';
-import type { CommonMarkString, Nullable, VersionString, JSONValue } from '@fresha/api-tools-core';
+import type {
+  CommonMarkString,
+  Nullable,
+  VersionString,
+  JSONValue,
+  ParametrisedURLString,
+} from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#openapi-object
@@ -31,11 +37,11 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
 
   readonly openapi: OpenApiVersion;
   info: Info;
-  servers: ServerImpl[];
+  readonly servers: Server[];
   readonly paths: Paths;
   readonly components: Components;
-  security: Nullable<SecurityRequirement[]>;
-  tags: Tag[];
+  readonly security: SecurityRequirement[];
+  readonly tags: Tag[];
   externalDocs: Nullable<ExternalDocumentation>;
   readonly extensions: Map<string, JSONValue>;
 
@@ -45,13 +51,13 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     this.servers = [];
     this.paths = new Paths(this);
     this.components = new Components(this);
-    this.security = null;
+    this.security = [];
     this.tags = [];
     this.externalDocs = null;
     this.extensions = new Map<string, JSONValue>();
   }
 
-  get root(): OpenAPI {
+  get root(): OpenAPIModel {
     return this;
   }
 
@@ -76,7 +82,7 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
       throw new Error(`Duplicate server URL ${url}`);
     }
 
-    const server = new ServerImpl(this, url, variableDefaults);
+    const server = new Server(this, url, variableDefaults);
     if (description) {
       server.description = description;
     }
@@ -107,6 +113,20 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
 
   clearPathItems(): void {
     this.paths.clear();
+  }
+
+  addSecurityRequirement(): SecurityRequirementModel {
+    const result = new SecurityRequirement(this);
+    this.security.push(result);
+    return result;
+  }
+
+  deleteSecurityRequirementAt(index: number): void {
+    this.security.splice(index, 1);
+  }
+
+  clearSecurityRequirements(): void {
+    this.security.splice(1, this.security.length);
   }
 
   addTag(name: string): TagModel {

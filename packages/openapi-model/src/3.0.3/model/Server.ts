@@ -1,28 +1,24 @@
 import { BasicNode } from './BasicNode';
 import { ServerVariable } from './ServerVariable';
 
-import type { OpenAPI } from './OpenAPI';
-import type { PathItem } from './PathItem';
-import type { ServerModel } from './types';
+import type { ServerModel, ServerModelParent, ServerVariableModel } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
-
-export type ServerParent = OpenAPI | PathItem;
 
 const isValidVariableName = (str: string): boolean => !!str;
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#server-object
  */
-export class Server extends BasicNode<ServerParent> implements ServerModel {
+export class Server extends BasicNode<ServerModelParent> implements ServerModel {
   private mUrl: string;
   description: Nullable<string>;
-  private readonly mVariables: Map<string, ServerVariable>;
+  private readonly mVariables: Map<string, ServerVariableModel>;
 
-  constructor(parent: ServerParent, url: string, variableDefaults?: Record<string, string>) {
+  constructor(parent: ServerModelParent, url: string, variableDefaults?: Record<string, string>) {
     super(parent);
     this.mUrl = url;
     this.description = null;
-    this.mVariables = new Map<string, ServerVariable>();
+    this.mVariables = new Map<string, ServerVariableModel>();
     this.syncVariables(url);
     if (variableDefaults) {
       for (const [name, variable] of this.mVariables) {
@@ -44,7 +40,7 @@ export class Server extends BasicNode<ServerParent> implements ServerModel {
     }
   }
 
-  get variables(): ReadonlyMap<string, ServerVariable> {
+  get variables(): ReadonlyMap<string, ServerVariableModel> {
     return this.mVariables;
   }
 

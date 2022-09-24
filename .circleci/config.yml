@@ -12,8 +12,8 @@ jobs:
           node-version: "16.14"
       - run: npm install
       - run: npm run -w @fresha/eslint-config --if-present build && exit 0
-      - run: npm run -w @fresha/jest-config --if-present build && exit 0
       - run: npm run -w @fresha/typescript-config --if-present build && exit 0
+      - run: npm run -w @fresha/jest-config --if-present build && exit 0
       - run: npm run -w @fresha/api-tools-core --if-present build && exit 0
       - run: npm run -w @fresha/asyncapi-codegen --if-present build && exit 0
       - run: npm run -w @fresha/async-codegen-client-typescript --if-present build &&

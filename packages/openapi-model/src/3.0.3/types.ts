@@ -10,7 +10,6 @@ import type {
   InfoObject,
   LinkObject,
   MediaTypeObject as MediaTypeObjectBase,
-  ObjectOrRef,
   OperationObject as OperationObjectBase,
   ParameterObject as ParameterObjectBase,
   PathItemObject as PathItemObjectBase,
@@ -27,7 +26,7 @@ import type {
   TagObject,
   XMLObject,
 } from '../baseTypes';
-import type { CommonMarkString, JSONValue } from '@fresha/api-tools-core';
+import type { CommonMarkString, JSONValue, ObjectOrRef } from '@fresha/api-tools-core';
 
 export type {
   APIKeySecuritySchemeObject,
@@ -36,15 +35,14 @@ export type {
   DiscriminatorObject,
   ExampleObject,
   ExternalDocumentationObject,
+  HeaderParameterSerializationStyle,
   InfoObject,
   LicenseObject,
   LinkObject,
   OAuth2SecuritySchemeObject,
-  ObjectOrRef,
   OpenIdConnectSecuritySchemeObject,
   PathParameterSerializationStyle,
   QueryParameterSerializationStyle,
-  Ref,
   SecurityRequirementObject,
   ServerObject,
   ServerVariableObject,

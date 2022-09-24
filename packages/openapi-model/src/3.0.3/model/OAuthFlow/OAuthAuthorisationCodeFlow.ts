@@ -1,6 +1,6 @@
-import { OAuthFlowBase, OAuthFlowParent } from './OAuthFlowBase';
+import { OAuthFlowBase } from './OAuthFlowBase';
 
-import type { OAuthAuthorizationCodeFlowModel } from '../types';
+import type { OAuthAuthorizationCodeFlowModel, OAuthFlowModelParent } from '../types';
 import type { URLString } from '@fresha/api-tools-core';
 
 /**
@@ -10,10 +10,11 @@ export class OAuthAuthorisationCodeFlow
   extends OAuthFlowBase
   implements OAuthAuthorizationCodeFlowModel
 {
+  declare readonly type: 'authorizationCode';
   authorizationUrl: URLString;
   tokenUrl: URLString;
 
-  constructor(parent: OAuthFlowParent, authorizationUrl: URLString, tokenUrl: URLString) {
+  constructor(parent: OAuthFlowModelParent, authorizationUrl: URLString, tokenUrl: URLString) {
     super(parent, 'authorizationCode');
     this.authorizationUrl = authorizationUrl;
     this.tokenUrl = tokenUrl;

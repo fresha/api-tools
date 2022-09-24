@@ -3,7 +3,6 @@ import path from 'path';
 
 import yaml from 'yaml';
 
-import { MediaType } from './MediaType';
 import { OpenAPI } from './OpenAPI';
 import { OpenAPIReader } from './OpenAPIReader';
 import { OpenAPIWriter } from './OpenAPIWriter';
@@ -84,7 +83,7 @@ test('serialises operation with inline schemas', () => {
   const pathItem = openapi.setPathItem('/employees');
   const operation = pathItem.setOperation('post');
   const response = operation.responses.setDefaultResponse('Error response');
-  const responseMediaType = response.setContent('application/json') as MediaType;
+  const responseMediaType = response.setContent('application/json');
   const responseSchema = responseMediaType.setSchema('object');
   responseSchema.setProperty('code', { type: 'integer', required: true });
 
