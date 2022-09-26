@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenAPI code generation",
   "bin": {
     "fresha-openapi-codegen": "./bin/fresha-openapi-codegen.js"
