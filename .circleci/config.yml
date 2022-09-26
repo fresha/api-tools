@@ -35,13 +35,13 @@ jobs:
       - run: npm run -w @fresha/json-api-model --if-present build && exit 0
       - run: npm run -w @fresha/json-schema-codegen --if-present build && exit 0
       - run: npm run -w @fresha/openapi-model --if-present build && exit 0
+      - run: npm run -w @fresha/openapi-codegen-client-typescript --if-present build &&
+          exit 0
       - run: npm run -w @fresha/openapi-codegen-server-nestjs --if-present build && exit
           0
       - run: npm run -w @fresha/openapi-codegen-server-elixir --if-present build && exit
           0
       - run: npm run -w @fresha/openapi-codegen --if-present build && exit 0
-      - run: npm run -w @fresha/openapi-codegen-client-typescript --if-present build &&
-          exit 0
       - run: npm run -w @fresha/openapi-diff --if-present build && exit 0
       - run: npm run -w @fresha/openapi-lint --if-present build && exit 0
       - run: npm run -w @fresha/openapi-validator --if-present build && exit 0

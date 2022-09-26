@@ -53,5 +53,10 @@ const handler = (args: ArgumentsCamelCase<Params>): void => {
 };
 
 export const register = (argv: Argv): void => {
-  argv.command('server-elixir', 'generates code for Elixir (Phoenix)', parser, handler);
+  argv.command(
+    'client-typescript',
+    '(experimental) generates code for TypeScript clients',
+    parser,
+    handler,
+  );
 };
