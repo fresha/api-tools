@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "OpenAPI code generation",
   "bin": {
     "fresha-openapi-codegen": "./bin/fresha-openapi-codegen.js"
@@ -54,6 +54,7 @@
     "typescript": "^4.7.2"
   },
   "dependencies": {
+    "@fresha/openapi-codegen-client-typescript": "^0.1.0",
     "@fresha/openapi-codegen-server-nestjs": "^0.1.0",
     "@fresha/openapi-codegen-server-elixir": "^0.1.0",
     "yargs": "^17.5.1"
