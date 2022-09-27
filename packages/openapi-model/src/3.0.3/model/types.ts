@@ -10,6 +10,7 @@ import type {
   CommonMarkString,
   Disposable,
   EmailString,
+  HTTPMethod,
   JSONValue,
   MIMETypeString,
   Nullable,
@@ -501,7 +502,7 @@ export interface OperationModel
   clearServers(): void;
 }
 
-export type HTTPMethod = 'get' | 'put' | 'post' | 'delete' | 'options' | 'head' | 'patch' | 'trace';
+export type PathItemOperationKey = Exclude<Lowercase<HTTPMethod>, 'connect'>;
 
 export type PathItemModelParent = PathsModel | CallbackModel;
 
@@ -522,10 +523,10 @@ export interface PathItemModel extends TreeNode<PathItemModelParent>, Specificat
   readonly servers: ServerModel[];
   readonly parameters: ParameterModel[];
 
-  operations(): IterableIterator<[HTTPMethod, OperationModel]>;
+  operations(): IterableIterator<[PathItemOperationKey, OperationModel]>;
 
-  setOperation(method: HTTPMethod): OperationModel;
-  removeOperation(method: HTTPMethod): void;
+  setOperation(method: PathItemOperationKey): OperationModel;
+  removeOperation(method: PathItemOperationKey): void;
   clearOperations(): void;
 
   addServer(url: string): ServerModel;
