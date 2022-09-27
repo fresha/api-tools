@@ -7,7 +7,7 @@ import { Server } from './Server';
 import type {
   PathItemModel,
   OperationModel,
-  HTTPMethod,
+  PathItemOperationKey,
   PathItemModelParent,
   ParameterModel,
   ServerModel,
@@ -20,7 +20,7 @@ import type { Nullable } from '@fresha/api-tools-core';
 export class PathItem extends BasicNode<PathItemModelParent> implements PathItemModel {
   summary: Nullable<string>;
   description: Nullable<string>;
-  readonly operations2: Map<HTTPMethod, OperationModel>;
+  readonly operations2: Map<PathItemOperationKey, OperationModel>;
   readonly servers: ServerModel[];
   readonly parameters: ParameterModel[];
 
@@ -28,12 +28,12 @@ export class PathItem extends BasicNode<PathItemModelParent> implements PathItem
     super(parent);
     this.summary = null;
     this.description = null;
-    this.operations2 = new Map<HTTPMethod, OperationModel>();
+    this.operations2 = new Map<PathItemOperationKey, OperationModel>();
     this.servers = [];
     this.parameters = [];
   }
 
-  *operations(): IterableIterator<[HTTPMethod, OperationModel]> {
+  *operations(): IterableIterator<[PathItemOperationKey, OperationModel]> {
     if (this.get) {
       yield ['get', this.get];
     }
@@ -92,14 +92,14 @@ export class PathItem extends BasicNode<PathItemModelParent> implements PathItem
     return this.operations2.get('trace') ?? null;
   }
 
-  setOperation(method: HTTPMethod): OperationModel {
+  setOperation(method: PathItemOperationKey): OperationModel {
     assert(!this.operations2.has(method), `Duplicate ${method} operation`);
     const operation = new Operation(this);
     this.operations2.set(method, operation);
     return operation;
   }
 
-  removeOperation(method: HTTPMethod): void {
+  removeOperation(method: PathItemOperationKey): void {
     this.operations2.delete(method);
   }
 

@@ -75,7 +75,7 @@ import type {
   XMLObject,
 } from '../types';
 import type {
-  HTTPMethod,
+  PathItemOperationKey,
   QueryParameterSerializationStyle,
   PathParameterSerializationStyle,
   ExtensionFields,
@@ -134,7 +134,7 @@ import type {
   EncodingSerializationStyle,
 } from './types';
 
-const httpMethods: HTTPMethod[] = [
+const operationMethods: PathItemOperationKey[] = [
   'get',
   'put',
   'post',
@@ -146,7 +146,7 @@ const httpMethods: HTTPMethod[] = [
 ];
 
 const whitelistedPathItemProperties = [
-  ...httpMethods,
+  ...operationMethods,
   '$ref',
   'summary',
   'description',
@@ -1257,7 +1257,10 @@ export class OpenAPIReader {
 
   private parsePathItem(json: PathItemObject, parent: PathItemModelParent): PathItemModel {
     const unknownMethods = Object.keys(json).filter(attr => {
-      return !attr.startsWith('x-') && !whitelistedPathItemProperties.includes(attr as HTTPMethod);
+      return (
+        !attr.startsWith('x-') &&
+        !whitelistedPathItemProperties.includes(attr as PathItemOperationKey)
+      );
     });
     if (unknownMethods.length) {
       throw new Error(`Unsupported HTTP method(-s) ${unknownMethods.join(',')}`);
@@ -1268,7 +1271,7 @@ export class OpenAPIReader {
     result.summary = getStringAttribute(json, 'summary', false);
     result.description = getStringAttribute(json, 'description', false);
 
-    for (const method of httpMethods) {
+    for (const method of operationMethods) {
       if (json[method]) {
         const operation = this.parseOperation(json[method] as OperationObject, result);
         result.operations2.set(method, operation);
