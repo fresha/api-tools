@@ -9,6 +9,8 @@ import type { Controller } from './Controller';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
+const jsonApiMediaType = 'application/vnd.api+json';
+
 /**
  * Generates code for a single NestJS controller action.
  */
@@ -38,13 +40,12 @@ export class Action {
         new ActionParam(this, {
           in: 'body',
           name: 'body',
-          schema: operation.requestBody?.content.get('application/vnd.api+json')?.schema ?? null,
+          schema: operation.requestBody?.content.get(jsonApiMediaType)?.schema ?? null,
         }),
       );
     }
 
-    this.returnSchema =
-      operation.responses.default?.content.get('application/vnd.api+json')?.schema ?? null;
+    this.returnSchema = operation.responses.default?.content.get(jsonApiMediaType)?.schema ?? null;
 
     this.urlSuffix = null;
   }

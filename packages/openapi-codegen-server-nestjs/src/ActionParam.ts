@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { addCommonNestImports, addDecorator } from './utils';
+import { addCommonNestImports, addDecorator, addNamedImport } from './utils';
 
 import type { Action } from './Action';
 import type { Nullable } from '@fresha/api-tools-core';
@@ -51,18 +51,51 @@ export class ActionParam {
     }
 
     addCommonNestImports(sourceFile, decoratorName);
+
+    let paramType = 'string';
+    let validatorName: string | undefined;
+
+    if (this.schema) {
+      switch (this.schema?.type) {
+        case null:
+          break;
+        case 'boolean':
+          paramType = 'boolean';
+          validatorName = 'ParseBoolPipe';
+          break;
+        case 'integer':
+          paramType = 'number';
+          validatorName = 'ParseIntPipe';
+          break;
+        case 'number':
+          paramType = 'number';
+          validatorName = 'ParseFloatPipe';
+          break;
+        default:
+          assert.fail(`Unsupported schema type ${this.schema.type}`);
+      }
+    }
+
+    if (validatorName) {
+      addNamedImport(methodDecl.getSourceFile(), '@nestjs/common', validatorName);
+    }
+
     const actionParam = methodDecl.addParameter({
       name: this.name,
-      type: 'string' ?? this.schema,
+      type: paramType,
     });
 
     switch (this.from) {
       case 'body':
         addDecorator(actionParam, 'Body', this.name);
         break;
-      default:
-        addDecorator(actionParam, 'Param', this.name);
+      default: {
+        const decorator = addDecorator(actionParam, 'Param', this.name);
+        if (validatorName) {
+          decorator.addArgument(validatorName);
+        }
         break;
+      }
     }
   }
 }
