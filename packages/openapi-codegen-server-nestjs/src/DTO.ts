@@ -1,4 +1,5 @@
 import assert from 'assert';
+import path from 'path';
 
 import { addClassValidatorImports, addDecorator } from './utils';
 
@@ -8,28 +9,16 @@ import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import type { SourceFile } from 'ts-morph';
 
 export class DTO {
-  /**
-   * Given name of the DTO type, makes name of the corresponding file.
-   */
-  static makeFileName(typeName: string): string {
-    return `${typeName}.dto.ts`;
-  }
-
   readonly generator: Generator;
-  readonly outputPath: string;
   readonly className: string;
+  readonly outputPath: string;
   private readonly schema: Nullable<SchemaModel>;
   private readonly tsSourceFile: SourceFile;
 
-  constructor(
-    generator: Generator,
-    name: string,
-    outputPath: string,
-    schema: Nullable<SchemaModel>,
-  ) {
+  constructor(generator: Generator, name: string, schema: Nullable<SchemaModel>) {
     this.generator = generator;
     this.className = name;
-    this.outputPath = outputPath;
+    this.outputPath = path.join(this.generator.outputPath, 'dto', `${this.className}.dto.ts`);
     this.schema = schema;
     this.tsSourceFile = this.generator.tsProject.createSourceFile(this.outputPath, '', {
       overwrite: true,

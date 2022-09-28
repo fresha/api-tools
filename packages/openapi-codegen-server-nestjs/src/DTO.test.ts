@@ -1,4 +1,4 @@
-import { OpenAPIFactory, OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
 import '@fresha/jest-config';
@@ -6,15 +6,22 @@ import '@fresha/jest-config';
 import { DTO } from './DTO';
 import { Generator } from './Generator';
 
-test.each`
-  typeName                | fileName
-  ${'ControllerResponse'} | ${'ControllerResponse.dto.ts'}
-`('makeFileName()', ({ typeName, fileName }: { typeName: string; fileName: string }) => {
-  expect(DTO.makeFileName(typeName)).toBe(fileName);
+test('construction', () => {
+  const openapi = OpenAPIFactory.create();
+  const tsProject = new Project({ useInMemoryFileSystem: true });
+  const fakeGenerator: Generator = {
+    openapi,
+    outputPath: '/tmp/',
+    tsProject,
+  } as Generator;
+
+  const dto = new DTO(fakeGenerator, 'SomeResponse', null);
+  expect(dto.className).toBe('SomeResponse');
+  expect(dto.outputPath).toBe('/tmp/dto/SomeResponse.dto.ts');
 });
 
 describe('serialization', () => {
-  let openapi: OpenAPIModel = OpenAPIFactory.create();
+  let openapi = OpenAPIFactory.create();
   let tsProject = new Project({ useInMemoryFileSystem: true });
   let fakeGenerator: Generator = {} as Generator;
 
@@ -23,15 +30,16 @@ describe('serialization', () => {
     tsProject = new Project({ useInMemoryFileSystem: true });
     fakeGenerator = {
       openapi,
+      outputPath: '/var',
       tsProject,
     } as unknown as Generator;
   });
 
   test('proper name and ouput path', () => {
-    new DTO(fakeGenerator, 'SomeResponse2', '/tmp/response.dto3.ts', null).generateCode();
+    new DTO(fakeGenerator, 'SomeResponse2', null).generateCode();
 
     expect(tsProject.getSourceFiles()).toHaveLength(1);
-    expect(tsProject.getSourceFileOrThrow('/tmp/response.dto3.ts')).toHaveFormattedText(
+    expect(tsProject.getSourceFileOrThrow('/var/dto/SomeResponse2.dto.ts')).toHaveFormattedText(
       `export class SomeResponse2 {}`,
     );
   });
@@ -47,10 +55,10 @@ describe('serialization', () => {
       requiredText: { type: 'string', required: true },
     });
 
-    new DTO(fakeGenerator, 'Response', '/dto.ts', schema).generateCode();
+    new DTO(fakeGenerator, 'Response', schema).generateCode();
 
     expect(tsProject.getSourceFiles()).toHaveLength(1);
-    expect(tsProject.getSourceFileOrThrow('/dto.ts')).toHaveFormattedText(
+    expect(tsProject.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
       `import { IsBoolean, IsInt, IsString } from 'class-validator';
 
       export class Response {
@@ -83,9 +91,9 @@ describe('serialization', () => {
     const maxExclusive = schema.setProperty('maxExclusive', 'number');
     maxExclusive.exclusiveMaximum = 25;
 
-    new DTO(fakeGenerator, 'Response', '/dto.ts', schema).generateCode();
+    new DTO(fakeGenerator, 'Response', schema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/dto.ts')).toHaveFormattedText(
+    expect(tsProject.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
       `import { Min, IsInt, Max } from 'class-validator';
 
       export class Response {
@@ -114,12 +122,12 @@ describe('serialization', () => {
     const maxLen = schema.setProperty('maxLen', 'string');
     maxLen.maxLength = 10;
 
-    new DTO(fakeGenerator, 'Response', '/dto.ts', schema).generateCode();
+    new DTO(fakeGenerator, 'Response2', schema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/dto.ts')).toHaveFormattedText(
+    expect(tsProject.getSourceFileOrThrow('/var/dto/Response2.dto.ts')).toHaveFormattedText(
       `import { MinLength, IsString, MaxLength } from 'class-validator';
 
-      export class Response {
+      export class Response2 {
         @MinLength(1)
         @IsString()
         minLen?: string;
@@ -136,12 +144,12 @@ describe('serialization', () => {
     const intArrayProp = schema.setProperty('intArray', 'array');
     intArrayProp.items = SchemaFactory.create(intArrayProp, 'integer');
 
-    new DTO(fakeGenerator, 'Response', '/dto.ts', schema).generateCode();
+    new DTO(fakeGenerator, 'AnotherResponse', schema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/dto.ts')).toHaveFormattedText(
+    expect(tsProject.getSourceFileOrThrow('/var/dto/AnotherResponse.dto.ts')).toHaveFormattedText(
       `import { IsArray } from 'class-validator';
 
-      export class Response {
+      export class AnotherResponse {
         @IsArray()
         intArray?: number[];
       }`,

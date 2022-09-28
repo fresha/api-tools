@@ -40,9 +40,9 @@ export class Controller {
   readonly generator: Generator;
   readonly className: string;
   readonly outputPath: string;
-  private readonly tsSourceFile: SourceFile;
-  private readonly actions: Action[];
-  private urlPrefix: string | null;
+  protected readonly tsSourceFile: SourceFile;
+  protected readonly actions: Action[];
+  protected urlPrefix: string | null;
 
   constructor(generator: Generator, outputPath: string, className: string) {
     this.generator = generator;
