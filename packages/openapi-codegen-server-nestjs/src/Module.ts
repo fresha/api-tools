@@ -10,25 +10,14 @@ type ModuleName = string;
 type NamedImport = string;
 
 export class Module {
-  /**
-   * Given name of a NestJS sub-app, returns file name of a module file for that sub-app.
-   */
-  static makeFileName(nestAppName: string): string {
-    return `${nestAppName}.module.ts`;
-  }
-
-  static makeFilePath(nestAppName: string, rootDir: string): string {
-    return path.join(rootDir, Module.makeFileName(nestAppName));
-  }
-
   readonly generator: Generator;
   readonly outputPath: string;
-  private readonly tsSourceFile: SourceFile;
   private readonly controllerImports: Map<ModuleName, NamedImport>;
+  private readonly tsSourceFile: SourceFile;
 
   constructor(generator: Generator) {
     this.generator = generator;
-    this.outputPath = Module.makeFilePath(this.generator.nestApp, this.generator.outputPath);
+    this.outputPath = path.join(this.generator.outputPath, `${this.generator.nestApp}.module.ts`);
     this.controllerImports = new Map<ModuleName, NamedImport>();
     this.tsSourceFile = this.generator.tsProject.getSourceFileOrThrow(this.outputPath);
   }
