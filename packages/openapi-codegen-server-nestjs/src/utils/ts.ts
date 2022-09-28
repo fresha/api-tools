@@ -1,4 +1,12 @@
-import { SourceFile, ts, printNode, DecoratableNode, Node, ImportSpecifier } from 'ts-morph';
+import {
+  SourceFile,
+  ts,
+  printNode,
+  DecoratableNode,
+  Node,
+  ImportSpecifier,
+  Decorator,
+} from 'ts-morph';
 
 export const addNamedImport = (
   sourceFile: SourceFile,
@@ -39,7 +47,7 @@ export const addDecorator = (
   nodeToAdd: DecoratableNode,
   name: string,
   ...args: (string | number | boolean | undefined)[]
-): void => {
+): Decorator => {
   const decorator = nodeToAdd.addDecorator({ name });
   if (args.length) {
     decorator.setIsDecoratorFactory(true);
@@ -57,4 +65,5 @@ export const addDecorator = (
       }
     }
   }
+  return decorator;
 };
