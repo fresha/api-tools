@@ -50,17 +50,25 @@ test('adds controller imports', () => {
 
   const moduleSourceFile = module.generator.tsProject.getSourceFileOrThrow('/tmp/web.module.ts');
   expect(moduleSourceFile).toHaveFormattedText(
-    `import { Module } from '@nestjs/common';
+    `import { Module, ValidationPipe } from '@nestjs/common';
     import { AppController } from './app.controller';
     import { AppService } from './app.service';
+    import { APP_PIPE } from '@nestjs/core';
     import { WebX } from './web2.controller';
     import { WebZ } from './abcd.controller';
 
     @Module({
       imports: [],
       controllers: [AppController, WebX, WebZ],
-      providers: [AppService],
+      providers: [
+        AppService,
+        {
+          provide: APP_PIPE,
+          useClass: ValidationPipe,
+        },
+      ],
     })
-    export class AppModule {}`,
+    export class AppModule {}
+  `,
   );
 });
