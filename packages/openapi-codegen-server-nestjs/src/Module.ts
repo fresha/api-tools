@@ -17,19 +17,20 @@ export class Module {
     return `${nestAppName}.module.ts`;
   }
 
+  static makeFilePath(nestAppName: string, rootDir: string): string {
+    return path.join(rootDir, Module.makeFileName(nestAppName));
+  }
+
   readonly generator: Generator;
   readonly outputPath: string;
   private readonly tsSourceFile: SourceFile;
   private readonly controllerImports: Map<ModuleName, NamedImport>;
 
-  constructor(generator: Generator, outputPath: string) {
+  constructor(generator: Generator) {
     this.generator = generator;
-    this.outputPath = outputPath;
+    this.outputPath = Module.makeFilePath(this.generator.nestApp, this.generator.outputPath);
     this.controllerImports = new Map<ModuleName, NamedImport>();
-
-    const sourceFile = this.generator.tsProject.getSourceFile(this.outputPath);
-    assert(sourceFile, `Cannot find module file ${this.outputPath}`);
-    this.tsSourceFile = sourceFile;
+    this.tsSourceFile = this.generator.tsProject.getSourceFileOrThrow(this.outputPath);
   }
 
   processController(controller: Controller): void {
