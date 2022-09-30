@@ -35,6 +35,7 @@
   "main": "build/index.js",
   "types": "build/types.d.ts",
   "dependencies": {
+    "jest-matcher-utils": "^29.1.2",
     "prettier": "^2.7.1"
   },
   "devDependencies": {
