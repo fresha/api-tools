@@ -44,7 +44,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/api-tools-core": "0.2.0",
+    "@fresha/api-tools-core": "0.2.1",
     "yaml": "^2.1.1"
   },
   "devDependencies": {
