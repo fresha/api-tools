@@ -63,6 +63,16 @@ Below is a list of types. For their descriptions, please consult `src/types.ts`.
 
 Below is a list of guard names. For more information, please read `src/typeGuards.ts`.
 
+- `isJSONObject`
+- `isJSONValueArray`
 - `isJSONRef`
 - `isJSONAPIDataDocument`
 - `isJSONAPIErrorDocument`
+
+## Miscellaneous functions
+
+- `transformKeysDeep`
+- `camelCase`
+- `camelCaseDeep`
+- `kebabCase`
+- `kebabCaseDeep`

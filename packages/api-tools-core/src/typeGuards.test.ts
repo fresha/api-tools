@@ -1,6 +1,25 @@
-import { isJSONAPIDataDocument, isJSONAPIErrorDocument, isJSONRef } from './typeGuards';
+import {
+  isJSONAPIDataDocument,
+  isJSONAPIErrorDocument,
+  isJSONObject,
+  isJSONRef,
+  isJSONValueArray,
+} from './typeGuards';
 
 import type { JSONAPIDocument } from './types';
+
+test('isJSONObject', () => {
+  expect(isJSONObject({})).toBeTruthy();
+  expect(isJSONObject(null)).toBeFalsy();
+  expect(isJSONObject([])).toBeFalsy();
+});
+
+test('isJSONValueArray', () => {
+  expect(isJSONValueArray({})).toBeFalsy();
+  expect(isJSONValueArray(null)).toBeFalsy();
+  expect(isJSONValueArray([])).toBeTruthy();
+  expect(isJSONValueArray([1, 's', {}])).toBeTruthy();
+});
 
 test('isJSONRef', () => {
   expect(isJSONRef({})).toBeFalsy();
