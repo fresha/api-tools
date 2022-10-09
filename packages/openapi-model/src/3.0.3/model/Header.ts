@@ -1,4 +1,8 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
+import { Example } from './Example';
+import { MediaType } from './MediaType';
 
 import type {
   ExampleModel,
@@ -35,5 +39,52 @@ export class Header extends BasicNode<HeaderModelParent> implements HeaderModel 
     this.example = null;
     this.examples = new Map<string, ExampleModel>();
     this.content = new Map<MIMETypeString, MediaTypeModel>();
+  }
+
+  getExample(name: string): ExampleModel | undefined {
+    return this.examples.get(name);
+  }
+
+  getExampleOrThrow(name: string): ExampleModel {
+    const result = this.getExample(name);
+    assert(result);
+    return result;
+  }
+
+  setExample(name: string): ExampleModel {
+    const result = new Example(this);
+    this.examples.set(name, result);
+    return result;
+  }
+
+  deleteExample(name: string): void {
+    this.examples.delete(name);
+  }
+
+  clearExamples(): void {
+    this.examples.clear();
+  }
+
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined {
+    return this.content.get(mimeType);
+  }
+
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel {
+    const result = this.getContent(mimeType);
+    assert(result);
+    return result;
+  }
+
+  setContent(mimeType: MIMETypeString): void {
+    const result = new MediaType(this);
+    this.content.set(mimeType, result);
+  }
+
+  deleteContent(mimeType: MIMETypeString): void {
+    this.content.delete(mimeType);
+  }
+
+  clearContents(): void {
+    this.content.clear();
   }
 }
