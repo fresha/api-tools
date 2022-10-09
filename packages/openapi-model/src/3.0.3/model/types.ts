@@ -738,7 +738,13 @@ export type CallbackModelParent = ComponentsModel | OperationModel;
  * @see https://spec.openapis.org/oas/v3.0.3#callback-object
  */
 export interface CallbackModel extends TreeNode<CallbackModelParent>, SpecificationExtensionsModel {
-  readonly paths: ReadonlyMap<ParametrisedURLString, PathItemModel>;
+  readonly paths: ReadonlyMap<string, PathItemModel>;
+
+  getPathItem(key: string): PathItemModel | undefined;
+  getPathItemOrThrow(key: string): PathItemModel;
+  setPathItem(key: string): PathItemModel;
+  deletePathItem(key: string): void;
+  clearPathItems(): void;
 }
 
 export type ComponentsModelParent = OpenAPIModel;
