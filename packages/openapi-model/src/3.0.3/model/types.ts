@@ -259,11 +259,15 @@ export interface ParameterBaseModel
   readonly examples: ReadonlyMap<string, ExampleModel>;
   readonly content: ReadonlyMap<MIMETypeString, MediaTypeModel>;
 
+  getExample(name: string): ExampleModel | undefined;
+  getExampleOrThrow(name: string): ExampleModel;
   setExampleModel(name: string, model: ExampleModel): void;
   setExample(name: string): ExampleModel;
   deleteExample(name: string): void;
   clearExamples(): void;
 
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
   setContentModel(mimeType: MIMETypeString, model: MediaTypeModel): void;
   setContent(mimeType: MIMETypeString): MediaTypeModel;
   deleteContent(mimeType: MIMETypeString): void;
