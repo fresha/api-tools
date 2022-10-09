@@ -444,14 +444,20 @@ export interface ResponseModel extends TreeNode<ResponseModelParent>, Specificat
   readonly content: ReadonlyMap<MIMETypeString, MediaTypeModel>; // key = MIME media type
   readonly links: ReadonlyMap<string, LinkModel>; // key = short name of the link
 
+  getHeader(name: string): HeaderModel | undefined;
+  getHeaderOrThrow(name: string): HeaderModel;
   setHeader(name: string): HeaderModel;
   deleteHeader(name: string): void;
   clearHeaders(): void;
 
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
   setContent(mimeType: MIMETypeString): MediaTypeModel;
   deleteContent(mimeType: MIMETypeString): void;
   clearContent(): void;
 
+  getLink(key: string): LinkModel | undefined;
+  getLinkOrThrow(key: string): LinkModel;
   setLink(key: string): LinkModel;
   deleteLink(key: string): void;
   clearLinks(): void;

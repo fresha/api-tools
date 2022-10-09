@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 import { Header } from './Header';
 import { Link } from './Link';
@@ -29,6 +31,16 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
     this.links = new Map<string, LinkModel>();
   }
 
+  getHeader(name: string): HeaderModel | undefined {
+    return this.headers.get(name);
+  }
+
+  getHeaderOrThrow(name: string): HeaderModel {
+    const result = this.getHeader(name);
+    assert(result);
+    return result;
+  }
+
   setHeader(name: string): HeaderModel {
     const result = new Header(this);
     this.headers.set(name, result);
@@ -41,6 +53,16 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
 
   clearHeaders(): void {
     this.headers.clear();
+  }
+
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined {
+    return this.content.get(mimeType);
+  }
+
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel {
+    const result = this.getContent(mimeType);
+    assert(result);
+    return result;
   }
 
   setContent(mimeType: MIMETypeString): MediaTypeModel {
@@ -58,6 +80,16 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
 
   clearContent(): void {
     this.content.clear();
+  }
+
+  getLink(key: string): LinkModel | undefined {
+    return this.links.get(key);
+  }
+
+  getLinkOrThrow(key: string): LinkModel {
+    const result = this.getLink(key);
+    assert(result);
+    return result;
   }
 
   setLink(key: string): LinkModel {
