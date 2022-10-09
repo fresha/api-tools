@@ -401,10 +401,14 @@ export interface MediaTypeModel
   setSchema(type: SchemaCreateType): SchemaModel;
   deleteSchema(): void;
 
+  getExample(key: string): ExampleModel | undefined;
+  getExampleOrThrow(key: string): ExampleModel;
   setExample(key: string): ExampleModel;
   deleteExample(key: string): void;
   clearExamples(): void;
 
+  getEncoding(key: string): EncodingModel | undefined;
+  getEncodingOrThrow(key: string): EncodingModel;
   setEncoding(key: string): EncodingModel;
   deleteEncoding(key: string): void;
   clearEncodings(): void;

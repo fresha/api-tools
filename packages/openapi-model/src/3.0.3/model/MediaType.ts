@@ -43,6 +43,16 @@ export class MediaType extends BasicNode<MediaTypeModelParent> implements MediaT
     this.schema = null;
   }
 
+  getExample(key: string): ExampleModel | undefined {
+    return this.examples.get(key);
+  }
+
+  getExampleOrThrow(key: string): ExampleModel {
+    const result = this.getExample(key);
+    assert(result);
+    return result;
+  }
+
   setExample(key: string): ExampleModel {
     assert.equal(this.example, null);
     const result = new Example(this);
@@ -56,6 +66,16 @@ export class MediaType extends BasicNode<MediaTypeModelParent> implements MediaT
 
   clearExamples(): void {
     this.examples.clear();
+  }
+
+  getEncoding(key: string): EncodingModel | undefined {
+    return this.encoding.get(key);
+  }
+
+  getEncodingOrThrow(key: string): EncodingModel {
+    const result = this.getEncoding(key);
+    assert(result);
+    return result;
   }
 
   setEncoding(key: string): EncodingModel {
