@@ -20,7 +20,7 @@ import type {
   SecurityRequirementModel,
   ServerModel,
 } from './types';
-import type { CommonMarkString, Nullable } from '@fresha/api-tools-core';
+import type { CommonMarkString, Nullable, ParametrisedURLString } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#operation-object
@@ -76,6 +76,16 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.tags.splice(0, this.tags.length);
   }
 
+  getParameter(name: string, source: ParameterLocation): ParameterModel | undefined {
+    return this.parameters.find(param => param.name === name && param.in === source);
+  }
+
+  getParameterOrThrow(name: string, source: ParameterLocation): ParameterModel {
+    const result = this.getParameter(name, source);
+    assert(result);
+    return result;
+  }
+
   addParameter(name: string, location: 'path'): PathParameter;
   addParameter(name: string, location: 'query'): QueryParameter;
   addParameter(name: string, location: 'header'): HeaderParameter;
@@ -129,6 +139,14 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.responses.deleteDefaultResponse();
   }
 
+  getResponse(code: HTTPStatusCode): ResponseModel | undefined {
+    return this.responses.getResponse(code);
+  }
+
+  getResponseOrThrow(code: HTTPStatusCode): ResponseModel {
+    return this.responses.getResponseOrThrow(code);
+  }
+
   setResponse(code: HTTPStatusCode, description: CommonMarkString): ResponseModel {
     return this.responses.setResponse(code, description);
   }
@@ -139,6 +157,16 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
 
   clearResponses(): void {
     this.responses.clearResponses();
+  }
+
+  getCallback(name: string): CallbackModel | undefined {
+    return this.callbacks.get(name);
+  }
+
+  getCallbackOrThrow(name: string): CallbackModel {
+    const result = this.getCallback(name);
+    assert(result);
+    return result;
   }
 
   setCallback(key: string): CallbackModel {
@@ -167,6 +195,16 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
 
   clearSecurityRequirements(): void {
     this.security.splice(0, this.security.length);
+  }
+
+  getServer(url: ParametrisedURLString): ServerModel | undefined {
+    return this.servers.find(item => item.url === url);
+  }
+
+  getServerOrThrow(url: ParametrisedURLString): ServerModel {
+    const result = this.getServer(url);
+    assert(result);
+    return result;
   }
 
   addServer(url: string): ServerModel {

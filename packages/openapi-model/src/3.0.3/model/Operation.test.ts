@@ -60,6 +60,13 @@ test('parameters collection', () => {
 
   expect(operation.parameters).toStrictEqual([p1, p2, p3, p4]);
 
+  expect(operation.getParameter('p1', 'path')).not.toBeUndefined();
+  expect(operation.getParameter('p1', 'query')).toBeUndefined();
+  expect(operation.getParameter('p5', 'path')).toBeUndefined();
+  expect(operation.getParameterOrThrow('p3', 'header')).not.toBeUndefined();
+  expect(() => operation.getParameterOrThrow('p1', 'query')).toThrow();
+  expect(() => operation.getParameterOrThrow('p5', 'cookie')).toThrow();
+
   expect(() => operation.addParameter('p1', 'path')).toThrow();
   expect(() => operation.addParameter('p1', 'cookie')).toThrow();
 
@@ -85,6 +92,11 @@ test('delegated response methods', () => {
   expect(operation.responses.codes.get(200)).toBe(res200);
   expect(operation.responses.codes.get(404)).toBe(res404);
 
+  expect(operation.getResponse(200)).not.toBeUndefined();
+  expect(operation.getResponse(418)).toBeUndefined();
+  expect(operation.getResponseOrThrow(404)).not.toBeUndefined();
+  expect(() => operation.getResponseOrThrow(501)).toThrow();
+
   operation.deleteResponse(404);
   expect(operation.responses.codes.get(404)).toBeUndefined();
 
@@ -99,6 +111,11 @@ test('callbacks collection', () => {
   operation.setCallback('cb2');
 
   expect(operation.callbacks.size).toBe(2);
+
+  expect(operation.getCallback('cb1')).not.toBeUndefined();
+  expect(operation.getCallback('-')).toBeUndefined();
+  expect(operation.getCallbackOrThrow('cb2')).not.toBeUndefined();
+  expect(() => operation.getCallbackOrThrow('?')).toThrow();
 
   operation.deleteCallback('cb1');
 
@@ -137,6 +154,11 @@ test('servers collection', () => {
   expect(() => operation.addServer('http://second.example.com')).toThrow();
 
   expect(operation.servers.length).toBe(3);
+
+  expect(operation.getServer('http://first.example.com')).not.toBeUndefined();
+  expect(operation.getServer('-')).toBeUndefined();
+  expect(operation.getServerOrThrow('http://second.example.com')).not.toBeUndefined();
+  expect(() => operation.getServerOrThrow('?')).toThrow();
 
   operation.deleteServer('http://third.example.com');
   expect(operation.servers.length).toBe(2);
