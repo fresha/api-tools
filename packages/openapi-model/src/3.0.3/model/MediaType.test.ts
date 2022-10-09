@@ -2,7 +2,7 @@ import { OpenAPIFactory } from './OpenAPI';
 
 import type { MediaTypeModel } from './types';
 
-let mediaType: MediaTypeModel | null = null;
+let mediaType: MediaTypeModel = {} as MediaTypeModel;
 
 beforeEach(() => {
   const openapi = OpenAPIFactory.create();
@@ -11,56 +11,66 @@ beforeEach(() => {
 });
 
 test('default properties', () => {
-  expect(mediaType?.schema).toBeNull();
-  expect(mediaType?.example).toBeNull();
-  expect(mediaType?.examples).toHaveProperty('size', 0);
-  expect(mediaType?.encoding).toHaveProperty('size', 0);
+  expect(mediaType.schema).toBeNull();
+  expect(mediaType.example).toBeNull();
+  expect(mediaType.examples).toHaveProperty('size', 0);
+  expect(mediaType.encoding).toHaveProperty('size', 0);
 });
 
 test('schema property', () => {
-  mediaType?.setSchema('date-time');
+  mediaType.setSchema('date-time');
 
-  expect(mediaType?.schema).toHaveProperty('type', 'string');
-  expect(mediaType?.schema).toHaveProperty('format', 'date-time');
+  expect(mediaType.schema).toHaveProperty('type', 'string');
+  expect(mediaType.schema).toHaveProperty('format', 'date-time');
 
-  mediaType?.deleteSchema();
+  mediaType.deleteSchema();
 
-  expect(mediaType?.schema).toBeNull();
+  expect(mediaType.schema).toBeNull();
 });
 
 test('examples collection', () => {
-  mediaType?.setExample('1');
-  mediaType?.setExample('2');
-  mediaType?.setExample('3');
+  mediaType.setExample('1');
+  mediaType.setExample('2');
+  mediaType.setExample('3');
 
-  expect(mediaType?.examples).toHaveProperty('size', 3);
+  expect(mediaType.examples).toHaveProperty('size', 3);
 
-  mediaType?.deleteExample('2');
+  expect(mediaType.getExample('1')).not.toBeUndefined();
+  expect(mediaType.getExample('_')).toBeUndefined();
+  expect(mediaType.getExampleOrThrow('2')).not.toBeUndefined();
+  expect(() => mediaType.getExampleOrThrow('?')).toThrow();
 
-  expect(Array.from(mediaType?.examples.keys() ?? [])).toStrictEqual(['1', '3']);
+  mediaType.deleteExample('2');
 
-  mediaType?.clearExamples();
+  expect(Array.from(mediaType.examples.keys() ?? [])).toStrictEqual(['1', '3']);
 
-  expect(mediaType?.examples).toHaveProperty('size', 0);
+  mediaType.clearExamples();
+
+  expect(mediaType.examples).toHaveProperty('size', 0);
 });
 
 test('either example or examples can be set', () => {
-  mediaType!.example = {};
-  expect(() => mediaType?.setExample('1')).toThrow();
+  mediaType.example = {};
+  expect(() => mediaType.setExample('1')).toThrow();
 });
 
 test('encoding collection', () => {
-  mediaType?.setEncoding('1');
-  mediaType?.setEncoding('2');
-  mediaType?.setEncoding('3');
+  mediaType.setEncoding('1');
+  mediaType.setEncoding('2');
+  mediaType.setEncoding('3');
 
-  expect(mediaType?.encoding).toHaveProperty('size', 3);
+  expect(mediaType.encoding).toHaveProperty('size', 3);
 
-  mediaType?.deleteEncoding('2');
+  expect(mediaType.getEncoding('1')).not.toBeUndefined();
+  expect(mediaType.getEncoding('_')).toBeUndefined();
+  expect(mediaType.getEncodingOrThrow('2')).not.toBeUndefined();
+  expect(() => mediaType.getEncodingOrThrow('?')).toThrow();
 
-  expect(Array.from(mediaType?.encoding.keys() ?? [])).toStrictEqual(['1', '3']);
+  mediaType.deleteEncoding('2');
 
-  mediaType?.clearEncodings();
+  expect(Array.from(mediaType.encoding.keys() ?? [])).toStrictEqual(['1', '3']);
 
-  expect(mediaType?.encoding).toHaveProperty('size', 0);
+  mediaType.clearEncodings();
+
+  expect(mediaType.encoding).toHaveProperty('size', 0);
 });
