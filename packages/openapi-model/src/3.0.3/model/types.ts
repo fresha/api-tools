@@ -378,6 +378,8 @@ export interface EncodingModel extends TreeNode<EncodingModelParent>, Specificat
   explode: boolean;
   allowReserved: boolean;
 
+  getHeader(name: string): HeaderModel | undefined;
+  getHeaderOrThrow(name: string): HeaderModel;
   setHeader(name: string): HeaderModel;
   deleteHeader(name: string): void;
   clearHeaders(): void;
