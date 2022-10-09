@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 import { Header } from './Header';
 
@@ -26,6 +28,16 @@ export class Encoding extends BasicNode<EncodingModelParent> implements Encoding
     this.style = 'form';
     this.explode = false;
     this.allowReserved = false;
+  }
+
+  getHeader(name: string): HeaderModel | undefined {
+    return this.headers.get(name);
+  }
+
+  getHeaderOrThrow(name: string): HeaderModel {
+    const result = this.getHeader(name);
+    assert(result);
+    return result;
   }
 
   setHeader(name: string): HeaderModel {
