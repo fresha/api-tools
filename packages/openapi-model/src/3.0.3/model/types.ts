@@ -730,6 +730,12 @@ export interface LinkModel extends TreeNode<LinkModelParent>, SpecificationExten
   requestBody: JSONValue;
   description: Nullable<CommonMarkString>;
   server: Nullable<ServerModel>;
+
+  getParameter(key: string): JSONValue | undefined;
+  getParameterOrThrow(key: string): JSONValue;
+  setParameter(key: string, value: JSONValue): void;
+  deleteParameter(key: string): void;
+  clearParameters(): void;
 }
 
 export type CallbackModelParent = ComponentsModel | OperationModel;

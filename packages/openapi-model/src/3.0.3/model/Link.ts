@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 
 import type { Server } from './Server';
@@ -23,5 +25,27 @@ export class Link extends BasicNode<LinkModelParent> implements LinkModel {
     this.requestBody = null;
     this.description = null;
     this.server = null;
+  }
+
+  getParameter(key: string): JSONValue | undefined {
+    return this.parameters.get(key);
+  }
+
+  getParameterOrThrow(key: string): JSONValue {
+    const result = this.getParameter(key);
+    assert(result !== undefined);
+    return result;
+  }
+
+  setParameter(key: string, value: JSONValue): void {
+    this.parameters.set(key, value);
+  }
+
+  deleteParameter(key: string): void {
+    this.parameters.delete(key);
+  }
+
+  clearParameters(): void {
+    this.parameters.clear();
   }
 }

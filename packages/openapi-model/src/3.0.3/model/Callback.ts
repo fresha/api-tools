@@ -1,9 +1,10 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
+import { PathItem } from './PathItem';
 
 import type { CallbackModel, CallbackModelParent, PathItemModel } from './types';
 import type { ParametrisedURLString } from '@fresha/api-tools-core';
-import assert from 'assert';
-import { PathItem } from './PathItem';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#callback-object
