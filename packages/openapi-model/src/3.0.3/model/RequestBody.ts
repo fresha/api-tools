@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 import { MediaType } from './MediaType';
 
@@ -17,6 +19,16 @@ export class RequestBody extends BasicNode<RequestBodyModelParent> implements Re
     this.description = null;
     this.content = new Map<string, MediaTypeModel>();
     this.required = false;
+  }
+
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined {
+    return this.content.get(mimeType);
+  }
+
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel {
+    const result = this.getContent(mimeType);
+    assert(result);
+    return result;
   }
 
   setContent(mimeType: MIMETypeString): MediaType {
