@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 
 import type { PathItemModel, PathsModel, PathsModelParent } from './types';
@@ -12,6 +14,16 @@ export class Paths extends BasicNode<PathsModelParent> implements PathsModel {
   constructor(parent: PathsModelParent) {
     super(parent);
     this.items = new Map<ParametrisedURLString, PathItemModel>();
+  }
+
+  getItem(url: ParametrisedURLString): PathItemModel | undefined {
+    return this.items.get(url);
+  }
+
+  getItemOrThrow(url: ParametrisedURLString): PathItemModel {
+    const result = this.getItem(url);
+    assert(result);
+    return result;
   }
 
   clear(): void {

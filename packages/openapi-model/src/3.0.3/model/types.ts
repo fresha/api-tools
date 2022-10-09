@@ -591,7 +591,10 @@ export type PathsModelParent = OpenAPIModel;
 export interface PathsModel
   extends TreeNode<PathsModelParent>,
     Map<ParametrisedURLString, PathItemModel>,
-    SpecificationExtensionsModel {}
+    SpecificationExtensionsModel {
+  getItem(url: ParametrisedURLString): PathItemModel | undefined;
+  getItemOrThrow(url: ParametrisedURLString): PathItemModel;
+}
 
 export type SecuritySchemaModelParent = ComponentsModel;
 
