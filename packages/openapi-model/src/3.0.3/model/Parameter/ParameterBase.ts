@@ -42,6 +42,16 @@ export abstract class ParameterBase extends BasicNode<ParameterModelParent> {
     this.required = false;
   }
 
+  getExample(name: string): ExampleModel | undefined {
+    return this.examples.get(name);
+  }
+
+  getExampleOrThrow(name: string): ExampleModel {
+    const result = this.getExample(name);
+    assert(result);
+    return result;
+  }
+
   setExampleModel(name: string, model: ExampleModel): void {
     assert(!this.examples.has(name));
     assert.equal(model.parent, this);
@@ -61,6 +71,16 @@ export abstract class ParameterBase extends BasicNode<ParameterModelParent> {
 
   clearExamples(): void {
     this.examples.clear();
+  }
+
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined {
+    return this.content.get(mimeType);
+  }
+
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel {
+    const result = this.getContent(mimeType);
+    assert(result);
+    return result;
   }
 
   setContentModel(mimeType: MIMETypeString, model: MediaTypeModel): void {
