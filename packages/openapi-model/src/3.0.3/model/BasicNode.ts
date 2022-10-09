@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import type {
   ExtensionFields,
   OpenAPIModel,
@@ -25,6 +27,16 @@ export class BasicNode<TParent extends TreeParent>
 
   // eslint-disable-next-line class-methods-use-this
   dispose(): void {}
+
+  getExtension(key: string): JSONValue | undefined {
+    return this.extensions.get(key);
+  }
+
+  getExtensionOrThrow(key: string): JSONValue {
+    const result = this.getExtension(key);
+    assert(result !== undefined);
+    return result;
+  }
 
   setExtension(key: string, value: JSONValue): void {
     this.extensions.set(key, value);

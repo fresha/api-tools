@@ -8,6 +8,19 @@ beforeEach(() => {
   openapi = new OpenAPI('BasicNode.test', '0.0.1');
 });
 
+test('getExtension + getExtensionOrThrow', () => {
+  class Item extends BasicNode<OpenAPI> {}
+
+  const item = new Item(openapi);
+  item.setExtension('a', 1);
+  item.setExtension('b', 'log');
+
+  expect(item.getExtension('a')).not.toBeUndefined();
+  expect(item.getExtension('')).toBeUndefined();
+  expect(item.getExtensionOrThrow('b')).not.toBeUndefined();
+  expect(() => item.getExtensionOrThrow('')).toThrow();
+});
+
 describe('parent-child relationships', () => {
   class Branch extends BasicNode<BranchParent> {}
   class Leaf extends BasicNode<Branch> {}
