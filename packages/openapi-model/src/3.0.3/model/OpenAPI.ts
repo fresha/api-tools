@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { Components } from './Components';
 import { ExternalDocumentation } from './ExternalDocumentation';
 import { Info } from './Info';
@@ -73,6 +75,16 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     this.extensions.clear();
   }
 
+  getServer(url: ParametrisedURLString): ServerModel | undefined {
+    return this.servers.find(item => item.url === url);
+  }
+
+  getServerOrThrow(url: ParametrisedURLString): ServerModel {
+    const result = this.getServer(url);
+    assert(result);
+    return result;
+  }
+
   addServer(
     url: ParametrisedURLString,
     variableDefaults?: Record<string, string>,
@@ -96,6 +108,16 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
 
   clearServers(): void {
     this.servers.splice(0, this.servers.length);
+  }
+
+  getPathItem(url: ParametrisedURLString): PathItemModel | undefined {
+    return this.paths.get(url);
+  }
+
+  getPathItemOrThrow(url: ParametrisedURLString): PathItemModel {
+    const result = this.paths.get(url);
+    assert(result);
+    return result;
   }
 
   setPathItem(url: ParametrisedURLString): PathItemModel {
@@ -127,6 +149,16 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
 
   clearSecurityRequirements(): void {
     this.security.splice(1, this.security.length);
+  }
+
+  getTag(name: string): TagModel | undefined {
+    return this.tags.find(item => item.name === name);
+  }
+
+  getTagOrThrow(name: string): TagModel {
+    const result = this.getTag(name);
+    assert(result);
+    return result;
   }
 
   addTag(name: string): TagModel {
