@@ -122,6 +122,8 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   example: Nullable<JSONValue>;
   deprecated: boolean;
 
+  getProperty(name: string): SchemaModel | undefined;
+  getPropertyOrThrow(name: string): SchemaModel;
   setProperty(name: string, options: SchemaCreateOptions): SchemaModel;
   setProperties(props: Record<string, SchemaCreateOptions>): SchemaModel;
   deleteProperty(name: string): void;

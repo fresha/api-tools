@@ -66,6 +66,18 @@ describe('SchemaFactory', () => {
 });
 
 describe('Schema', () => {
+  test('getProperty + getPropertyOrThrow', () => {
+    const openapi = new OpenAPI('example', '0.1.0');
+
+    const schema = SchemaFactory.create(openapi.components, 'object');
+    schema.setProperties({ a: 'string', b: 'date' });
+
+    expect(schema.getProperty('a')).not.toBeUndefined();
+    expect(schema.getProperty('')).toBeUndefined();
+    expect(schema.getPropertyOrThrow('b')).not.toBeUndefined();
+    expect(() => schema.getPropertyOrThrow('_')).toThrow();
+  });
+
   test('setProperty', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 
