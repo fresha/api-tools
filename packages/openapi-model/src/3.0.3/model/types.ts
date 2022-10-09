@@ -350,6 +350,18 @@ export interface HeaderModel extends TreeNode<HeaderModelParent>, SpecificationE
   example: JSONValue;
   readonly examples: Map<string, ExampleModel>;
   readonly content: Map<MIMETypeString, MediaTypeModel>;
+
+  getExample(name: string): ExampleModel | undefined;
+  getExampleOrThrow(name: string): ExampleModel;
+  setExample(name: string): ExampleModel;
+  deleteExample(name: string): void;
+  clearExamples(): void;
+
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
+  setContent(mimeType: MIMETypeString): void;
+  deleteContent(mimeType: MIMETypeString): void;
+  clearContents(): void;
 }
 
 export type EncodingModelParent = MediaTypeModel;
@@ -371,7 +383,7 @@ export interface EncodingModel extends TreeNode<EncodingModelParent>, Specificat
   clearHeaders(): void;
 }
 
-export type MediaTypeModelParent = ParameterModel | RequestBodyModel | ResponseModel;
+export type MediaTypeModelParent = ParameterModel | RequestBodyModel | ResponseModel | HeaderModel;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#media-type-object
