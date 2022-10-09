@@ -811,6 +811,8 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
   readonly tags: ReadonlyArray<TagModel>;
   readonly externalDocs: Nullable<ExternalDocumentationModel>;
 
+  getServer(url: ParametrisedURLString): ServerModel | undefined;
+  getServerOrThrow(url: ParametrisedURLString): ServerModel;
   addServer(
     url: ParametrisedURLString,
     variableDefaults?: Record<string, string>,
@@ -819,6 +821,8 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
   removeServerAt(index: number): void;
   clearServers(): void;
 
+  getPathItem(url: ParametrisedURLString): PathItemModel | undefined;
+  getPathItemOrThrow(url: ParametrisedURLString): PathItemModel;
   setPathItem(url: ParametrisedURLString): PathItemModel;
   deletePathItem(url: ParametrisedURLString): void;
   clearPathItems(): void;
@@ -827,6 +831,8 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
   deleteSecurityRequirementAt(index: number): void;
   clearSecurityRequirements(): void;
 
+  getTag(name: string): TagModel | undefined;
+  getTagOrThrow(name: string): TagModel;
   addTag(name: string): TagModel;
   deleteTag(name: string): void;
   deleteTagAt(index: number): void;
