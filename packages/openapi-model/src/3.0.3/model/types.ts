@@ -43,6 +43,8 @@ export interface TreeNode<TParent> extends Disposable {
 export interface SpecificationExtensionsModel {
   readonly extensions: ExtensionFields;
 
+  getExtension(key: string): JSONValue | undefined;
+  getExtensionOrThrow(key: string): JSONValue;
   setExtension(key: string, value: JSONValue): void;
   deleteExtension(key: string): void;
   clearExtensions(): void;

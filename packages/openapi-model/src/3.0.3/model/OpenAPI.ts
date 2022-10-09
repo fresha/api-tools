@@ -63,6 +63,16 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     return this;
   }
 
+  getExtension(key: string): JSONValue | undefined {
+    return this.extensions.get(key);
+  }
+
+  getExtensionOrThrow(key: string): JSONValue {
+    const result = this.getExtension(key);
+    assert(result !== undefined);
+    return result;
+  }
+
   setExtension(key: string, value: JSONValue): void {
     this.extensions.set(key, value);
   }

@@ -13,6 +13,16 @@ test('ownership', () => {
   expect(openapi.info.license.parent).toBe(openapi.info);
 });
 
+test('getExtension + getExtensionOrThrow', () => {
+  openapi.setExtension('a', 1);
+  openapi.setExtension('b', 'log');
+
+  expect(openapi.getExtension('a')).not.toBeUndefined();
+  expect(openapi.getExtension('')).toBeUndefined();
+  expect(openapi.getExtensionOrThrow('b')).not.toBeUndefined();
+  expect(() => openapi.getExtensionOrThrow('')).toThrow();
+});
+
 describe('server collection', () => {
   test('getServer + getServerOrThrow', () => {
     const server1 = openapi.addServer('https://api1.example.com');
