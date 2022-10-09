@@ -786,6 +786,8 @@ export interface SecurityRequirementModel
     SpecificationExtensionsModel {
   readonly scopes: ReadonlyMap<string, ReadonlyArray<string>>;
 
+  getScopes(schemeName: string): string[] | undefined;
+  getScopesOrThrow(schemeName: string): string[];
   addScopes(schemeName: string, ...scope: string[]): void;
   deleteScopes(schemeName: string, ...scope: string[]): void;
   clearScopes(): void;
