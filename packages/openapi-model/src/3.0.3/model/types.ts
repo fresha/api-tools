@@ -634,6 +634,12 @@ export type OAuthFlowModelParent = OAuthFlowsModel;
 interface OAuthFlowBaseModel extends TreeNode<OAuthFlowModelParent>, SpecificationExtensionsModel {
   refreshUrl: Nullable<URLString>;
   readonly scopes: ReadonlyMap<string, string>;
+
+  getScope(key: string): string | undefined;
+  getScopeOrThrow(key: string): string;
+  setScope(key: string, value: string): void;
+  deleteScope(key: string): void;
+  clearScopes(): void;
 }
 
 /**
