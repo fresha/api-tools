@@ -73,6 +73,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     );
   }
 
+  getSchema(name: string): SchemaModel | undefined {
+    return this.schemas.get(name);
+  }
+
+  getSchemaOrThrow(name: string): SchemaModel {
+    const result = this.getSchema(name);
+    assert(result);
+    return result;
+  }
+
   setSchemaModel(name: string, model: SchemaModel): void {
     assert(!this.schemas.has(name));
     assert.equal(model.parent, this);
@@ -95,6 +105,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.schemas.clear();
   }
 
+  getResponse(name: string): ResponseModel | undefined {
+    return this.responses.get(name);
+  }
+
+  getResponseOrThrow(name: string): ResponseModel {
+    const result = this.getResponse(name);
+    assert(result);
+    return result;
+  }
+
   setResponseModel(name: string, model: ResponseModel): void {
     assert(!this.responses.has(name));
     assert.equal(model.parent, this);
@@ -114,6 +134,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
 
   clearResponses(): void {
     this.responses.clear();
+  }
+
+  getParameter(name: string): ParameterModel | undefined {
+    return this.parameters.get(name);
+  }
+
+  getParameterOrThrow(name: string): ParameterModel {
+    const result = this.getParameter(name);
+    assert(result);
+    return result;
   }
 
   setParameterModel(name: string, model: ParameterModel): void {
@@ -153,6 +183,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.parameters.clear();
   }
 
+  getExample(name: string): ExampleModel | undefined {
+    return this.examples.get(name);
+  }
+
+  getExampleOrThrow(name: string): ExampleModel {
+    const result = this.getExample(name);
+    assert(result);
+    return result;
+  }
+
   setExampleModel(name: string, model: ExampleModel): void {
     assert(!this.examples.has(name));
     assert.equal(model.parent, this);
@@ -172,6 +212,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
 
   clearExamples(): void {
     this.examples.clear();
+  }
+
+  getRequestBody(name: string): RequestBodyModel | undefined {
+    return this.requestBodies.get(name);
+  }
+
+  getRequestBodyOrThrow(name: string): RequestBodyModel {
+    const result = this.getRequestBody(name);
+    assert(result);
+    return result;
   }
 
   setRequestBodyModel(name: string, model: RequestBodyModel): void {
@@ -195,6 +245,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.requestBodies.clear();
   }
 
+  getHeader(name: string): HeaderModel | undefined {
+    return this.headers.get(name);
+  }
+
+  getHeaderOrThrow(name: string): HeaderModel {
+    const result = this.getHeader(name);
+    assert(result);
+    return result;
+  }
+
   setHeaderModel(name: string, model: HeaderModel): void {
     assert(!this.headers.has(name));
     assert.equal(model.parent, this);
@@ -214,6 +274,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
 
   clearHeaders(): void {
     this.headers.clear();
+  }
+
+  getSecuritySchema(name: string): SecuritySchemaModel | undefined {
+    return this.securitySchemes.get(name);
+  }
+
+  getSecuritySchemaOrThrow(name: string): SecuritySchemaModel {
+    const result = this.getSecuritySchema(name);
+    assert(result);
+    return result;
   }
 
   setSecuritySchemaModel(name: string, model: SecuritySchemaModel): void {
@@ -253,6 +323,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.securitySchemes.clear();
   }
 
+  getLink(name: string): LinkModel | undefined {
+    return this.links.get(name);
+  }
+
+  getLinkOrThrow(name: string): LinkModel {
+    const result = this.getLink(name);
+    assert(result);
+    return result;
+  }
+
   setLinkModel(name: string, model: LinkModel): void {
     assert(!this.links.has(name));
     assert.equal(model.parent, this);
@@ -272,6 +352,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
 
   clearLinks(): void {
     this.links.clear();
+  }
+
+  getCallback(name: string): CallbackModel | undefined {
+    return this.callbacks.get(name);
+  }
+
+  getCallbackOrThrow(name: string): CallbackModel {
+    const result = this.getCallback(name);
+    assert(result);
+    return result;
   }
 
   setCallbackModel(name: string, model: CallbackModel): void {

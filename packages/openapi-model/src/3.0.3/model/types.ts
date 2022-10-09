@@ -712,46 +712,64 @@ export interface ComponentsModel
 
   isEmpty(): boolean;
 
+  getSchema(name: string): SchemaModel | undefined;
+  getSchemaOrThrow(name: string): SchemaModel;
   setSchemaModel(name: string, model: SchemaModel): void;
   setSchema(name: string, type?: SchemaType): SchemaModel;
   deleteSchema(name: string): void;
   clearSchemas(): void;
 
+  getResponse(name: string): ResponseModel | undefined;
+  getResponseOrThrow(name: string): ResponseModel;
   setResponseModel(name: string, model: ResponseModel): void;
   setResponse(name: string, description: CommonMarkString): ResponseModel;
   deleteResponse(name: string): void;
   clearResponses(): void;
 
+  getParameter(name: string): ParameterModel | undefined;
+  getParameterOrThrow(name: string): ParameterModel;
   setParameterModel(name: string, model: ParameterModel): void;
   setParameter(name: string, kind: ParameterModel['in'], paramName: string): ParameterModel;
   deleteParameter(name: string): void;
   clearParameters(): void;
 
+  getExample(name: string): ExampleModel | undefined;
+  getExampleOrThrow(name: string): ExampleModel;
   setExampleModel(name: string, model: ExampleModel): void;
   setExample(name: string): ExampleModel;
   deleteExample(name: string): void;
   clearExamples(): void;
 
+  getRequestBody(name: string): RequestBodyModel | undefined;
+  getRequestBodyOrThrow(name: string): RequestBodyModel;
   setRequestBodyModel(name: string, model: RequestBodyModel): void;
   setRequestBody(name: string): RequestBodyModel;
   deleteRequestBody(name: string): void;
   clearRequestBodies(): void;
 
+  getHeader(name: string): HeaderModel | undefined;
+  getHeaderOrThrow(name: string): HeaderModel;
   setHeaderModel(name: string, model: HeaderModel): void;
   setHeader(name: string): HeaderModel;
   deleteHeader(name: string): void;
   clearHeaders(): void;
 
+  getSecuritySchema(name: string): SecuritySchemaModel | undefined;
+  getSecuritySchemaOrThrow(name: string): SecuritySchemaModel;
   setSecuritySchemaModel(name: string, model: SecuritySchemaModel): void;
   setSecuritySchema(name: string, kind: SecuritySchemaModel['type']): SecuritySchemaModel;
   deleteSecuritySchema(name: string): void;
   clearSecuritySchemes(): void;
 
+  getLink(name: string): LinkModel | undefined;
+  getLinkOrThrow(name: string): LinkModel;
   setLinkModel(name: string, model: LinkModel): void;
   setLink(name: string): LinkModel;
   deleteLink(name: string): void;
   clearLinks(): void;
 
+  getCallback(name: string): CallbackModel | undefined;
+  getCallbackOrThrow(name: string): CallbackModel;
   setCallbackModel(name: string, model: CallbackModel): void;
   setCallback(name: string): CallbackModel;
   deleteCallback(name: string): void;
