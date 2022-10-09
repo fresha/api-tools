@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 import { ServerVariable } from './ServerVariable';
 
@@ -42,6 +44,16 @@ export class Server extends BasicNode<ServerModelParent> implements ServerModel 
 
   get variables(): ReadonlyMap<string, ServerVariableModel> {
     return this.mVariables;
+  }
+
+  getVariable(name: string): ServerVariableModel | undefined {
+    return this.variables.get(name);
+  }
+
+  getVariableOrThrow(name: string): ServerVariableModel {
+    const result = this.getVariable(name);
+    assert(result);
+    return result;
   }
 
   setVariableDefault(name: string, value: string): void {

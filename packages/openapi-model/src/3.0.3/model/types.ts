@@ -221,6 +221,8 @@ export interface ServerModel extends TreeNode<ServerModelParent>, SpecificationE
   description: Nullable<CommonMarkString>;
   readonly variables: ReadonlyMap<string, ServerVariableModel>;
 
+  getVariable(name: string): ServerVariableModel | undefined;
+  getVariableOrThrow(name: string): ServerVariableModel;
   setVariableDefault(name: string, value: string): void;
 }
 

@@ -24,6 +24,14 @@ describe('constructor', () => {
   });
 });
 
+test('getVariable + getVariableOrThrow', () => {
+  const server = new Server(openapi, 'https://www.example.com/{a}/{b}');
+  expect(server.getVariable('a')).not.toBeUndefined();
+  expect(server.getVariable('_')).toBeUndefined();
+  expect(server.getVariableOrThrow('b')).not.toBeUndefined();
+  expect(() => server.getVariableOrThrow('_')).toThrow();
+});
+
 test('changing server URL also updates variable map', () => {
   const server = new Server(openapi, 'https://www.{hostName}.com/{pathName}');
   server.variables.get('pathName')!.default = '/a/b/c';
