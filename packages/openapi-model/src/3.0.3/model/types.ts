@@ -512,6 +512,8 @@ export interface OperationModel
   deleteTagAt(index: number): void;
   clearTags(): void;
 
+  getParameter(name: string, source: ParameterLocation): ParameterModel | undefined;
+  getParameterOrThrow(name: string, source: ParameterLocation): ParameterModel;
   addParameter(name: string, source: 'path'): PathParameterModel;
   addParameter(name: string, source: 'query'): QueryParameterModel;
   addParameter(name: string, source: 'header'): HeaderParameterModel;
@@ -522,10 +524,14 @@ export interface OperationModel
   setDefaultResponse(description: CommonMarkString): ResponseModel;
   deleteDefaultResponse(): void;
 
+  getResponse(code: HTTPStatusCode): ResponseModel | undefined;
+  getResponseOrThrow(code: HTTPStatusCode): ResponseModel;
   setResponse(code: HTTPStatusCode, description: CommonMarkString): ResponseModel;
   deleteResponse(code: HTTPStatusCode): void;
   clearResponses(): void;
 
+  getCallback(name: string): CallbackModel | undefined;
+  getCallbackOrThrow(name: string): CallbackModel;
   setCallback(key: string): CallbackModel;
   deleteCallback(key: string): void;
   clearCallbacks(): void;
@@ -534,6 +540,8 @@ export interface OperationModel
   deleteSecurityRequirementAt(index: number): void;
   clearSecurityRequirements(): void;
 
+  getServer(url: ParametrisedURLString): ServerModel | undefined;
+  getServerOrThrow(url: ParametrisedURLString): ServerModel;
   addServer(url: string): ServerModel;
   deleteServer(url: string): void;
   deleteServerAt(index: number): void;
