@@ -426,6 +426,8 @@ export interface RequestBodyModel
   readonly content: ReadonlyMap<MIMETypeString, MediaTypeModel>;
   required: boolean;
 
+  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
+  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
   setContent(mimeType: MIMETypeString): MediaTypeModel;
   deleteContent(mimeType: MIMETypeString): void;
   clearContent(): void;
