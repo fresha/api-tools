@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 
 import type { SecurityRequirementModel, SecurityRequirementModelParent } from './types';
@@ -14,6 +16,16 @@ export class SecurityRequirement
   constructor(parent: SecurityRequirementModelParent) {
     super(parent);
     this.scopes = new Map<string, string[]>();
+  }
+
+  getScopes(schemeName: string): string[] | undefined {
+    return this.scopes.get(schemeName);
+  }
+
+  getScopesOrThrow(schemeName: string): string[] {
+    const result = this.getScopes(schemeName);
+    assert(result);
+    return result;
   }
 
   addScopes(schemeName: string, ...scopes: string[]): void {
