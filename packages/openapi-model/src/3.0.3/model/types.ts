@@ -479,6 +479,8 @@ export interface ResponsesModel
   setDefaultResponse(description: CommonMarkString): ResponseModel;
   deleteDefaultResponse(): void;
 
+  getResponse(code: HTTPStatusCode): ResponseModel | undefined;
+  getResponseOrThrow(code: HTTPStatusCode): ResponseModel;
   setResponse(code: HTTPStatusCode, description: CommonMarkString): ResponseModel;
   deleteResponse(code: HTTPStatusCode): void;
   clearResponses(): void;

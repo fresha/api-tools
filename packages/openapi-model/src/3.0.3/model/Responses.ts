@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from './BasicNode';
 import { Response } from './Response';
 
@@ -27,10 +29,18 @@ export class Responses extends BasicNode<ResponsesModelParent> implements Respon
     this.default = null;
   }
 
+  getResponse(code: HTTPStatusCode): ResponseModel | undefined {
+    return this.codes.get(code);
+  }
+
+  getResponseOrThrow(code: HTTPStatusCode): ResponseModel {
+    const result = this.getResponse(code);
+    assert(result);
+    return result;
+  }
+
   setResponse(code: HTTPStatusCode, description: CommonMarkString): ResponseModel {
-    if (this.codes.has(code)) {
-      throw new Error(`Duplicate response for code ${code}`);
-    }
+    assert(!this.codes.has(code), `Duplicate response for code ${code}`);
     const response = new Response(this, description);
     this.codes.set(code, response);
     return response;
