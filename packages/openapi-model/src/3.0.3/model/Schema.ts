@@ -184,6 +184,16 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.deprecated = false;
   }
 
+  getProperty(name: string): SchemaModel | undefined {
+    return this.properties.get(name);
+  }
+
+  getPropertyOrThrow(name: string): SchemaModel {
+    const result = this.getProperty(name);
+    assert(result);
+    return result;
+  }
+
   setProperty(name: string, params: SchemaCreateOptions): SchemaModel {
     const propertySchema = Schema.internalCreate(this, params);
     this.properties.set(name, propertySchema);
