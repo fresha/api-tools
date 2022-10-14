@@ -1,6 +1,7 @@
 {
   "extends": "@fresha/typescript-config",
   "compilerOptions": {
+    "experimentalDecorators": true,
     "outDir": "./build",
     "rootDir": "./src"
   },
