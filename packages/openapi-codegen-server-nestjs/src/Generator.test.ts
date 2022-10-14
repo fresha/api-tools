@@ -7,6 +7,9 @@ import { Schema } from '@fresha/openapi-model/build/3.0.3/model/Schema';
 import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
+import { createLogger } from './utils/logging';
+
+const logger = createLogger(false);
 
 const buildInMemoryTSProject = (): Project => {
   const result = new Project({ useInMemoryFileSystem: true });
@@ -136,27 +139,46 @@ test('simple JSON:API schema', () => {
   const postResponseContent = postResponse.setContent('application/vnd.api+json');
   postResponseContent.schema = openapi.components.schemas.get('JSONAPIDataDocument')!;
 
-  const generator = new Generator(openapi, tsProject, {
-    outputPath: '/tmp',
-    nestApp: 'web',
-    useJsonApi: true,
-    verbose: false,
-    dryRun: true,
-  });
+  const generator = new Generator(
+    openapi,
+    tsProject,
+    {
+      outputPath: '/tmp',
+      nestApp: 'web',
+      useJsonApi: true,
+      dryRun: true,
+    },
+    logger,
+  );
 
-  generator.run();
+  generator.collectData();
+  generator.generateCode();
 
   const dtoFile = tsProject.getSourceFileOrThrow('/tmp/dto/CreateEntityResponse.dto.ts');
 
-  expect(dtoFile).toHaveFormattedText(`import { ValidateNested, IsArray } from "class-validator";
+  expect(dtoFile).toHaveFormattedText(`
+    import { Expose, Type } from 'class-transformer';
+    import { IsString, ValidateNested, IsArray } from 'class-validator';
 
     export class CreateEntityResponse {
+      @Expose()
+      @Type(() => CreateEntityResponseJsonapi)
       @ValidateNested()
-      jsonapi?: object;
+      jsonapi?: CreateEntityResponseJsonapi;
+
+      @Expose()
       @ValidateNested()
       data: unknown;
+
+      @Expose()
       @IsArray()
       included?: object[];
+    }
+
+    export class CreateEntityResponseJsonapi {
+      @Expose()
+      @IsString()
+      version: string;
     }
   `);
 });

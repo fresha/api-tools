@@ -5,6 +5,7 @@ import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
 import { getNestJSSubAppPath } from './utils';
+import { createLogger } from './utils/logging';
 
 import type { Argv, ArgumentsCamelCase } from 'yargs';
 
@@ -20,17 +21,15 @@ type Params = {
   verbose?: boolean;
 };
 
-export const parser = (yarg: Argv): Argv<Params> => {
+export const builder = (yarg: Argv): Argv<Params> => {
   return yarg
-    .string('i')
-    .alias('i', 'input')
-    .describe('i', 'Input schema')
-    .demandOption('i')
+    .string('input')
+    .alias('input', 'i')
+    .describe('input', 'Input schema')
     .demandOption('input')
-    .string('o')
-    .alias('o', 'output')
-    .describe('o', 'Output directory (NestJS package root)')
-    .demandOption('o')
+    .string('output')
+    .alias('output', 'o')
+    .describe('output', 'Output directory (NestJS package root)')
     .demandOption('output')
     .string('nest-app')
     .describe('nest-app', 'Create files inside given NestJS application name')
@@ -50,13 +49,20 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     tsConfigFilePath: path.join(args.output, 'tsconfig.json'),
   });
 
-  const generator = new Generator(openapi, tsProject, {
-    outputPath: getNestJSSubAppPath(args.output, args.nestApp),
-    nestApp: args.nestApp ?? 'app',
-    useJsonApi: !!args.jsonApi,
-    verbose: !!args.verbose,
-    dryRun: !!args.dryRun,
-  });
+  const logger = createLogger(!!args.verbose);
 
-  generator.run();
+  const generator = new Generator(
+    openapi,
+    tsProject,
+    {
+      outputPath: getNestJSSubAppPath(args.output, args.nestApp),
+      nestApp: args.nestApp ?? 'app',
+      useJsonApi: !!args.jsonApi,
+      dryRun: !!args.dryRun,
+    },
+    logger,
+  );
+
+  generator.collectData();
+  generator.generateCode();
 };

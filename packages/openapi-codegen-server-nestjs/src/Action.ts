@@ -6,6 +6,7 @@ import { ActionParam } from './ActionParam';
 import { addCommonNestImports, addDecorator, addNamedImport, camelCase, upperFirst } from './utils';
 
 import type { Controller } from './Controller';
+import type { Logger } from './utils/logging';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
@@ -21,6 +22,7 @@ export class Action {
   private readonly methodName: string;
   private readonly params: ActionParam[];
   private readonly returnSchema: Nullable<SchemaModel>; // OpenAPI schema
+  private readonly logger: Logger;
   private urlSuffix: string | null;
 
   constructor(
@@ -28,20 +30,29 @@ export class Action {
     pathUrl: string,
     httpMethod: string,
     operation: OperationModel,
+    logger: Logger,
   ) {
     this.controller = controller;
     this.pathUrl = pathUrl;
     this.httpMethod = httpMethod;
     this.methodName = operation.operationId ?? pathUrl;
-    this.params = Array.from(operation.parameters, param => new ActionParam(this, param));
+    this.logger = logger;
+    this.params = Array.from(
+      operation.parameters,
+      param => new ActionParam(this, param, this.logger),
+    );
 
     if (operation.requestBody) {
       this.params.push(
-        new ActionParam(this, {
-          in: 'body',
-          name: 'body',
-          schema: operation.requestBody?.content.get(jsonApiMediaType)?.schema ?? null,
-        }),
+        new ActionParam(
+          this,
+          {
+            in: 'body',
+            name: 'body',
+            schema: operation.requestBody?.content.get(jsonApiMediaType)?.schema ?? null,
+          },
+          this.logger,
+        ),
       );
     }
 
@@ -66,6 +77,8 @@ export class Action {
   }
 
   generateCode(classDecl: ClassDeclaration): void {
+    this.logger.info(`Generating code for action ${this.methodName}`);
+
     const methodDecoratorName = upperFirst(this.httpMethod);
     addCommonNestImports(classDecl, methodDecoratorName, 'HttpException');
 

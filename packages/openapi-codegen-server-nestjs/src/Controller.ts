@@ -11,6 +11,7 @@ import {
 } from './utils';
 
 import type { Generator } from './Generator';
+import type { Logger } from './utils/logging';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 import type { SourceFile } from 'ts-morph';
 
@@ -43,8 +44,9 @@ export class Controller {
   protected readonly tsSourceFile: SourceFile;
   protected readonly actions: Action[];
   protected urlPrefix: string | null;
+  protected readonly logger: Logger;
 
-  constructor(generator: Generator, outputPath: string, className: string) {
+  constructor(generator: Generator, outputPath: string, className: string, logger: Logger) {
     this.generator = generator;
     this.outputPath = outputPath;
     this.className = className;
@@ -53,6 +55,7 @@ export class Controller {
     });
     this.actions = [];
     this.urlPrefix = null;
+    this.logger = logger;
   }
 
   relativeModulePath(filePath: string): string {
@@ -64,7 +67,7 @@ export class Controller {
 
   processPathItem(pathUrl: string, pathItem: PathItemModel): void {
     for (const [methodName, operation] of pathItem.operations()) {
-      this.actions.push(new Action(this, pathUrl, methodName, operation));
+      this.actions.push(new Action(this, pathUrl, methodName, operation, this.logger));
     }
     this.urlPrefix = null;
   }
@@ -77,6 +80,8 @@ export class Controller {
   }
 
   generateCode(): void {
+    this.logger.info(`Generating controller code for ${this.outputPath}`);
+
     addCommonNestImports(this.tsSourceFile, 'Controller');
 
     const classDecl = this.tsSourceFile.addClass({

@@ -3,6 +3,7 @@ import assert from 'assert';
 import { addCommonNestImports, addDecorator, addNamedImport } from './utils';
 
 import type { Action } from './Action';
+import type { Logger } from './utils/logging';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import type { MethodDeclaration } from 'ts-morph';
@@ -15,6 +16,7 @@ export class ActionParam {
   readonly from: 'body' | 'path' | 'query'; // parameter source
   readonly name: string; // parameter (method argument) name
   private readonly schema: Nullable<SchemaModel>; // OpenAPI schema
+  protected readonly logger: Logger;
 
   constructor(
     action: Action,
@@ -23,6 +25,7 @@ export class ActionParam {
       name: string;
       schema: Nullable<SchemaModel>;
     },
+    logger: Logger,
   ) {
     assert(param.in === 'path' || param.in === 'query' || param.in === 'body');
 
@@ -30,6 +33,7 @@ export class ActionParam {
     this.from = param.in;
     this.name = param.name;
     this.schema = param.schema;
+    this.logger = logger;
   }
 
   generateCode(methodDecl: MethodDeclaration): void {
@@ -71,8 +75,12 @@ export class ActionParam {
           paramType = 'number';
           validatorName = 'ParseFloatPipe';
           break;
+        case 'string':
+          break;
         default:
-          assert.fail(`Unsupported schema type ${this.schema.type}`);
+          if (this.from !== 'body') {
+            assert.fail(`Unsupported schema type ${this.schema.type}`);
+          }
       }
     }
 

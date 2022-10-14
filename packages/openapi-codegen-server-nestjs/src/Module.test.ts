@@ -3,12 +3,15 @@ import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
 import { Module } from './Module';
+import { createLogger } from './utils/logging';
 
 import type { Controller } from './Controller';
 
 import '@fresha/jest-config/build/types';
 
 let fakeGenerator: Generator | null = null;
+
+const logger = createLogger(false);
 
 beforeEach(() => {
   const openapi = OpenAPIFactory.create();
@@ -37,12 +40,12 @@ beforeEach(() => {
 });
 
 test('construction', () => {
-  const module = new Module(fakeGenerator!);
+  const module = new Module(fakeGenerator!, logger);
   expect(module.outputPath).toBe('/tmp/web.module.ts');
 });
 
 test('adds controller imports', () => {
-  const module = new Module(fakeGenerator!);
+  const module = new Module(fakeGenerator!, logger);
 
   module.processController({ outputPath: '/tmp/web2.controller', className: 'WebX' } as Controller);
   module.processController({ outputPath: '/tmp/abcd.controller', className: 'WebZ' } as Controller);
