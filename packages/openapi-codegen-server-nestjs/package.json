@@ -65,6 +65,9 @@
     "@types/lodash.get": "^4.4.7",
     "@types/lodash.kebabcase": "^4.1.7",
     "@types/lodash.startcase": "^4.4.7",
-    "@types/yargs": "^17.0.12"
+    "@types/yargs": "^17.0.12",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.13.2",
+    "reflect-metadata": "^0.1.13"
   }
 }
