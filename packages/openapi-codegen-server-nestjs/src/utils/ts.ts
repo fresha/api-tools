@@ -6,6 +6,7 @@ import {
   Node,
   ImportSpecifier,
   Decorator,
+  CodeBlockWriter,
 } from 'ts-morph';
 
 export const addNamedImport = (
@@ -43,10 +44,17 @@ export const addClassValidatorImports = (node: Node, ...importedNames: string[])
   }
 };
 
+export const addClassTransformerImports = (node: Node, ...importedNames: string[]): void => {
+  const sourceFile = node.getSourceFile();
+  for (const name of importedNames) {
+    addNamedImport(sourceFile, 'class-transformer', name);
+  }
+};
+
 export const addDecorator = (
   nodeToAdd: DecoratableNode,
   name: string,
-  ...args: (string | number | boolean | undefined)[]
+  ...args: (string | number | boolean | undefined | ((writer: CodeBlockWriter) => void))[]
 ): Decorator => {
   const decorator = nodeToAdd.addDecorator({ name });
   if (args.length) {
@@ -62,6 +70,8 @@ export const addDecorator = (
         decorator.addArgument(printNode(ts.factory.createStringLiteral(arg, true)));
       } else if (typeof arg === 'number') {
         decorator.addArgument(printNode(ts.factory.createNumericLiteral(arg)));
+      } else if (typeof arg === 'function') {
+        decorator.addArgument(arg);
       }
     }
   }
