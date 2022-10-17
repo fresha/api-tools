@@ -24,7 +24,12 @@
     "LICENSE",
     "README.md"
   ],
-  "keywords": ["OpenAPI", "code generator", "TypeScript", "Fresha"],
+  "keywords": [
+    "OpenAPI",
+    "code generator",
+    "TypeScript",
+    "Fresha"
+  ],
   "author": "Fresha Engineering",
   "contributors": [
     {
@@ -42,8 +47,10 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@fresha/api-tools-core": "^0.2.1",
     "@fresha/openapi-model": "0.3.0",
-    "ts-morph": "^16.0.0"
+    "ts-morph": "^16.0.0",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
     "@fresha/eslint-config": "0.1.0",
