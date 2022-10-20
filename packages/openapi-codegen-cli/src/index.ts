@@ -1,7 +1,7 @@
+import * as elixirCodegenCommand from '@fresha/openapi-codegen-server-elixir/build/command';
+import * as fetchClientCommand from '@fresha/openapi-codegen-client-fetch/build/command';
 import * as freshaClientCommand from '@fresha/openapi-codegen-client-fresha/build/command';
-import { register as registerClientCodegen } from '@fresha/openapi-codegen-client-fetch';
-import { register as registerElixirCodegen } from '@fresha/openapi-codegen-server-elixir';
-import * as nestJsCommand from '@fresha/openapi-codegen-server-nestjs/build/command';
+import * as nestJsServerCommand from '@fresha/openapi-codegen-server-nestjs/build/command';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -12,10 +12,9 @@ const argv = yargs(hideBin(process.argv))
   .usage('Usage: $0 GENERATOR_NAME [OPTIONS]')
   .demandCommand(1, 'Please specify generator name');
 
-argv.command(nestJsCommand);
 argv.command(freshaClientCommand);
-
-registerClientCodegen(argv);
-registerElixirCodegen(argv);
+argv.command(fetchClientCommand);
+argv.command(nestJsServerCommand);
+argv.command(elixirCodegenCommand);
 
 argv.parseSync();
