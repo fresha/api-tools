@@ -1,5 +1,5 @@
 import * as freshaClientCommand from '@fresha/openapi-codegen-client-fresha/build/command';
-import { register as registerClientCodegen } from '@fresha/openapi-codegen-client-typescript';
+import { register as registerClientCodegen } from '@fresha/openapi-codegen-client-fetch';
 import { register as registerElixirCodegen } from '@fresha/openapi-codegen-server-elixir';
 import * as nestJsCommand from '@fresha/openapi-codegen-server-nestjs/build/command';
 import yargs from 'yargs';

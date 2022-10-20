@@ -1,11 +1,11 @@
-# @fresha/openapi-codegen
+# @fresha/openapi-codegen-cli
 
 The code generator CLI for RESTful APIs.
 
 ## Installation
 
 ```bash
-$ npm install @fresha/openapi-codegen
+$ npm install @fresha/openapi-codegen-cli
 ```
 
 ## Usage
@@ -34,7 +34,7 @@ Options:
 As an example, we'll use NestJS generator. For more details, please see its documentation.
 
 ```bash
-$ npx fresha-openapi-codegen \
+$ npx fresha-openapi-codegen server-nestjs \
   --input ~/Developer/openapi/schema.yaml \
   --output ~/Developer/nestjs-project
   --nest-app web
