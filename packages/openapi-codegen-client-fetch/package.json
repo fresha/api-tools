@@ -1,7 +1,7 @@
 {
-  "name": "@fresha/openapi-codegen-client-typescript",
+  "name": "@fresha/openapi-codegen-client-fetch",
   "version": "0.1.0",
-  "description": "OpenAPI code generation for TypeScript clients",
+  "description": "OpenAPI code generation for Fetch API clients",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
@@ -24,7 +24,7 @@
     "LICENSE",
     "README.md"
   ],
-  "keywords": ["OpenAPI", "code generator", "TypeScript"],
+  "keywords": ["OpenAPI", "code generator", "Fetch API", "TypeScript"],
   "author": "Fresha Engineering",
   "contributors": [
     {

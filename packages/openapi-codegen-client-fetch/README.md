@@ -1,6 +1,6 @@
-# @fresha/openapi-codegen-client-typescript
+# @fresha/openapi-codegen-client-fetch
 
-OpenAPI code generator for TypeScript clients.
+OpenAPI code generator for TypeScript clients using Fetch API.
 
 ## Installation
 
@@ -15,16 +15,15 @@ $ npm install @fresha/openapi-codegen
 ### Listing available options
 
 ```bash
-npx fresha-openapi-codegen client-typescript --help
+npx fresha-openapi-codegen client-fetch --help
 ```
 
 ### Generating source code
 
 ```bash
-npx fresha-openapi-codegen client-typescript \
+npx fresha-openapi-codegen client-fetch \
   --input PATH_TO_OPENAPI_SCHEMA_FILE
-  --output ROOT_DIR_OF_NESTJS_PROJECT
-  --nest-app NAME_OF_NESTJS_SUBAPP
+  --output ROOT_DIR_NPM_PROJECT
   --json-api
 ```
 
