@@ -1,6 +1,6 @@
-import * as elixirCodegenCommand from '@fresha/openapi-codegen-server-elixir/build/command';
 import * as fetchClientCommand from '@fresha/openapi-codegen-client-fetch/build/command';
 import * as freshaClientCommand from '@fresha/openapi-codegen-client-fresha/build/command';
+import * as elixirCodegenCommand from '@fresha/openapi-codegen-server-elixir/build/command';
 import * as nestJsServerCommand from '@fresha/openapi-codegen-server-nestjs/build/command';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
