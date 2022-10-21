@@ -1,10 +1,8 @@
 {
-  "name": "@fresha/openapi-codegen-cli",
-  "version": "0.1.3",
-  "description": "CLI for OpenAPI code generators",
-  "bin": {
-    "fresha-openapi-codegen": "./bin/fresha-openapi-codegen.js"
-  },
+  "name": "@fresha/openapi-codegen-server-mock",
+  "version": "0.1.0",
+  "description": "OpenAPI code generation for mock API servers",
+  "main": "build/index.js",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -26,10 +24,7 @@
     "LICENSE",
     "README.md"
   ],
-  "keywords": [
-    "OpenAPI",
-    "code generator"
-  ],
+  "keywords": ["OpenAPI", "code generator", "mock server"],
   "author": "Fresha Engineering",
   "contributors": [
     {
@@ -46,19 +41,13 @@
     }
   ],
   "license": "MIT",
+  "dependencies": {
+    "@fresha/openapi-model": "0.3.0"
+  },
   "devDependencies": {
     "@fresha/eslint-config": "0.1.0",
     "@fresha/jest-config": "0.1.0",
     "@fresha/typescript-config": "0.1.0",
-    "@types/yargs": "^17.0.12",
     "typescript": "^4.7.2"
-  },
-  "dependencies": {
-    "@fresha/openapi-codegen-client-fresha": "^0.1.0",
-    "@fresha/openapi-codegen-client-fetch": "^0.1.0",
-    "@fresha/openapi-codegen-server-mock": "^0.1.0",
-    "@fresha/openapi-codegen-server-nestjs": "^0.1.0",
-    "@fresha/openapi-codegen-server-elixir": "^0.1.0",
-    "yargs": "^17.5.1"
   }
 }
