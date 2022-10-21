@@ -39,6 +39,7 @@ jobs:
           0
       - run: npm run -w @fresha/openapi-codegen-client-fetch --if-present build && exit
           0
+      - run: npm run -w @fresha/openapi-codegen-server-mock --if-present build && exit 0
       - run: npm run -w @fresha/openapi-codegen-server-nestjs --if-present build && exit
           0
       - run: npm run -w @fresha/openapi-codegen-server-elixir --if-present build && exit
