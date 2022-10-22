@@ -1,12 +1,18 @@
 import assert from 'assert';
 
+import {
+  Logger,
+  camelCase,
+  titleCase,
+  addImportDeclarations,
+  addImportDeclaration,
+  addDecorator,
+} from '@fresha/openapi-codegen-utils';
 import { ClassDeclaration, Scope } from 'ts-morph';
 
 import { ActionParam } from './ActionParam';
-import { addCommonNestImports, addDecorator, addNamedImport, camelCase, upperFirst } from './utils';
 
 import type { Controller } from './Controller';
-import type { Logger } from './utils/logging';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
@@ -79,15 +85,15 @@ export class Action {
   generateCode(classDecl: ClassDeclaration): void {
     this.logger.info(`Generating code for action ${this.methodName}`);
 
-    const methodDecoratorName = upperFirst(this.httpMethod);
-    addCommonNestImports(classDecl, methodDecoratorName, 'HttpException');
+    addImportDeclarations(classDecl.getSourceFile(), {
+      '@nestjs/common': [titleCase(this.httpMethod), 'HttpException'],
+      '@fresha/json-api': 'JSONAPI',
+    });
 
-    addNamedImport(classDecl.getSourceFile(), '@fresha/json-api', 'JSONAPI');
-
-    const returnTypeName = upperFirst(`${this.methodName}Response`);
+    const returnTypeName = titleCase(`${this.methodName}Response`);
 
     const dto = this.controller.generator.addDTO(returnTypeName, this.returnSchema);
-    addNamedImport(
+    addImportDeclaration(
       classDecl.getSourceFile(),
       this.controller.relativeModulePath(dto.outputPath),
       returnTypeName,
@@ -98,8 +104,8 @@ export class Action {
   }
 
   private generatePublicMethod(classDecl: ClassDeclaration): void {
-    const methodDecoratorName = upperFirst(this.httpMethod);
-    const returnTypeName = upperFirst(`${this.methodName}Response`);
+    const methodDecoratorName = titleCase(this.httpMethod);
+    const returnTypeName = titleCase(`${this.methodName}Response`);
     const handleActionName = camelCase(`handle-${this.methodName}`);
     const responseDtoName = 'Response';
 
@@ -183,7 +189,7 @@ export class Action {
   private generateHandlerMethod(classDecl: ClassDeclaration): void {
     const handlerFunc = classDecl.addMethod({
       name: camelCase(`handle-${this.methodName}`),
-      returnType: `Promise<${upperFirst(`${this.methodName}Response`)}>`,
+      returnType: `Promise<${titleCase(`${this.methodName}Response`)}>`,
       isAsync: true,
       scope: Scope.Private,
     });

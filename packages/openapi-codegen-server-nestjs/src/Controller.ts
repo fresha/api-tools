@@ -1,17 +1,18 @@
 import path from 'path';
 
-import { Action } from './Action';
 import {
-  addCommonNestImports,
   addDecorator,
   commonStringPrefix,
   kebabCase,
+  Logger,
   significantNameParts,
-  startCase,
-} from './utils';
+  titleCase,
+  addImportDeclaration,
+} from '@fresha/openapi-codegen-utils';
+
+import { Action } from './Action';
 
 import type { Generator } from './Generator';
-import type { Logger } from './utils/logging';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 import type { SourceFile } from 'ts-morph';
 
@@ -24,7 +25,7 @@ export class Controller {
    */
   static makeClassName(pathUrl: string): string {
     const nameParts = significantNameParts(pathUrl);
-    return startCase(nameParts.concat('Controller').join('-')).replace(/\s+/g, '');
+    return titleCase(nameParts.concat('Controller').join('-')).replace(/\s+/g, '');
   }
 
   /**
@@ -82,7 +83,7 @@ export class Controller {
   generateCode(): void {
     this.logger.info(`Generating controller code for ${this.outputPath}`);
 
-    addCommonNestImports(this.tsSourceFile, 'Controller');
+    addImportDeclaration(this.tsSourceFile, '@nestjs/common', 'Controller');
 
     const classDecl = this.tsSourceFile.addClass({
       name: this.className,

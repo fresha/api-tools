@@ -2,12 +2,12 @@ import assert from 'assert';
 
 import '@fresha/jest-config/build/types';
 
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Schema } from '@fresha/openapi-model/build/3.0.3/model/Schema';
 import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
-import { createLogger } from './utils/logging';
 
 const logger = createLogger(false);
 
@@ -157,7 +157,7 @@ test('simple JSON:API schema', () => {
   const dtoFile = tsProject.getSourceFileOrThrow('/tmp/dto/CreateEntityResponse.dto.ts');
 
   expect(dtoFile).toHaveFormattedText(`
-    import { Expose, Type } from 'class-transformer';
+    import { Type, Expose } from 'class-transformer';
     import { IsString, ValidateNested, IsArray } from 'class-validator';
 
     export class CreateEntityResponse {

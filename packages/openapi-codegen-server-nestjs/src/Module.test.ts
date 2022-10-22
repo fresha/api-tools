@@ -1,9 +1,9 @@
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
 import { Module } from './Module';
-import { createLogger } from './utils/logging';
 
 import type { Controller } from './Controller';
 

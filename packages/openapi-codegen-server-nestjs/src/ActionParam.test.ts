@@ -1,10 +1,10 @@
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 import { MethodDeclaration, Project } from 'ts-morph';
 
 import '@fresha/jest-config/build/types';
 
 import { ActionParam } from './ActionParam';
-import { createLogger } from './utils/logging';
 
 import type { Action } from './Action';
 

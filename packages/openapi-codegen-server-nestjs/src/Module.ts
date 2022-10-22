@@ -1,13 +1,11 @@
 import assert from 'assert';
 import path from 'path';
 
+import { addImportDeclaration, Logger } from '@fresha/openapi-codegen-utils';
 import { SourceFile, SyntaxKind } from 'ts-morph';
-
-import { addNamedImport } from './utils';
 
 import type { Controller } from './Controller';
 import type { Generator } from './Generator';
-import type { Logger } from './utils/logging';
 
 type ModuleName = string;
 type NamedImport = string;
@@ -50,8 +48,8 @@ export class Module {
       .asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
     assert(decoratorArgument);
 
-    addNamedImport(this.tsSourceFile, '@nestjs/core', 'APP_PIPE');
-    addNamedImport(this.tsSourceFile, '@nestjs/common', 'ValidationPipe');
+    addImportDeclaration(this.tsSourceFile, '@nestjs/core', 'APP_PIPE');
+    addImportDeclaration(this.tsSourceFile, '@nestjs/common', 'ValidationPipe');
     const providersProp = decoratorArgument
       .getPropertyOrThrow('providers')
       .asKindOrThrow(SyntaxKind.PropertyAssignment)
