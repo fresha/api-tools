@@ -1,9 +1,8 @@
 import assert from 'assert';
 
-import { addCommonNestImports, addDecorator, addNamedImport } from './utils';
+import { addDecorator, addImportDeclaration, Logger } from '@fresha/openapi-codegen-utils';
 
 import type { Action } from './Action';
-import type { Logger } from './utils/logging';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import type { MethodDeclaration } from 'ts-morph';
@@ -54,7 +53,7 @@ export class ActionParam {
         assert.fail(`Unsupported parameter source ${String(this.from)}`);
     }
 
-    addCommonNestImports(sourceFile, decoratorName);
+    addImportDeclaration(sourceFile, '@nestjs/common', decoratorName);
 
     let paramType = 'string';
     let validatorName: string | undefined;
@@ -85,7 +84,7 @@ export class ActionParam {
     }
 
     if (validatorName) {
-      addNamedImport(methodDecl.getSourceFile(), '@nestjs/common', validatorName);
+      addImportDeclaration(methodDecl.getSourceFile(), '@nestjs/common', validatorName);
     }
 
     const actionParam = methodDecl.addParameter({

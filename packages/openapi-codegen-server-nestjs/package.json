@@ -47,6 +47,8 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@fresha/api-tools-core": "^0.2.1",
+    "@fresha/openapi-codegen-utils": "^0.1.0",
     "@fresha/openapi-model": "0.3.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.get": "^4.4.2",

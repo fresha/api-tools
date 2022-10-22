@@ -14,7 +14,7 @@ test.each`
 
 test.each`
   pathUrl                     | fileName
-  ${'/api/v2'}                | ${'api-v-2.controller.ts'}
+  ${'/api/v2'}                | ${'api-v2.controller.ts'}
   ${'/track-codes/{id}/edit'} | ${'track-codes-edit.controller.ts'}
   ${'/'}                      | ${'controller.ts'}
 `(

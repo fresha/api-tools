@@ -5,8 +5,8 @@ import { Controller } from './Controller';
 import { DTO } from './DTO';
 import { Module } from './Module';
 
-import type { Logger } from './utils/logging';
 import type { Nullable } from '@fresha/api-tools-core';
+import type { Logger } from '@fresha/openapi-codegen-utils';
 import type { OpenAPIModel, PathItemModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import type { Project } from 'ts-morph';
 

@@ -2,14 +2,13 @@ import assert from 'assert';
 import path from 'path';
 
 import {
-  addClassTransformerImports,
-  addClassValidatorImports,
   addDecorator,
-  startCase,
-} from './utils';
+  addImportDeclaration,
+  Logger,
+  titleCase,
+} from '@fresha/openapi-codegen-utils';
 
 import type { Generator } from './Generator';
-import type { Logger } from './utils/logging';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import type { ClassDeclaration, CodeBlockWriter, SourceFile } from 'ts-morph';
@@ -88,11 +87,11 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addClassTransformerImports(this.tsSourceFile, 'Expose');
+    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
 
     if (propSchema.allOf?.length || propSchema.oneOf?.length || propSchema.anyOf?.length) {
-      addClassValidatorImports(this.tsSourceFile, 'ValidateNested');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'ValidateNested');
       addDecorator(propDef, 'ValidateNested', undefined);
     }
   }
@@ -111,9 +110,9 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addClassTransformerImports(this.tsSourceFile, 'Expose');
+    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
-    addClassValidatorImports(this.tsSourceFile, 'IsBoolean');
+    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsBoolean');
     addDecorator(propDef, 'IsBoolean', undefined);
   }
 
@@ -131,25 +130,25 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addClassTransformerImports(this.tsSourceFile, 'Expose');
+    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
     if (propSchema.minimum != null) {
-      addClassValidatorImports(this.tsSourceFile, 'Min');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Min');
       addDecorator(propDef, 'Min', propSchema.minimum);
     }
     if (propSchema.exclusiveMinimum != null) {
-      addClassValidatorImports(this.tsSourceFile, 'Min');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Min');
       addDecorator(propDef, 'Min', propSchema.exclusiveMinimum);
     }
     if (propSchema.maximum != null) {
-      addClassValidatorImports(this.tsSourceFile, 'Max');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Max');
       addDecorator(propDef, 'Max', propSchema.maximum);
     }
     if (propSchema.exclusiveMaximum != null) {
-      addClassValidatorImports(this.tsSourceFile, 'Max');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Max');
       addDecorator(propDef, 'Max', propSchema.exclusiveMaximum);
     }
-    addClassValidatorImports(this.tsSourceFile, 'IsInt');
+    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsInt');
     addDecorator(propDef, 'IsInt', undefined);
   }
 
@@ -167,17 +166,17 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addClassTransformerImports(this.tsSourceFile, 'Expose');
+    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
     if (propSchema.minLength) {
-      addClassValidatorImports(this.tsSourceFile, 'MinLength');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'MinLength');
       addDecorator(propDef, 'MinLength', propSchema.minLength);
     }
     if (propSchema.maxLength) {
-      addClassValidatorImports(this.tsSourceFile, 'MaxLength');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'MaxLength');
       addDecorator(propDef, 'MaxLength', propSchema.maxLength);
     }
-    addClassValidatorImports(this.tsSourceFile, 'IsString');
+    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsString');
     addDecorator(propDef, 'IsString', undefined);
   }
 
@@ -187,7 +186,7 @@ export class DTO {
     propName: string,
     propSchema: SchemaModel,
   ): void {
-    const propClassName = startCase(`${classDecl.getName() ?? ''}-${propName}`).replace(/\s+/g, '');
+    const propClassName = titleCase(`${classDecl.getName() ?? ''}-${propName}`).replace(/\s+/g, '');
 
     this.addClassDecl(propClassName, propSchema);
 
@@ -199,7 +198,8 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addClassTransformerImports(this.tsSourceFile, 'Expose', 'Type');
+    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
+    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Type');
     addDecorator(propDef, 'Expose', undefined);
     addDecorator(propDef, 'Type', (writer: CodeBlockWriter) =>
       writer.write(`() => ${propClassName}`),
@@ -244,17 +244,17 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addClassTransformerImports(this.tsSourceFile, 'Expose');
+    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
     if (propSchema.minItems != null) {
-      addClassValidatorImports(this.tsSourceFile, 'ArrayMinSize');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'ArrayMinSize');
       addDecorator(propDef, 'ArrayMinSize', propSchema.minItems);
     }
     if (propSchema.maxItems != null) {
-      addClassValidatorImports(this.tsSourceFile, 'ArrayMaxSize');
+      addImportDeclaration(this.tsSourceFile, 'class-validator', 'ArrayMaxSize');
       addDecorator(propDef, 'ArrayMaxSize', propSchema.maxItems);
     }
-    addClassValidatorImports(this.tsSourceFile, 'IsArray');
+    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsArray');
     addDecorator(propDef, 'IsArray', undefined);
   }
 }

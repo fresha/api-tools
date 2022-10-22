@@ -1,3 +1,4 @@
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
@@ -5,7 +6,6 @@ import '@fresha/jest-config';
 
 import { DTO } from './DTO';
 import { Generator } from './Generator';
-import { createLogger } from './utils/logging';
 
 const logger = createLogger(false);
 
@@ -109,7 +109,7 @@ describe('serialization', () => {
 
     expect(tsProject.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
       `import { Expose } from 'class-transformer';
-      import { Min, IsInt, Max } from 'class-validator';
+      import { Min, Max, IsInt } from 'class-validator';
 
       export class Response {
         @Expose()
@@ -148,7 +148,7 @@ describe('serialization', () => {
 
     expect(tsProject.getSourceFileOrThrow('/var/dto/Response2.dto.ts')).toHaveFormattedText(
       `import { Expose } from 'class-transformer';
-      import { MinLength, IsString, MaxLength } from 'class-validator';
+      import { MinLength, MaxLength, IsString } from 'class-validator';
 
       export class Response2 {
         @Expose()
@@ -201,7 +201,7 @@ describe('serialization', () => {
 
     expect(tsProject.getSourceFileOrThrow('/var/dto/Employee.dto.ts')).toHaveFormattedText(`
       import { Expose, Type } from 'class-transformer';
-      import { IsString, IsInt, IsBoolean } from 'class-validator';
+      import { IsInt, IsBoolean, IsString } from 'class-validator';
 
       export class Employee {
         @Expose()
