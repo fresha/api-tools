@@ -1,2 +1,1 @@
-export { ActionsSignatures } from './ActionsSignatures';
-export { APIConfig } from './APIConfig';
+export { Generator } from './Generator';

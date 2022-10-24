@@ -3,7 +3,8 @@ import path from 'path';
 import { getAPIName, Logger } from '@fresha/openapi-codegen-utils';
 import { Project, SourceFile } from 'ts-morph';
 
-import { APIConfig, ActionsSignatures } from './parts';
+import { ActionsSignatures } from './ActionsSignatures';
+import { APIConfig } from './APIConfig';
 
 import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
