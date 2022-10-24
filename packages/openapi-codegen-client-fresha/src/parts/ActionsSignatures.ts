@@ -1,21 +1,20 @@
 import assert from 'assert';
 
 import { camelCase } from '@fresha/api-tools-core';
-
-import { getOperationEntryKeyOrThrow, getOperationIdOrThrow } from '../utils/openapi';
-import { addTypeAlias, addVariableStatement } from '../utils/tsMorph';
+import {
+  addConstant,
+  addTypeLiteralAlias,
+  getOperationEntryKeyOrThrow,
+  getOperationIdOrThrow,
+  Logger,
+  titleCase,
+} from '@fresha/openapi-codegen-utils';
 
 import { ActionSignature } from './ActionSignature';
 import { findOperationTemplate } from './operations';
 
 import type { Generator } from '../Generator';
-import type { Logger } from '../utils/logging';
 import type { SourceFile } from 'ts-morph';
-
-const titleCase = (str: string): string => {
-  const res = camelCase(str);
-  return res[0].toUpperCase() + res.slice(1);
-};
 
 export class ActionsSignatures {
   readonly parent: Generator;
@@ -52,14 +51,14 @@ export class ActionsSignatures {
   generateCode(): void {
     this.logger.info(`Generating actions shape type, ${this.name}`);
 
-    const returnTypeObj = addTypeAlias(this.tsSourceFile, this.name, '{}', true);
+    const returnTypeObj = addTypeLiteralAlias(this.tsSourceFile, this.name, true);
     for (const action of this.actions.values()) {
       action.generateCode(returnTypeObj);
     }
 
-    addVariableStatement(
+    addConstant(
       this.tsSourceFile,
-      `!${camelCase(this.parent.apiName)}`,
+      camelCase(this.parent.apiName),
       `boundActions(store, configuredApi) as ${this.name}`,
     );
   }
