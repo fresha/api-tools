@@ -1,11 +1,6 @@
 import assert from 'assert';
 
-import {
-  addFunctionTypeProperty,
-  addTypeAlias,
-  getOperationEntryKeyOrThrow,
-  Logger,
-} from '@fresha/openapi-codegen-utils';
+import { addFunctionTypeProperty, addTypeAlias, Logger } from '@fresha/openapi-codegen-utils';
 import { OperationModel } from '@fresha/openapi-model/build/3.0.3';
 import { FunctionTypeNode, StructureKind, SyntaxKind, TypeLiteralNode } from 'ts-morph';
 
@@ -19,12 +14,17 @@ export class ActionSignature {
   readonly template: OperationTemplate;
   readonly name: string;
 
-  constructor(parent: ActionsSignatures, operation: OperationModel, template: OperationTemplate) {
+  constructor(
+    parent: ActionsSignatures,
+    name: string,
+    operation: OperationModel,
+    template: OperationTemplate,
+  ) {
     this.parent = parent;
     this.logger = this.parent.logger;
     this.operation = operation;
     this.template = template;
-    this.name = this.template.actionName(getOperationEntryKeyOrThrow(this.operation));
+    this.name = name;
   }
 
   generateCode(type: TypeLiteralNode): void {
