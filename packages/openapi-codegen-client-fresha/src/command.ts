@@ -1,10 +1,10 @@
 import path from 'path';
 
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
-import { createLogger } from './utils/logging';
 
 import type { Argv, ArgumentsCamelCase } from 'yargs';
 

@@ -48,6 +48,7 @@
   "license": "MIT",
   "dependencies": {
     "@fresha/api-tools-core": "^0.2.1",
+    "@fresha/openapi-codegen-utils": "^0.1.0",
     "@fresha/openapi-model": "0.3.0",
     "ts-morph": "^16.0.0",
     "winston": "^3.8.2"

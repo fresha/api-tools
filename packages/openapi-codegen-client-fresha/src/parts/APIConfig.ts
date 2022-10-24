@@ -1,25 +1,23 @@
 import { camelCase } from '@fresha/api-tools-core';
-import { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
-import { Expression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
-
-import { Logger } from '../utils/logging';
 import {
+  addConstant,
+  addFunction,
+  addImportDeclarations,
+  addObjectLiteralArrayProperty,
+  addObjectLiteralObjectProperty,
+  addObjectLiteralProperties,
+  addObjectLiteralProperty,
   getOperationEntryKeyOrThrow,
   getOperationIdOrThrow,
   getRootUrlOrThrow,
-} from '../utils/openapi';
-import {
-  addArrayProperty,
-  addImportDeclarations,
-  addObjectProperty,
-  addProperties,
-  addProperty,
-  addVariableStatements,
-} from '../utils/tsMorph';
+  Logger,
+} from '@fresha/openapi-codegen-utils';
+import { Expression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
 import { APIOperationTemplateName, findOperationTemplate } from './operations';
 
 import type { Generator } from '../Generator';
+import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 
 type APIOperationConfig =
   | APIOperationTemplateName
@@ -129,8 +127,8 @@ export class APIConfig {
     );
 
     addImportDeclarations(this.tsSourceFile, {
-      '!@fresha/connector-utils/build/types/api': ['APIEnvironmentOptions'],
-      '@fresha/redux-store': ['!store'],
+      '@fresha/connector-utils/build/types/api': ['APIEnvironmentOptions'],
+      '@fresha/redux-store': ['.:store'],
       '@fresha/connector-utils/build/apiConfig': ['configureApi'],
       '@fresha/connector-utils/build/boundActions': ['boundActions'],
       '@fresha/connector-utils/build/env': ['env'],
@@ -138,19 +136,18 @@ export class APIConfig {
 
     this.generateMakeApiConfig();
 
-    addVariableStatements(this.tsSourceFile, {
-      apiConfig: 'makeApiConfig(env)',
-      configuredApi: `configureApi([apiConfig], '${this.parent.apiName}')`,
-    });
+    addConstant(this.tsSourceFile, 'apiConfig', 'makeApiConfig(env)');
+    addConstant(
+      this.tsSourceFile,
+      'configuredApi',
+      `configureApi([apiConfig], '${this.parent.apiName}')`,
+      true,
+    );
   }
 
   protected generateMakeApiConfig(): void {
-    const initFunctionDecl = this.tsSourceFile.addFunction({
-      name: 'makeApiConfig',
-    });
-    initFunctionDecl.addParameter({
-      name: `{ ${this.apiRootUrl} }`,
-      type: `Pick<APIEnvironmentOptions, '${this.apiRootUrl}'>`,
+    const initFunctionDecl = addFunction(this.tsSourceFile, 'makeApiConfig', {
+      [`{ ${this.apiRootUrl} }`]: `Pick<APIEnvironmentOptions, '${this.apiRootUrl}'>`,
     });
     initFunctionDecl.addVariableStatement({
       declarationKind: VariableDeclarationKind.Const,
@@ -176,11 +173,11 @@ export class APIConfig {
   protected generateEntryConfigs(configElementObj: Expression): void {
     const entriesConfigObj = configElementObj.asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
     for (const [entryKey, entryConfig] of Object.entries(this.apiConfig)) {
-      const entryObj = addObjectProperty(entriesConfigObj, entryKey);
+      const entryObj = addObjectLiteralObjectProperty(entriesConfigObj, entryKey);
 
-      addProperty(entryObj, 'url', `'${entryConfig.url}'`);
+      addObjectLiteralProperty(entryObj, 'url', `'${entryConfig.url}'`);
 
-      const operationsObj = addArrayProperty(entryObj, 'operations');
+      const operationsObj = addObjectLiteralArrayProperty(entryObj, 'operations');
       for (const operConfig of entryConfig.operations) {
         if (typeof operConfig === 'string') {
           operationsObj.addElement(`'${operConfig}'`);
@@ -192,10 +189,10 @@ export class APIConfig {
             .getElements()[1]
             .asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
           if (overrides.name) {
-            addProperty(overridesObj, 'actionName', `'${overrides.name}'`);
+            addObjectLiteralProperty(overridesObj, 'actionName', `'${overrides.name}'`);
           }
           if (overrides.queryParams?.length) {
-            const queryParamsObj = addArrayProperty(overridesObj, 'queryParams');
+            const queryParamsObj = addObjectLiteralArrayProperty(overridesObj, 'queryParams');
             for (const paramName of overrides.queryParams) {
               queryParamsObj.addElement(`'${paramName}'`);
             }
@@ -206,7 +203,7 @@ export class APIConfig {
   }
 
   protected generateCommonConfig(configElementObj: Expression): void {
-    addProperties(configElementObj.asKindOrThrow(SyntaxKind.ObjectLiteralExpression), {
+    addObjectLiteralProperties(configElementObj.asKindOrThrow(SyntaxKind.ObjectLiteralExpression), {
       rootUrl: this.apiRootUrl,
       adapter: `'${this.parent.options.useJsonApi ? 'jsonapi' : 'raw'}'`,
     });

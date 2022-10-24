@@ -1,11 +1,10 @@
 import path from 'path';
 
+import { getAPIName, Logger } from '@fresha/openapi-codegen-utils';
 import { Project, SourceFile } from 'ts-morph';
 
 import { APIConfig, ActionsSignatures } from './parts';
-import { getAPIName } from './utils/openapi';
 
-import type { Logger } from './utils/logging';
 import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
 type GeneratorOptions = {

@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { camelCase } from '@fresha/api-tools-core';
+import { camelCase } from '@fresha/openapi-codegen-utils';
 
 import type { PathItemOperationKey } from '@fresha/openapi-model/build/3.0.3';
 

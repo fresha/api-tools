@@ -1,12 +1,14 @@
 import assert from 'assert';
 
+import {
+  addFunctionTypeProperty,
+  addTypeAlias,
+  getOperationEntryKeyOrThrow,
+  Logger,
+} from '@fresha/openapi-codegen-utils';
 import { OperationModel } from '@fresha/openapi-model/build/3.0.3';
 import { FunctionTypeNode, StructureKind, SyntaxKind, TypeLiteralNode } from 'ts-morph';
 
-import { getOperationEntryKeyOrThrow } from '../utils/openapi';
-import { addFunctionTypeMember, addTypeAliasOnce } from '../utils/tsMorph';
-
-import type { Logger } from '../utils/logging';
 import type { ActionsSignatures } from './ActionsSignatures';
 import type { OperationTemplate } from './operations';
 
@@ -28,7 +30,7 @@ export class ActionSignature {
   generateCode(type: TypeLiteralNode): void {
     this.logger.info(`Generating type for action ${this.name}`);
 
-    const actionFuncTypeObj = addFunctionTypeMember(type, this.name, '() => Promise<Response>');
+    const actionFuncTypeObj = addFunctionTypeProperty(type, this.name, '() => Promise<Response>');
 
     switch (this.template.name) {
       case 'list':
@@ -72,7 +74,7 @@ export class ActionSignature {
 
   // eslint-disable-next-line class-methods-use-this
   protected generateReadActionSignature(funcType: FunctionTypeNode): void {
-    addTypeAliasOnce(funcType.getSourceFile(), 'ResourceId', 'string | number');
+    addTypeAlias(funcType.getSourceFile(), 'ResourceId', 'string | number');
     funcType.addParameter({
       name: 'id',
       type: 'ResourceId',
@@ -89,7 +91,7 @@ export class ActionSignature {
 
   // eslint-disable-next-line class-methods-use-this
   protected generateUpdateActionSignature(funcType: FunctionTypeNode): void {
-    addTypeAliasOnce(funcType.getSourceFile(), 'ResourceId', 'string | number');
+    addTypeAlias(funcType.getSourceFile(), 'ResourceId', 'string | number');
     funcType.addParameter({
       name: 'id',
       type: 'ResourceId',
@@ -101,7 +103,7 @@ export class ActionSignature {
 
   // eslint-disable-next-line class-methods-use-this
   protected generatePatchActionSignature(funcType: FunctionTypeNode): void {
-    addTypeAliasOnce(funcType.getSourceFile(), 'ResourceId', 'string | number');
+    addTypeAlias(funcType.getSourceFile(), 'ResourceId', 'string | number');
     funcType.addParameter({
       name: 'id',
       type: 'ResourceId',
@@ -113,7 +115,7 @@ export class ActionSignature {
 
   // eslint-disable-next-line class-methods-use-this
   protected generateDeleteActionSignature(funcType: FunctionTypeNode): void {
-    addTypeAliasOnce(funcType.getSourceFile(), 'ResourceId', 'string | number');
+    addTypeAlias(funcType.getSourceFile(), 'ResourceId', 'string | number');
     funcType.addParameter({
       name: 'id',
       type: 'ResourceId',
