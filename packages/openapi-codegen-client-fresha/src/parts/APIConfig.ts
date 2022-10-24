@@ -1,4 +1,3 @@
-import { camelCase } from '@fresha/api-tools-core';
 import {
   addConstant,
   addFunction,
@@ -10,13 +9,14 @@ import {
   getOperationEntryKeyOrThrow,
   getOperationIdOrThrow,
   getRootUrlOrThrow,
+  pathUrlToUrlExp,
   Logger,
 } from '@fresha/openapi-codegen-utils';
 import { Expression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
 import { APIOperationTemplateName, findOperationTemplate } from './operations';
 
-import type { Generator } from '../Generator';
+import type { Generator } from './Generator';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 
 type APIOperationConfig =
@@ -48,14 +48,8 @@ type APIRootURL = string;
 // type APIClientConfig = Record<APIRootURL, APIConfig>;
 
 export class APIConfig {
-  static convertPathUrlToConfigUrl(pathItemUrl: string): string {
-    return pathItemUrl
-      .replace(/^\//, '')
-      .replace(/\{[a-zA-Z0-9_-]+\}/g, (m: string): string => `:${camelCase(m.slice(1, -1))}`);
-  }
-
   protected readonly parent: Generator;
-  protected readonly tsSourceFile: SourceFile;
+  readonly tsSourceFile: SourceFile;
   protected readonly logger: Logger;
   protected apiRootUrl: APIRootURL;
   protected apiConfig: APIEntriesConfig;
@@ -72,7 +66,12 @@ export class APIConfig {
     try {
       this.apiRootUrl = getRootUrlOrThrow(this.parent.openapi);
     } catch (err) {
-      this.logger.warn(err);
+      const message = (err as Record<string, unknown>)?.message;
+      if (typeof message === 'string') {
+        this.logger.info(message);
+      } else {
+        this.logger.info(err);
+      }
       this.apiRootUrl = 'API_URL';
     }
 
@@ -90,7 +89,7 @@ export class APIConfig {
       let apiEntryConfig = this.apiConfig[entryKey];
       if (!apiEntryConfig) {
         apiEntryConfig = {
-          url: APIConfig.convertPathUrlToConfigUrl(pathUrl),
+          url: pathUrlToUrlExp(pathUrl),
           operations: [],
         };
         this.apiConfig[entryKey] = apiEntryConfig;
