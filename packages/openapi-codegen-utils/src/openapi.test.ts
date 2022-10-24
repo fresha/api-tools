@@ -1,6 +1,7 @@
 import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 
 import {
+  pathUrlToUrlExp,
   getAPIName,
   getOperationEntryKey,
   getOperationEntryKeyOrThrow,
@@ -107,4 +108,9 @@ test('getOperationIdOrThrow', () => {
 
   operation.operationId = 'op3';
   expect(getOperationIdOrThrow(operation)).toBe('op3');
+});
+
+test('pathUrlToUrlExp', () => {
+  expect(pathUrlToUrlExp('/employees')).toBe('employees');
+  expect(pathUrlToUrlExp('/employees/{id}/pets/{status}')).toBe('employees/:id/pets/:status');
 });

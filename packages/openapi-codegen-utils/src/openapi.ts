@@ -1,6 +1,7 @@
 import assert from 'assert';
 
 import type { OpenAPIModel, OperationModel, PathsModel } from '@fresha/openapi-model/build/3.0.3';
+import { camelCase } from './string';
 
 export const significantNameParts = (pathUrl: string): string[] =>
   pathUrl.split('/').filter(x => x && !(x.startsWith('{') && x.endsWith('}')));
@@ -63,3 +64,16 @@ export const getOperationIdOrThrow = (operation: OperationModel): string => {
   );
   return operationId;
 };
+
+/**
+ * Converts OpenAPI-style URI template (e.g. /employees/{id}/tasks) to Express-style path
+ * (e.g. /employees/:id/tasks), which is called URL expression. Transformations include:
+ *
+ * - removing leading slash
+ * - replacing {param} parameters with :param ones
+ */
+export const pathUrlToUrlExp = (pathItemUrl: string): string => {
+  return pathItemUrl
+    .replace(/^\//, '')
+    .replace(/\{[a-zA-Z0-9_-]+\}/g, (param: string): string => `:${camelCase(param.slice(1, -1))}`);
+}
