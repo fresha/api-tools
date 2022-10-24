@@ -111,7 +111,7 @@ export const findOperationTemplate = (
   httpMethod: PathItemOperationKey,
   itemPath: string,
   entryKey: string,
-  operationId: string,
+  operationId?: string,
 ): { name: APIOperationTemplateName; template: OperationTemplate } => {
   let templateName: APIOperationTemplateName | null = null;
   if (httpMethod === 'get') {
