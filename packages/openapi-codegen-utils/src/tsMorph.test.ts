@@ -13,6 +13,7 @@ import {
   addObjectLiteralProperty,
   addTypeAlias,
   addTypeLiteralAlias,
+  addTypeLiteralCall,
   addTypeLiteralProperty,
   addVariable,
 } from './tsMorph';
@@ -306,4 +307,47 @@ test('addFunctionTypeProperty', () => {
       func: (arg: number) => Promise<number>;
     };
   `);
+});
+
+describe('addTypeLiteralCall', () => {
+  test('minimalistic', () => {
+    const sourceFile = makeSourceFile();
+    const typeLiteral = addTypeLiteralAlias(sourceFile, 'AType');
+
+    addTypeLiteralCall(typeLiteral);
+
+    expect(sourceFile).toHaveFormattedText(`
+      type AType = {
+        (): void;
+      };
+    `);
+  });
+
+  test('with parameters and return type', () => {
+    const sourceFile = makeSourceFile();
+    const typeLiteral = addTypeLiteralAlias(sourceFile, 'AType');
+
+    addTypeLiteralCall(typeLiteral, { p1: 'string', p2: '{ x: number }' }, 'Promise<number>');
+
+    expect(sourceFile).toHaveFormattedText(`
+      type AType = {
+        (p1: string, p2: { x: number }): Promise<number>;
+      };
+    `);
+  });
+
+  test('multiple signatures', () => {
+    const sourceFile = makeSourceFile();
+    const typeLiteral = addTypeLiteralAlias(sourceFile, 'AType');
+
+    addTypeLiteralCall(typeLiteral, { x: 'string' }, 'string');
+    addTypeLiteralCall(typeLiteral, { x: 'number' }, 'number');
+
+    expect(sourceFile).toHaveFormattedText(`
+      type AType = {
+        (x: string): string;
+        (x: number): number;
+      };
+    `);
+  });
 });

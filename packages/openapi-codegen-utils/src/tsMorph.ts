@@ -2,6 +2,7 @@ import assert from 'assert';
 
 import {
   ArrayLiteralExpression,
+  CallSignatureDeclaration,
   CodeBlockWriter,
   DecoratableNode,
   Decorator,
@@ -331,4 +332,21 @@ export const addFunctionTypeProperty = (
   type: string,
 ): FunctionTypeNode => {
   return addTypeLiteralProperty(typeLiteral, name, type).asKindOrThrow(SyntaxKind.FunctionType);
+};
+
+/**
+ * Adds call signature to given type literal. One may pass map of parameters (keys are parameter
+ * names, values are types),
+ */
+export const addTypeLiteralCall = (
+  typeLiteral: TypeLiteralNode,
+  params?: Record<string, string>,
+  returnType?: string,
+): CallSignatureDeclaration => {
+  return typeLiteral.addCallSignature({
+    parameters: params
+      ? Object.entries(params).map(([name, type]: [string, string]) => ({ name, type }))
+      : undefined,
+    returnType,
+  });
 };
