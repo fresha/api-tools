@@ -5,7 +5,7 @@ import {
   addConstant,
   addTypeLiteralAlias,
   getOperationEntryKeyOrThrow,
-  getOperationIdOrThrow,
+  getOperationId,
   Logger,
   titleCase,
 } from '@fresha/openapi-codegen-utils';
@@ -13,7 +13,7 @@ import {
 import { ActionSignature } from './ActionSignature';
 import { findOperationTemplate } from './operations';
 
-import type { Generator } from '../Generator';
+import type { Generator } from './Generator';
 import type { SourceFile } from 'ts-morph';
 
 export class ActionsSignatures {
@@ -39,11 +39,11 @@ export class ActionsSignatures {
           operationKey,
           pathUrl,
           entryKey,
-          getOperationIdOrThrow(operation),
+          getOperationId(operation),
         );
-        const actionName = template.actionName(entryKey);
+        const actionName = getOperationId(operation) ?? template.actionName(entryKey);
         assert(!this.actions.has(actionName));
-        this.actions.set(actionName, new ActionSignature(this, operation, template));
+        this.actions.set(actionName, new ActionSignature(this, actionName, operation, template));
       }
     }
   }
@@ -60,6 +60,7 @@ export class ActionsSignatures {
       this.tsSourceFile,
       camelCase(this.parent.apiName),
       `boundActions(store, configuredApi) as ${this.name}`,
+      true,
     );
   }
 }
