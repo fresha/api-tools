@@ -3,6 +3,7 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { Callback } from './Callback';
 import { PathParameter, QueryParameter, HeaderParameter, CookieParameter } from './Parameter';
+import { RequestBody } from './RequestBody';
 import { Responses } from './Responses';
 import { SecurityRequirement } from './SecurityRequirement';
 import { Server } from './Server';
@@ -129,6 +130,16 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
 
   clearParameters(): void {
     this.parameters.splice(0, this.parameters.length);
+  }
+
+  setRequestBody(): RequestBodyModel {
+    assert(!this.requestBody);
+    this.requestBody = new RequestBody(this);
+    return this.requestBody;
+  }
+
+  deleteRequestBody(): void {
+    this.requestBody = null;
   }
 
   setDefaultResponse(description: CommonMarkString): ResponseModel {

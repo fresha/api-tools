@@ -521,6 +521,9 @@ export interface OperationModel
   deleteParameter(name: string): void;
   clearParameters(): void;
 
+  setRequestBody(): RequestBodyModel;
+  deleteRequestBody(): void;
+
   setDefaultResponse(description: CommonMarkString): ResponseModel;
   deleteDefaultResponse(): void;
 

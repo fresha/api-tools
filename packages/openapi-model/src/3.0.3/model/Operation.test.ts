@@ -77,6 +77,18 @@ test('parameters collection', () => {
   expect(operation.parameters).toHaveLength(0);
 });
 
+test('request body', () => {
+  const operation = openapi.setPathItem('/').setOperation('head');
+
+  const requestBody = operation.setRequestBody();
+  expect(operation.requestBody).toBe(requestBody);
+
+  expect(() => operation.setRequestBody()).toThrow();
+
+  operation.deleteRequestBody();
+  expect(operation.requestBody).toBeNull();
+});
+
 test('delegated response methods', () => {
   const operation = openapi.setPathItem('/').setOperation('head');
 
