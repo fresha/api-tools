@@ -10,6 +10,8 @@ import {
   getRootUrl,
   getRootUrlOrThrow,
   significantNameParts,
+  getOperationCacheOptionsOrThrow,
+  getOperationCacheOptions,
 } from './openapi';
 
 test('significantNameParts', () => {
@@ -108,6 +110,37 @@ test('getOperationIdOrThrow', () => {
 
   operation.operationId = 'op3';
   expect(getOperationIdOrThrow(operation)).toBe('op3');
+});
+
+test('getOperationCacheOptions', () => {
+  const openapi = OpenAPIFactory.create();
+  const operation = openapi.setPathItem('/op').setOperation('get');
+
+  expect(getOperationCacheOptions(operation)).toBeUndefined();
+
+  operation.setExtension('cache', 'https://www.example.com');
+  expect(() => getOperationCacheOptions(operation)).toThrow();
+
+  operation.setExtension('cache', null);
+  expect(() => getOperationCacheOptions(operation)).toThrow();
+
+  operation.setExtension('cache', 60);
+  expect(getOperationCacheOptions(operation)).toBe(60);
+
+  operation.setExtension('cache', false);
+  expect(getOperationCacheOptions(operation)).toBe(false);
+
+  operation.setExtension('cache', true);
+  expect(getOperationCacheOptions(operation)).toBe(true);
+});
+
+test('getOperationCacheOptionsOrThrow', () => {
+  const operation = OpenAPIFactory.create().setPathItem('/op1').setOperation('get');
+
+  expect(() => getOperationIdOrThrow(operation)).toThrow();
+
+  operation.setExtension('cache', 10);
+  expect(getOperationCacheOptionsOrThrow(operation)).toBe(10);
 });
 
 test('pathUrlToUrlExp', () => {

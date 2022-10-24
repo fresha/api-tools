@@ -67,6 +67,29 @@ export const getOperationIdOrThrow = (operation: OperationModel): string => {
 };
 
 /**
+ * Returns cache options for given operation. Return undefined is no options have been specified.
+ */
+export const getOperationCacheOptions = (
+  operation: OperationModel,
+): boolean | number | undefined => {
+  const cache = operation.getExtension('cache');
+  assert(
+    cache === undefined || typeof cache === 'boolean' || typeof cache === 'number',
+    `x-cache in "${findOperationPathUrl(operation)}" has wrong type ${typeof cache}`,
+  );
+  return cache;
+};
+
+/**
+ * Returns cache options for given operation. Throws in no options have been specified.
+ */
+export const getOperationCacheOptionsOrThrow = (operation: OperationModel): boolean | number => {
+  const result = getOperationCacheOptions(operation);
+  assert(result, `Expected "${findOperationPathUrl(operation)}" to have cache options`);
+  return result;
+};
+
+/**
  * Converts OpenAPI-style URI template (e.g. /employees/{id}/tasks) to Express-style path
  * (e.g. /employees/:id/tasks), which is called URL expression. Transformations include:
  *
