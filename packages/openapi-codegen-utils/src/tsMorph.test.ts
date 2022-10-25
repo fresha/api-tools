@@ -288,10 +288,14 @@ test('addTypeLiteralProperty', () => {
     .asKindOrThrow(SyntaxKind.TypeLiteral);
 
   addTypeLiteralProperty(typeLiteral, 'prop', 'string');
+  addTypeLiteralProperty(typeLiteral, 'fnProp', (writer: CodeBlockWriter) => {
+    writer.writeLine('string | null');
+  });
 
   expect(sourceFile).toHaveFormattedText(`
     type TypeA = {
       prop: string;
+      fnProp: string | null;
     };
   `);
 });
