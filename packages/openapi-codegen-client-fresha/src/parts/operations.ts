@@ -38,7 +38,7 @@ const OPERATION_TEMPLATES_LIST: OperationTemplate[] = [
   },
   {
     name: 'read',
-    actionName: (entryKey: string): string => camelCase(`read_${entryKey}_list`),
+    actionName: (entryKey: string): string => camelCase(`read_${entryKey}`),
     httpMethod: 'get',
     hasRequestBody: false,
     makeUrl: (urlBase: string): string => (urlBase.includes(':id') ? urlBase : `${urlBase}/:id`),
@@ -104,8 +104,6 @@ const OPERATION_TEMPLATES_LIST: OperationTemplate[] = [
 export const OPERATION_TEMPLATES_MAP = Object.fromEntries<OperationTemplate>(
   OPERATION_TEMPLATES_LIST.map(template => [template.name, template]),
 ) as Record<APIOperationTemplateName, OperationTemplate>;
-
-export const getOperationTemplate = () => {};
 
 export const findOperationTemplate = (
   httpMethod: PathItemOperationKey,
