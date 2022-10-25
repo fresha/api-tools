@@ -1,5 +1,6 @@
 import path from 'path';
 
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
@@ -20,17 +21,15 @@ type Params = {
 
 export const builder = (yarg: Argv): Argv<Params> => {
   return yarg
-    .string('i')
-    .alias('i', 'input')
-    .describe('i', 'Input schema')
-    .demandOption('i')
+    .string('input')
+    .alias('input', 'i')
+    .describe('input', 'Input schema')
     .demandOption('input')
-    .string('o')
-    .alias('o', 'output')
-    .describe('o', 'Output directory (NPM package root)')
-    .demandOption('o')
+    .string('output')
+    .alias('output', 'o')
+    .describe('output', 'Output directory (NPM package root)')
     .demandOption('output')
-    .string('json-api')
+    .boolean('json-api')
     .describe('json-api', 'Uses JSON:API extensions')
     .boolean('verbose')
     .describe('verbose', 'prints additional information')
@@ -46,12 +45,17 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     tsConfigFilePath: path.join(args.output, 'tsconfig.json'),
   });
 
+  const logger = createLogger(!!args.verbose);
+
+  logger.info(!!args.jsonApi);
+
   const generator = new Generator(openapi, tsProject, {
     outputPath: args.output,
     useJsonApi: !!args.jsonApi,
-    verbose: !!args.verbose,
+    logger,
     dryRun: !!args.dryRun,
   });
 
-  generator.run();
+  generator.collectData();
+  generator.generateCode();
 };
