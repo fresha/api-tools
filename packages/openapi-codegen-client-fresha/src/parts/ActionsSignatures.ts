@@ -16,6 +16,12 @@ import { findOperationTemplate } from './operations';
 import type { Generator } from './Generator';
 import type { SourceFile } from 'ts-morph';
 
+/**
+ * Generates the type alias, containing signatures of all API actions.
+ * For each action, delegates the task of generating its signature to ActionSignature part.
+ *
+ * @see ActionSignature
+ */
 export class ActionsSignatures {
   readonly parent: Generator;
   readonly logger: Logger;
