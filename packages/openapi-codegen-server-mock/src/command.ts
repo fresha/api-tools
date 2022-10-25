@@ -1,4 +1,8 @@
+import path from 'path';
+
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
+import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
 
@@ -37,9 +41,16 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
   const openapiReader = new OpenAPIReader();
   const openapi = openapiReader.parseFromFile(args.input);
 
-  const generator = new Generator(openapi, {
+  const tsProject = new Project({
+    tsConfigFilePath: path.join(args.output, 'tsconfig.json'),
+  });
+
+  const logger = createLogger(!!args.verbose);
+
+  const generator = new Generator(openapi, tsProject, {
     outputPath: args.output,
     useJsonApi: !!args.jsonApi,
+    logger,
     verbose: !!args.verbose,
     dryRun: !!args.dryRun,
   });
