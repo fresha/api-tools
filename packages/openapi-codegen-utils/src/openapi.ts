@@ -2,7 +2,13 @@ import assert from 'assert';
 
 import { camelCase } from './string';
 
-import type { OpenAPIModel, OperationModel, PathsModel } from '@fresha/openapi-model/build/3.0.3';
+import type { Nullable } from '@fresha/api-tools-core';
+import type {
+  OpenAPIModel,
+  OperationModel,
+  PathsModel,
+  SchemaModel,
+} from '@fresha/openapi-model/build/3.0.3';
 
 export const significantNameParts = (pathUrl: string): string[] =>
   pathUrl.split('/').filter(x => x && !(x.startsWith('{') && x.endsWith('}')));
@@ -86,6 +92,53 @@ export const getOperationCacheOptions = (
 export const getOperationCacheOptionsOrThrow = (operation: OperationModel): boolean | number => {
   const result = getOperationCacheOptions(operation);
   assert(result, `Expected "${findOperationPathUrl(operation)}" to have cache options`);
+  return result;
+};
+
+export const getMediaType = (useJsonApi: boolean) =>
+  useJsonApi ? 'application/vnd.api+json' : 'application/json';
+
+export const getOperationRequestBodySchema = (
+  operation: OperationModel,
+  useJsonApi: boolean,
+): Nullable<SchemaModel> => {
+  const mediaType = getMediaType(useJsonApi);
+  return operation.requestBody?.getContentOrThrow(mediaType).schema ?? null;
+};
+
+export const getOperationRequestBodySchemaOrThrow = (
+  operation: OperationModel,
+  useJsonApi: boolean,
+): SchemaModel => {
+  const schema = getOperationRequestBodySchema(operation, useJsonApi);
+  assert(
+    schema,
+    `Expected to find non-null request body schema in "${findOperationPathUrl(
+      operation,
+    )}" operation`,
+  );
+  return schema;
+};
+
+export const getOperationDefaultResponseSchema = (
+  operation: OperationModel,
+  useJsonApi: boolean,
+): Nullable<SchemaModel> => {
+  const mediaType = getMediaType(useJsonApi);
+  return operation.responses.default?.getContentOrThrow(mediaType).schema ?? null;
+};
+
+export const getOperationDefaultResponseSchemaOrThrow = (
+  operation: OperationModel,
+  useJsonApi: boolean,
+): Nullable<SchemaModel> => {
+  const result = getOperationDefaultResponseSchema(operation, useJsonApi);
+  assert(
+    result,
+    `Expected to find non-null default response schema in "${findOperationPathUrl(
+      operation,
+    )}" operation`,
+  );
   return result;
 };
 
