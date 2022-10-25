@@ -47,8 +47,6 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
 
   const logger = createLogger(!!args.verbose);
 
-  logger.info(!!args.jsonApi);
-
   const generator = new Generator(openapi, tsProject, {
     outputPath: args.output,
     useJsonApi: !!args.jsonApi,

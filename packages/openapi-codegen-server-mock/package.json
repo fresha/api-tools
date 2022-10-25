@@ -24,7 +24,11 @@
     "LICENSE",
     "README.md"
   ],
-  "keywords": ["OpenAPI", "code generator", "mock server"],
+  "keywords": [
+    "OpenAPI",
+    "code generator",
+    "mock server"
+  ],
   "author": "Fresha Engineering",
   "contributors": [
     {
@@ -42,7 +46,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/openapi-model": "0.3.0"
+    "@fresha/openapi-codegen-utils": "^0.1.0",
+    "@fresha/openapi-model": "0.3.0",
+    "ts-morph": "^16.0.0"
   },
   "devDependencies": {
     "@fresha/eslint-config": "0.1.0",
