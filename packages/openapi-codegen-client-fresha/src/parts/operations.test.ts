@@ -1,6 +1,6 @@
 import { PathItemOperationKey } from '@fresha/openapi-model/build/3.0.3';
 
-import { findOperationTemplate } from './operations';
+import { findOperationTemplate, OPERATION_TEMPLATES_MAP } from './operations';
 
 describe('findOperationTemplate', () => {
   test('get without ID maps to single-read, if generated action name is identical', () => {
@@ -74,5 +74,67 @@ describe('findOperationTemplate', () => {
         'operationId',
       ),
     ).toThrow();
+  });
+});
+
+describe('templates', () => {
+  test('list', () => {
+    const { list: template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('readEmployeeTokenList');
+    expect(template.makeUrl('/v2')).toBe('/v2');
+  });
+
+  test('read', () => {
+    const { read: template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('readEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2/:id');
+  });
+
+  test('single-read', () => {
+    const { 'single-read': template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('readEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2');
+  });
+
+  test('create', () => {
+    const { create: template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('createEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2');
+  });
+
+  test('update', () => {
+    const { update: template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('updateEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2/:id');
+  });
+
+  test('single-update', () => {
+    const { 'single-update': template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('updateEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2');
+  });
+
+  test('patch', () => {
+    const { patch: template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('patchEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2/:id');
+  });
+
+  test('single-patch', () => {
+    const { 'single-patch': template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('patchEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2');
+  });
+
+  test('delete', () => {
+    const { delete: template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('deleteEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2/:id');
+  });
+
+  test('single-delete', () => {
+    const { 'single-delete': template } = OPERATION_TEMPLATES_MAP;
+    expect(template.actionName('employee-token')).toBe('deleteEmployeeToken');
+    expect(template.makeUrl('/v2')).toBe('/v2');
   });
 });
