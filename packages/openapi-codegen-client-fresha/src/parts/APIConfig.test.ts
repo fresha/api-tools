@@ -1,5 +1,5 @@
 import { createLogger } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
 import { APIConfig } from './APIConfig';
@@ -18,6 +18,7 @@ const makeApiConfig = (openapi: OpenAPIModel): APIConfig => {
       useJsonApi: true,
     },
     apiName: 'testApi',
+    apiRootUrl: 'API_CONFIG_URL',
     openapi,
     logger,
     tsSourceFile,
@@ -30,6 +31,21 @@ test('happy path', () => {
   const openapi = OpenAPIFactory.create('test-api', '0.1.0');
   const apiConfig = makeApiConfig(openapi);
 
+  const operationQueryParams = openapi.setPathItem('/tasks').setOperation('get');
+  operationQueryParams.operationId = 'readTaskList';
+  operationQueryParams.setExtension('entry-key', 'task');
+
+  const offsetParam = operationQueryParams.addParameter('offset', 'query');
+  offsetParam.required = true;
+  offsetParam.schema = SchemaFactory.create(offsetParam, 'number');
+  const limitParam = operationQueryParams.addParameter('limit', 'query');
+  limitParam.required = true;
+  limitParam.schema = SchemaFactory.create(limitParam, 'number');
+  const searchParam = operationQueryParams.addParameter('search', 'query');
+  searchParam.required = false;
+  searchParam.schema = SchemaFactory.create(searchParam, 'string');
+  searchParam.schema.nullable = true;
+
   apiConfig.collectData();
   apiConfig.generateCode();
 
@@ -40,11 +56,22 @@ test('happy path', () => {
     import { boundActions } from '@fresha/connector-utils/build/boundActions';
     import { env } from '@fresha/connector-utils/build/env';
 
-    function makeApiConfig({ API_URL }: Pick<APIEnvironmentOptions, 'API_URL'>) {
+    export function makeApiConfig({ API_CONFIG_URL }: Pick<APIEnvironmentOptions, 'API_CONFIG_URL'>) {
       const config = [
-        {},
         {
-          rootUrl: API_URL,
+          task: {
+            url: 'tasks',
+            operations: [
+              [
+                'list', {
+                  queryParams: ['offset', 'limit', 'search'],
+                },
+              ],
+            ],
+          },
+        },
+        {
+          rootUrl: API_CONFIG_URL,
           adapter: 'jsonapi',
         },
       ] as const;
