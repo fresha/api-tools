@@ -8,7 +8,6 @@ import {
   addObjectLiteralProperty,
   getOperationEntryKeyOrThrow,
   getOperationIdOrThrow,
-  getRootUrlOrThrow,
   pathUrlToUrlExp,
   Logger,
 } from '@fresha/openapi-codegen-utils';
@@ -38,8 +37,6 @@ type APIEntryKey = string;
 
 type APIEntriesConfig = Record<APIEntryKey, APIEntryConfig>;
 
-type APIRootURL = string;
-
 // type APIConfig = {
 //   rootUrl: APIRootURL;
 //   entries: APIEntriesConfig;
@@ -47,34 +44,23 @@ type APIRootURL = string;
 
 // type APIClientConfig = Record<APIRootURL, APIConfig>;
 
+/**
+ * Generates API initialization function, as well as configured API variable.
+ */
 export class APIConfig {
   protected readonly parent: Generator;
   readonly tsSourceFile: SourceFile;
   protected readonly logger: Logger;
-  protected apiRootUrl: APIRootURL;
   protected apiConfig: APIEntriesConfig;
 
   constructor(parent: Generator) {
     this.parent = parent;
     this.tsSourceFile = this.parent.tsSourceFile;
     this.logger = this.parent.logger;
-    this.apiRootUrl = 'API_URL';
     this.apiConfig = {};
   }
 
   collectData(): void {
-    try {
-      this.apiRootUrl = getRootUrlOrThrow(this.parent.openapi);
-    } catch (err) {
-      const message = (err as Record<string, unknown>)?.message;
-      if (typeof message === 'string') {
-        this.logger.info(message);
-      } else {
-        this.logger.info(err);
-      }
-      this.apiRootUrl = 'API_URL';
-    }
-
     for (const [pathUrl, pathItem] of this.parent.openapi.paths) {
       this.processPathItem(pathUrl, pathItem);
     }
@@ -122,7 +108,11 @@ export class APIConfig {
 
   generateCode(): void {
     this.logger.info(
-      `Found configuration for ${this.apiRootUrl} ${JSON.stringify(this.apiConfig, null, 2)}`,
+      `Found configuration for ${this.parent.apiRootUrl} ${JSON.stringify(
+        this.apiConfig,
+        null,
+        2,
+      )}`,
     );
 
     addImportDeclarations(this.tsSourceFile, {
@@ -145,9 +135,15 @@ export class APIConfig {
   }
 
   protected generateMakeApiConfig(): void {
-    const initFunctionDecl = addFunction(this.tsSourceFile, 'makeApiConfig', {
-      [`{ ${this.apiRootUrl} }`]: `Pick<APIEnvironmentOptions, '${this.apiRootUrl}'>`,
-    });
+    const initFunctionDecl = addFunction(
+      this.tsSourceFile,
+      'makeApiConfig',
+      {
+        [`{ ${this.parent.apiRootUrl} }`]: `Pick<APIEnvironmentOptions, '${this.parent.apiRootUrl}'>`,
+      },
+      undefined,
+      true,
+    );
     initFunctionDecl.addVariableStatement({
       declarationKind: VariableDeclarationKind.Const,
       declarations: [
@@ -203,7 +199,7 @@ export class APIConfig {
 
   protected generateCommonConfig(configElementObj: Expression): void {
     addObjectLiteralProperties(configElementObj.asKindOrThrow(SyntaxKind.ObjectLiteralExpression), {
-      rootUrl: this.apiRootUrl,
+      rootUrl: this.parent.apiRootUrl,
       adapter: `'${this.parent.options.useJsonApi ? 'jsonapi' : 'raw'}'`,
     });
   }
