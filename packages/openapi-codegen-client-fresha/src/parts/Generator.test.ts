@@ -45,7 +45,7 @@ test('renders init function, configured api variable, as well as action types', 
     import { boundActions } from '@fresha/connector-utils/build/boundActions';
     import { env } from '@fresha/connector-utils/build/env';
 
-    function makeApiConfig({ PROFILE_API_URL }: Pick<APIEnvironmentOptions, 'PROFILE_API_URL'>) {
+    export function makeApiConfig({ PROFILE_API_URL }: Pick<APIEnvironmentOptions, 'PROFILE_API_URL'>) {
       const config = [
         {
           profile: {
@@ -73,8 +73,16 @@ test('renders init function, configured api variable, as well as action types', 
     export const configuredApi = configureApi([apiConfig], 'generator-test-api');
 
     export type GeneratorTestActions = {
-      readProfile: () => Promise<Response>;
-      updateProfile: (args: {}) => Promise<Response>;
+      readProfile: {
+        (): Promise<Response>;
+        apiName: 'readProfile';
+        cache: null;
+      };
+      updateProfile: {
+        (): Promise<Response>;
+        apiName: 'updateProfile';
+        cache: null;
+      };
     };
 
     export const generatorTestApi = boundActions(
