@@ -19,6 +19,7 @@ import {
   TypeNode,
   VariableDeclarationKind,
   VariableStatement,
+  WriterFunction,
 } from 'ts-morph';
 
 /**
@@ -307,7 +308,7 @@ export const addTypeLiteralAlias = (
 export const addTypeLiteralProperty = (
   typeLiteral: TypeLiteralNode,
   name: string,
-  type: string,
+  type: string | WriterFunction,
 ): TypeNode => {
   const result = typeLiteral
     .addMember({
