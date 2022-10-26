@@ -24,7 +24,11 @@
     "LICENSE",
     "README.md"
   ],
-  "keywords": ["OpenAPI", "code generator", "Elixir"],
+  "keywords": [
+    "OpenAPI",
+    "code generator",
+    "Elixir"
+  ],
   "author": "Fresha Engineering",
   "contributors": [
     {
@@ -42,7 +46,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/openapi-model": "0.3.0"
+    "@fresha/api-tools-core": "^0.2.1",
+    "@fresha/openapi-codegen-utils": "^0.1.0",
+    "@fresha/openapi-model": "0.3.0",
+    "memfs": "^3.4.7"
   },
   "devDependencies": {
     "@fresha/eslint-config": "0.1.0",
