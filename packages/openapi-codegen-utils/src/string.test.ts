@@ -1,5 +1,12 @@
 import { commonStringPrefix } from './string';
 
+test('snakeCase', () => {
+  expect(snakeCase('forget-me-not')).toBe('forget_me_not');
+  expect(snakeCase('Forget-me-not')).toBe('forget_me_not');
+  expect(snakeCase('forgetMeNot')).toBe('forget_me_not');
+  expect(snakeCase('--Forget--MeNot')).toBe('forget_me_not');
+});
+
 test('empty array', () => {
   expect(() => commonStringPrefix([])).toThrow();
 });
