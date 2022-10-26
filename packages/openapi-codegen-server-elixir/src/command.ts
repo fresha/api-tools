@@ -1,7 +1,7 @@
+import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
 
-import { Generator } from './Generator';
-import { getPhoenixAppPath } from './utils';
+import { getPhoenixAppPath, Generator } from './parts';
 
 import type { Argv, ArgumentsCamelCase } from 'yargs';
 
@@ -43,13 +43,20 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
   const openapiReader = new OpenAPIReader();
   const openapi = openapiReader.parseFromFile(args.input);
 
-  const generator = new Generator(openapi, {
-    outputPath: getPhoenixAppPath(args.output, args.phoenixApp!),
-    phoenixApp: args.phoenixApp ?? 'app',
-    useJsonApi: !!args.jsonApi,
-    verbose: !!args.verbose,
-    dryRun: !!args.dryRun,
-  });
+  const logger = createLogger(!!args.verbose);
 
-  generator.run();
+  const generator = new Generator(
+    openapi,
+    {
+      outputPath: getPhoenixAppPath(args.output, args.phoenixApp!),
+      phoenixApp: args.phoenixApp ?? 'app',
+      useJsonApi: !!args.jsonApi,
+      verbose: !!args.verbose,
+      dryRun: !!args.dryRun,
+    },
+    logger,
+  );
+
+  generator.collectData();
+  generator.generateCode();
 };

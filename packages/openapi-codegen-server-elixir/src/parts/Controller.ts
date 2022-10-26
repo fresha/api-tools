@@ -1,7 +1,9 @@
 import console from 'console';
 
-import type { Action } from './Action';
+import { Action } from './Action';
+
 import type { Generator } from './Generator';
+import type { Logger } from '@fresha/openapi-codegen-utils';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 
 export class Controller {
@@ -13,23 +15,24 @@ export class Controller {
     return '';
   }
 
-  private readonly generator: Generator;
-  private readonly actions: Action[];
+  readonly parent: Generator;
+  readonly logger: Logger;
+  protected readonly actions: Map<string, Action>;
 
-  constructor(generator: Generator) {
-    this.generator = generator;
-    this.actions = [];
+  constructor(parent: Generator) {
+    this.parent = parent;
+    this.logger = this.parent.logger;
+    this.actions = new Map<string, Action>();
   }
 
   generateCode(): void {
-    console.log(!!this.generator);
-    for (const action of this.actions) {
+    for (const action of this.actions.values()) {
       action.generateCode();
     }
   }
 
   // eslint-disable-next-line class-methods-use-this
-  processPathItem(pathUrl: string, pathItem: PathItemModel): void {
+  collectData(pathUrl: string, pathItem: PathItemModel): void {
     console.log(pathUrl, pathItem);
   }
 }

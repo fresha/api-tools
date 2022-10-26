@@ -1,25 +1,26 @@
-import console from 'console';
-
 import type { Controller } from './Controller';
 import type { Generator } from './Generator';
+import type { Logger } from '@fresha/openapi-codegen-utils';
 
 export class Router {
   static makeFileName(): string {
     return '';
   }
 
-  private readonly generator: Generator;
+  readonly parent: Generator;
+  readonly logger: Logger;
 
-  constructor(generator: Generator) {
-    this.generator = generator;
+  constructor(parent: Generator) {
+    this.parent = parent;
+    this.logger = this.parent.logger;
   }
 
   // eslint-disable-next-line class-methods-use-this
   processController(controller: Controller): void {
-    console.log(!!controller);
+    this.logger.info('Processing controller');
   }
 
   generateCode(): void {
-    console.log(this.generator);
+    this.logger.info('Generating code');
   }
 }
