@@ -9,15 +9,10 @@ import {
 
 export const setResourceIdSchema = (linkSchema: SchemaModel, type?: string): void => {
   assert(linkSchema.type === 'object');
-
-  const typeSchema = linkSchema.setProperty('type', { type: 'string', required: true });
-  typeSchema.minLength = 1;
-  if (type) {
-    typeSchema.enum = [type];
-  }
-
-  const idSchema = linkSchema.setProperty('id', { type: 'string', required: true });
-  idSchema.minLength = 1;
+  linkSchema.setProperties({
+    type: { type: 'string', required: true, minLength: 1, enum: type ? [type] : undefined },
+    id: { type: 'string', required: true, minLength: 1 },
+  });
 };
 
 export const createResourceIdSchema = (parent: SchemaModelParent, type?: string): SchemaModel => {
@@ -28,17 +23,14 @@ export const createResourceIdSchema = (parent: SchemaModelParent, type?: string)
 
 export const setResourceSchema = (resourceSchema: SchemaModel, resourceType: string): void => {
   assert(resourceSchema.type === 'object');
-
-  const typeSchema = resourceSchema.setProperty('type', { type: 'string', required: true });
-  typeSchema.minLength = 1;
-  if (resourceType) {
-    typeSchema.enum = [resourceType];
-  }
-
-  const idSchema = resourceSchema.setProperty('id', { type: 'string', required: true });
-  idSchema.minLength = 1;
-
   resourceSchema.setProperties({
+    type: {
+      type: 'string',
+      required: true,
+      minLength: 1,
+      enum: resourceType ? [resourceType] : undefined,
+    },
+    id: { type: 'string', required: true, minLength: 1 },
     attributes: { type: 'object', required: true },
     relationships: 'object',
   });
@@ -108,12 +100,6 @@ export const addResourceRelationship = (
   }
 };
 
-const createVersionSchema = (documentSchema: SchemaModel): SchemaModel => {
-  const versionSchema = documentSchema.setProperty('jsonapi', 'object');
-  versionSchema.setProperty('version', { type: 'string', required: true }).enum = ['1.0'];
-  return versionSchema;
-};
-
 type PrimaryDataOptions =
   | string
   | {
@@ -127,16 +113,23 @@ export const setDataDocumentSchema = (
 ): void => {
   assert(documentSchema.type === 'object');
 
-  createVersionSchema(documentSchema);
+  documentSchema
+    .setProperty('jsonapi', 'object')
+    .setProperty('version', { type: 'string', required: true, enum: ['1.0'] });
+
   if (typeof dataOptions === 'string') {
-    const dataSchema = documentSchema.setProperty('data', { type: 'object', required: true });
-    setResourceSchema(dataSchema, dataOptions);
+    setResourceSchema(
+      documentSchema.setProperty('data', { type: 'object', required: true }),
+      dataOptions,
+    );
   } else if (dataOptions.multiple) {
     const dataSchema = documentSchema.setProperty('data', { type: 'array', required: true });
     dataSchema.items = createResourceSchema(dataSchema, dataOptions.type);
   } else {
-    const dataSchema = documentSchema.setProperty('data', { type: 'object', required: true });
-    setResourceSchema(dataSchema, dataOptions.type);
+    setResourceSchema(
+      documentSchema.setProperty('data', { type: 'object', required: true }),
+      dataOptions.type,
+    );
   }
 };
 

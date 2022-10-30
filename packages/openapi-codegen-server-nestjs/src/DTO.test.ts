@@ -94,16 +94,12 @@ describe('serialization', () => {
 
   test('numeric limits', () => {
     const schema = openapi.components.setSchema('Error', 'object');
-
-    const min = schema.setProperty('min', 'number');
-    min.minimum = 10;
-    const minExclusive = schema.setProperty('minExclusive', 'number');
-    minExclusive.exclusiveMinimum = 15;
-
-    const max = schema.setProperty('max', 'number');
-    max.maximum = 20;
-    const maxExclusive = schema.setProperty('maxExclusive', 'number');
-    maxExclusive.exclusiveMaximum = 25;
+    schema.setProperties({
+      min: { type: 'number', minimum: 10 },
+      minExclusive: { type: 'number', exclusiveMinimum: 15 },
+      max: { type: 'number', maximum: 20 },
+      maxExclusive: { type: 'number', exclusiveMaximum: 25 },
+    });
 
     new DTO(fakeGenerator, 'Response', schema, logger).generateCode();
 
@@ -137,12 +133,10 @@ describe('serialization', () => {
 
   test('string limits', () => {
     const schema = openapi.components.setSchema('Error', 'object');
-
-    const minLen = schema.setProperty('minLen', 'string');
-    minLen.minLength = 1;
-
-    const maxLen = schema.setProperty('maxLen', 'string');
-    maxLen.maxLength = 10;
+    schema.setProperties({
+      minLen: { type: 'string', minLength: 1 },
+      maxLen: { type: 'string', maxLength: 10 },
+    });
 
     new DTO(fakeGenerator, 'Response2', schema, logger).generateCode();
 
@@ -167,17 +161,13 @@ describe('serialization', () => {
   test('object', () => {
     const resourceSchema = openapi.components.setSchema('Employee', 'object');
     resourceSchema.setProperties({
-      type: { type: 'string', required: true },
+      type: { type: 'string', required: true, enum: ['1.0'] },
       id: { type: 'string', required: true },
       attributes: { type: 'object', required: true },
       relationships: { type: 'object', required: true },
     });
 
-    const typeSchema = resourceSchema.getPropertyOrThrow('type');
-    typeSchema.enum = ['1.0'];
-
-    const attributesSchema = resourceSchema.getPropertyOrThrow('attributes');
-    attributesSchema.setProperties({
+    resourceSchema.getPropertyOrThrow('attributes').setProperties({
       name: { type: 'string', required: true },
       age: 'number',
       active: 'boolean',
