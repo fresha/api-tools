@@ -197,9 +197,100 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   setProperty(name: string, params: SchemaCreateOptions): SchemaModel {
     const propertySchema = Schema.internalCreate(this, params);
     this.properties.set(name, propertySchema);
-    if (params != null && typeof params === 'object' && typeof params.required === 'boolean') {
-      this.setPropertyRequired(name, params.required);
+
+    if (
+      params != null &&
+      typeof params !== 'string' &&
+      !('root' in params && params.root != null) &&
+      params.required != null
+    ) {
+      this.setPropertyRequired(name, !!params.required);
     }
+
+    if (
+      params != null &&
+      typeof params === 'object' &&
+      (params.type == null || typeof params.type === 'string')
+    ) {
+      switch (params.type) {
+        case null:
+        case 'object':
+        case 'array':
+          break;
+        case 'boolean': {
+          if (params.enum?.includes(true)) {
+            if (!params.enum?.includes(false)) {
+              propertySchema.enum = [true];
+            }
+          } else if (params.enum?.includes(false)) {
+            propertySchema.enum = [false];
+          }
+          if (params.default != null) {
+            assert(propertySchema.enum == null || propertySchema.enum.includes(!!params.default));
+            propertySchema.default = !!params.default;
+          }
+          break;
+        }
+        case 'integer':
+        case 'int32':
+        case 'int64':
+        case 'number': {
+          if (params.enum?.length) {
+            propertySchema.enum = params.enum.slice();
+          }
+          if (params.default != null) {
+            assert(propertySchema.enum == null || propertySchema.enum.includes(params.default));
+            propertySchema.default = params.default;
+          }
+          if (params.minimum != null) {
+            propertySchema.minimum = params.minimum;
+          }
+          if (params.maximum != null) {
+            propertySchema.maximum = params.maximum;
+          }
+          if (params.exclusiveMinimum != null) {
+            propertySchema.exclusiveMinimum = params.exclusiveMinimum;
+          }
+          if (params.exclusiveMaximum != null) {
+            propertySchema.exclusiveMaximum = params.exclusiveMaximum;
+          }
+          break;
+        }
+        case 'date':
+        case 'date-time': {
+          if (params.enum?.length) {
+            propertySchema.enum = params.enum.slice();
+          }
+          if (params.default != null) {
+            assert(propertySchema.enum == null || propertySchema.enum.includes(params.default));
+            propertySchema.default = params.default;
+          }
+          break;
+        }
+        case 'string': {
+          if (params.enum?.length) {
+            propertySchema.enum = params.enum.slice();
+          }
+          if (params.default != null) {
+            assert(propertySchema.enum == null || propertySchema.enum.includes(params.default));
+            propertySchema.default = params.default;
+          }
+          if (params.pattern != null) {
+            propertySchema.pattern = params.pattern;
+          }
+          if (params.minLength != null) {
+            propertySchema.minLength = params.minLength;
+          }
+          if (params.maxLength != null) {
+            propertySchema.maxLength = params.maxLength;
+          }
+          break;
+        }
+        default:
+          assert.fail(`Unexpected property type "${String(params.type)}" of property "${name}"`);
+      }
+    }
+
     return propertySchema;
   }
 

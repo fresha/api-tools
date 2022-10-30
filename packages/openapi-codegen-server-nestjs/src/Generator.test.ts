@@ -1,5 +1,3 @@
-import assert from 'assert';
-
 import '@fresha/jest-config/build/types';
 
 import { createLogger } from '@fresha/openapi-codegen-utils';
@@ -57,9 +55,7 @@ const buildBasicJSONAPI = (): OpenAPIModel => {
     relationships: 'object',
   });
 
-  const resourceRelationshipsPropertySchema = resourceSchema.properties.get('relationships');
-  assert(resourceRelationshipsPropertySchema);
-  resourceRelationshipsPropertySchema.additionalProperties = relationshipSchema;
+  resourceSchema.getPropertyOrThrow('relationships').additionalProperties = relationshipSchema;
 
   const resourceListSchema = openapi.components.setSchema('JSONAPIResourceList', 'array');
   resourceListSchema.items = resourceSchema;
@@ -85,8 +81,7 @@ const buildBasicJSONAPI = (): OpenAPIModel => {
     source: 'object',
   });
 
-  const errorSourceSchema = errorSchema.properties.get('source');
-  assert(errorSourceSchema);
+  const errorSourceSchema = errorSchema.getPropertyOrThrow('source');
   errorSourceSchema.setProperties({
     pointer: 'string',
     parameter: 'string',

@@ -1,5 +1,6 @@
 import { OpenAPI } from './OpenAPI';
 import { SchemaFactory } from './Schema';
+import { SchemaModel } from './types';
 
 describe('SchemaFactory', () => {
   test('create()', () => {
@@ -78,23 +79,254 @@ describe('Schema', () => {
     expect(() => schema.getPropertyOrThrow('_')).toThrow();
   });
 
-  test('setProperty', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
+  describe('setProperty', () => {
+    const makeSchema = (): SchemaModel => {
+      const openapi = new OpenAPI('example', '0.1.0');
+      return SchemaFactory.create(openapi.components, 'object');
+    };
 
-    const schema = SchemaFactory.create(openapi.components, 'object');
-    expect(schema.properties.size).toBe(0);
-    expect(schema.required.size).toBe(0);
+    let schema = makeSchema();
 
-    const optionalProp = schema.setProperty('x', 'int32');
-    expect(optionalProp.parent).toBe(schema);
-    expect(optionalProp.type).toBe('integer');
-    expect(optionalProp.format).toBe('int32');
-    expect(schema.properties.get('x')).toBe(optionalProp);
-    expect(schema.required.size).toBe(0);
+    beforeEach(() => {
+      schema = makeSchema();
+    });
 
-    const requiredProp = schema.setProperty('y', { type: 'date', required: true });
-    expect(requiredProp.parent).toBe(schema);
-    expect(schema.required.has('y')).toBe(true);
+    test('empty state', () => {
+      expect(schema.properties.size).toBe(0);
+      expect(schema.required.size).toBe(0);
+    });
+
+    describe('boolean type', () => {
+      test('defaults', () => {
+        const prop1 = schema.setProperty('prop1', 'boolean');
+        expect(prop1).toHaveProperty('parent', schema);
+        expect(prop1).toHaveProperty('enum', null);
+        expect(prop1).toHaveProperty('default', null);
+
+        const prop2 = schema.setProperty('prop2', { type: 'boolean' });
+        expect(prop2).toHaveProperty('parent', schema);
+        expect(prop2).toHaveProperty('enum', null);
+        expect(prop2).toHaveProperty('default', null);
+
+        expect(schema.required.has('prop1')).toBeFalsy();
+        expect(schema.required.has('prop2')).toBeFalsy();
+      });
+
+      test('required-ness', () => {
+        schema.setProperty('requiredProp', { type: 'boolean', required: true });
+        expect(schema.required).toContain('requiredProp');
+      });
+
+      test('enum', () => {
+        const propEnum = [true];
+        const prop1 = schema.setProperty('prop', {
+          type: 'boolean',
+          required: true,
+          enum: propEnum,
+        });
+        expect(prop1).toHaveProperty('enum', [true]);
+
+        propEnum.push(false, true);
+        expect(prop1).toHaveProperty('enum', [true]);
+
+        const prop2 = schema.setProperty('prop', {
+          type: 'boolean',
+          required: true,
+          enum: [true, false, true],
+        });
+        expect(prop2).toHaveProperty('enum', null);
+      });
+
+      test('default', () => {
+        const prop = schema.setProperty('defaultIsInEnum', {
+          type: 'boolean',
+          enum: [true],
+          default: true,
+        });
+        expect(prop).toHaveProperty('enum', [true]);
+        expect(prop).toHaveProperty('default', true);
+
+        expect(() =>
+          schema.setProperty('defaultIsNotInEnum', {
+            type: 'boolean',
+            enum: [false],
+            default: true,
+          }),
+        ).toThrow();
+      });
+    });
+
+    describe('numeric types', () => {
+      test('defaults', () => {
+        const int32Prop = schema.setProperty('int32Prop', 'int32');
+        expect(int32Prop).toHaveProperty('type', 'integer');
+        expect(int32Prop).toHaveProperty('format', 'int32');
+        expect(int32Prop).toHaveProperty('enum', null);
+        expect(int32Prop).toHaveProperty('default', null);
+
+        const int64Prop = schema.setProperty('int64Prop', 'int64');
+        expect(int64Prop).toHaveProperty('type', 'integer');
+        expect(int64Prop).toHaveProperty('format', 'int64');
+        expect(int64Prop).toHaveProperty('enum', null);
+        expect(int64Prop).toHaveProperty('default', null);
+
+        const intProp = schema.setProperty('intProp', 'integer');
+        expect(intProp).toHaveProperty('type', 'integer');
+        expect(intProp).toHaveProperty('format', null);
+        expect(intProp).toHaveProperty('enum', null);
+        expect(intProp).toHaveProperty('default', null);
+
+        const numberProp = schema.setProperty('numberProp', 'number');
+        expect(numberProp).toHaveProperty('type', 'number');
+        expect(numberProp).toHaveProperty('format', null);
+        expect(numberProp).toHaveProperty('enum', null);
+        expect(numberProp).toHaveProperty('default', null);
+
+        expect(schema.required.has('int32Prop')).toBeFalsy();
+        expect(schema.required.has('int64Prop')).toBeFalsy();
+        expect(schema.required.has('intProp')).toBeFalsy();
+        expect(schema.required.has('numberProp')).toBeFalsy();
+      });
+
+      test('required-ness', () => {
+        schema.setProperty('propR', { type: 'integer', required: true });
+        expect(schema.required.has('propR')).toBeTruthy();
+      });
+
+      test('enum', () => {
+        const enumValues = [1, 3, 12];
+        const enumProp = schema.setProperty('enumProp', { type: 'integer', enum: enumValues });
+        expect(enumProp).toHaveProperty('enum', [1, 3, 12]);
+
+        enumValues.push(-9, 4);
+        expect(enumProp).toHaveProperty('enum', [1, 3, 12]);
+      });
+
+      test('default value', () => {
+        const prop = schema.setProperty('prop', { type: 'number', default: 12 });
+        expect(prop.default).toBe(12);
+
+        expect(() =>
+          schema.setProperty('prop2', { type: 'int32', enum: [1, 3], default: 4 }),
+        ).toThrow();
+      });
+
+      test('limits', () => {
+        const prop0 = schema.setProperty('prop0', { type: 'integer' });
+        expect(prop0).toHaveProperty('minimum', null);
+        expect(prop0).toHaveProperty('maximum', null);
+        expect(prop0).toHaveProperty('exclusiveMinimum', null);
+        expect(prop0).toHaveProperty('exclusiveMaximum', null);
+
+        const prop1 = schema.setProperty('prop1', { type: 'integer', minimum: 12 });
+        expect(prop1).toHaveProperty('minimum', 12);
+
+        const prop2 = schema.setProperty('prop2', { type: 'integer', maximum: 25 });
+        expect(prop2).toHaveProperty('maximum', 25);
+
+        const prop3 = schema.setProperty('prop3', { type: 'integer', minimum: 12, maximum: 30 });
+        expect(prop3).toHaveProperty('minimum', 12);
+        expect(prop3).toHaveProperty('maximum', 30);
+
+        const prop4 = schema.setProperty('prop4', { type: 'integer', exclusiveMinimum: 12 });
+        expect(prop4).toHaveProperty('exclusiveMinimum', 12);
+
+        const prop5 = schema.setProperty('prop5', { type: 'integer', exclusiveMaximum: 25 });
+        expect(prop5).toHaveProperty('exclusiveMaximum', 25);
+
+        const prop6 = schema.setProperty('prop6', {
+          type: 'integer',
+          exclusiveMinimum: 12,
+          exclusiveMaximum: 30,
+        });
+        expect(prop6).toHaveProperty('exclusiveMinimum', 12);
+        expect(prop6).toHaveProperty('exclusiveMaximum', 30);
+      });
+    });
+
+    describe('date types', () => {
+      test('defaults', () => {
+        const dateProp = schema.setProperty('dateProp', 'date');
+        expect(dateProp).toHaveProperty('type', 'string');
+        expect(dateProp).toHaveProperty('format', 'date');
+        expect(dateProp).toHaveProperty('enum', null);
+        expect(dateProp).toHaveProperty('default', null);
+
+        const dateTimeProp = schema.setProperty('dateTimeProp', 'date-time');
+        expect(dateTimeProp).toHaveProperty('type', 'string');
+        expect(dateTimeProp).toHaveProperty('format', 'date-time');
+        expect(dateTimeProp).toHaveProperty('enum', null);
+        expect(dateTimeProp).toHaveProperty('default', null);
+      });
+
+      test('required-ness', () => {
+        schema.setProperty('propR', { type: 'date', required: true });
+        expect(schema.required.has('propR')).toBeTruthy();
+      });
+
+      test('enum', () => {
+        const enumValues = ['2022-12-12'];
+        const enumProp = schema.setProperty('enumProp', { type: 'date', enum: enumValues });
+        expect(enumProp).toHaveProperty('enum', ['2022-12-12']);
+
+        enumValues.push('2022-01-01');
+        expect(enumProp).toHaveProperty('enum', ['2022-12-12']);
+      });
+
+      test('default value', () => {
+        const prop = schema.setProperty('prop', { type: 'date', default: '2022-12-12' });
+        expect(prop.default).toBe('2022-12-12');
+
+        expect(() =>
+          schema.setProperty('prop2', {
+            type: 'date',
+            enum: ['2022-02-03'],
+            default: '2022-12-12',
+          }),
+        ).toThrow();
+      });
+    });
+
+    describe('string property', () => {
+      test('enum', () => {
+        const genderEnum = ['male', 'female'];
+        const genderProp = schema.setProperty('gender', { type: 'string', enum: genderEnum });
+        expect(genderProp).toHaveProperty('enum', ['male', 'female']);
+
+        genderEnum.push('non-binary');
+        expect(genderProp).toHaveProperty('enum', ['male', 'female']);
+      });
+
+      test('default', () => {
+        const prop1 = schema.setProperty('prop1', { type: 'string', default: 'xyz' });
+        expect(prop1).toHaveProperty('default', 'xyz');
+
+        expect(() =>
+          schema.setProperty('prop1', { type: 'string', enum: ['a'], default: 'xyz' }),
+        ).toThrow();
+      });
+
+      test('pattern', () => {
+        const prop = schema.setProperty('prop', { type: 'string', pattern: '[a-z]+' });
+        expect(prop).toHaveProperty('pattern', '[a-z]+');
+      });
+
+      test('length', () => {
+        const prop0 = schema.setProperty('prop0', { type: 'string' });
+        expect(prop0).toHaveProperty('minLength', null);
+        expect(prop0).toHaveProperty('maxLength', null);
+
+        const prop1 = schema.setProperty('prop1', { type: 'string', minLength: 12 });
+        expect(prop1).toHaveProperty('minLength', 12);
+
+        const prop2 = schema.setProperty('prop2', { type: 'string', maxLength: 43 });
+        expect(prop2).toHaveProperty('maxLength', 43);
+
+        const prop3 = schema.setProperty('prop0', { type: 'string', minLength: 1, maxLength: 3 });
+        expect(prop3).toHaveProperty('minLength', 1);
+        expect(prop3).toHaveProperty('maxLength', 3);
+      });
+    });
   });
 
   test('setProperties', () => {

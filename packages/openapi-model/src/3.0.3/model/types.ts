@@ -67,10 +67,42 @@ export interface DiscriminatorModel
  */
 export type SchemaCreateType = null | SchemaType | SchemaFormat;
 
-export type SchemaCreateObject = {
-  type: SchemaCreateType | SchemaModel;
-  required?: boolean;
-};
+export type SchemaCreateObject =
+  | {
+      type: null | 'object' | 'array' | SchemaModel;
+      required?: boolean;
+    }
+  | {
+      type: 'boolean';
+      required?: boolean;
+      enum?: boolean[];
+      default?: boolean;
+    }
+  | {
+      type: 'integer' | 'number' | 'int32' | 'int64';
+      required?: boolean;
+      minimum?: number;
+      maximum?: number;
+      exclusiveMinimum?: number;
+      exclusiveMaximum?: number;
+      enum?: number[];
+      default?: number;
+    }
+  | {
+      type: 'date' | 'date-time';
+      required?: boolean;
+      enum?: string[];
+      default?: string;
+    }
+  | {
+      type: 'string';
+      required?: boolean;
+      enum?: string[];
+      default?: string;
+      pattern?: string;
+      minLength?: number;
+      maxLength?: number;
+    };
 
 export type SchemaCreateOptions = SchemaCreateType | SchemaModel | SchemaCreateObject;
 
