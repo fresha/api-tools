@@ -96,6 +96,21 @@ describe('Schema', () => {
       expect(schema.required.size).toBe(0);
     });
 
+    test.only('common attributes', () => {
+      schema.setProperty('prop1', { type: 'boolean', required: true });
+      expect(schema.isPropertyRequired('prop1')).toBeTruthy();
+
+      const prop2 = schema.setProperty('prop2', { type: 'integer', nullable: true });
+      global.console.log(prop2);
+      expect(prop2).toHaveProperty('nullable', true);
+
+      const prop3 = schema.setProperty('prop3', { type: 'string', readOnly: true });
+      expect(prop3).toHaveProperty('readOnly', true);
+
+      const prop4 = schema.setProperty('prop4', { type: 'number', writeOnly: true });
+      expect(prop4).toHaveProperty('writeOnly', true);
+    });
+
     describe('boolean type', () => {
       test('defaults', () => {
         const prop1 = schema.setProperty('prop1', 'boolean');
@@ -110,11 +125,6 @@ describe('Schema', () => {
 
         expect(schema.isPropertyRequired('prop1')).toBeFalsy();
         expect(schema.isPropertyRequired('prop2')).toBeFalsy();
-      });
-
-      test('required-ness', () => {
-        schema.setProperty('requiredProp', { type: 'boolean', required: true });
-        expect(schema.required).toContain('requiredProp');
       });
 
       test('enum', () => {
@@ -188,11 +198,6 @@ describe('Schema', () => {
         expect(schema.isPropertyRequired('numberProp')).toBeFalsy();
       });
 
-      test('required-ness', () => {
-        schema.setProperty('propR', { type: 'integer', required: true });
-        expect(schema.isPropertyRequired('propR')).toBeTruthy();
-      });
-
       test('enum', () => {
         const enumValues = [1, 3, 12];
         const enumProp = schema.setProperty('enumProp', { type: 'integer', enum: enumValues });
@@ -257,11 +262,6 @@ describe('Schema', () => {
         expect(dateTimeProp).toHaveProperty('format', 'date-time');
         expect(dateTimeProp).toHaveProperty('enum', null);
         expect(dateTimeProp).toHaveProperty('default', null);
-      });
-
-      test('required-ness', () => {
-        schema.setProperty('propR', { type: 'date', required: true });
-        expect(schema.isPropertyRequired('propR')).toBeTruthy();
       });
 
       test('enum', () => {
