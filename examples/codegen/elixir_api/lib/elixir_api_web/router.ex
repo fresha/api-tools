@@ -11,7 +11,13 @@ defmodule ElixirApiWeb.Router do
   end
 
   pipeline :api do
-    plug :accepts, ["json"]
+    plug :accepts, ["json-api"]
+
+    plug Plug.Parsers,
+      parsers: [:urlencoded, Jabbax.Parser],
+      json_decoder: Jason
+
+    plug Jabbax.Plug
   end
 
   scope "/", ElixirApiWeb do
@@ -20,10 +26,10 @@ defmodule ElixirApiWeb.Router do
     get "/", PageController, :index
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", ElixirApiWeb do
-  #   pipe_through :api
-  # end
+  # JSON:API routes should be listed here
+  scope "/api", ElixirApiWeb do
+    pipe_through :api
+  end
 
   # Enables LiveDashboard only for development
   #
