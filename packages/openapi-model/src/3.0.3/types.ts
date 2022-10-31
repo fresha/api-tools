@@ -131,7 +131,10 @@ export type SchemaFormat =
   | 'binary'
   | 'date'
   | 'date-time'
-  | 'password';
+  | 'password'
+  // https://github.com/fresha/api-tools/issues/57
+  | 'email'
+  | 'decimal';
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#schema-object

@@ -87,6 +87,8 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
       case 'date':
       case 'date-time':
       case 'password':
+      case 'email':
+      case 'decimal':
         result.type = 'string';
         result.format = params;
         break;
@@ -274,7 +276,9 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
           break;
         }
         case 'date':
-        case 'date-time': {
+        case 'date-time':
+        case 'email':
+        case 'decimal': {
           if (params.enum?.length) {
             propertySchema.enum = params.enum.slice();
           }
