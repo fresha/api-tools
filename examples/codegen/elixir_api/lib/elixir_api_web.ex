@@ -23,6 +23,7 @@ defmodule ElixirApiWeb do
 
       import Plug.Conn
       import ElixirApiWeb.Gettext
+      import Surgex.Parser
       alias ElixirApiWeb.Router.Helpers, as: Routes
     end
   end

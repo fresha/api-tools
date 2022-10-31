@@ -46,6 +46,13 @@ config :logger, :console,
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
+config :phoenix, :format_encoders, "json-api": Jabbax
+
+config :plug, :types, %{"application/vnd.api+json" => ["json-api"]}
+
+config :jabbax,
+  json_encoder: Jason,
+  json_decoder: Jason
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

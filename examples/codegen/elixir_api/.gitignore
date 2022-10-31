@@ -32,3 +32,5 @@ elixir_api-*.tar
 npm-debug.log
 /assets/node_modules/
 
+# SQLite databases
+*.sqlite3*

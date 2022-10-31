@@ -7,7 +7,8 @@ defmodule ElixirApi.MixProject do
       version: "0.1.0",
       elixir: "~> 1.12",
       elixirc_paths: elixirc_paths(Mix.env()),
-      compilers: [:gettext] ++ Mix.compilers(),
+      compilers: Mix.compilers(),
+      # compilers: [:gettext] ++ Mix.compilers(),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       deps: deps()
@@ -33,10 +34,13 @@ defmodule ElixirApi.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:corsica, "~> 1.0"},
       {:ecto_sql, "~> 3.6"},
+      {:ecto_sqlite3, "~> 0.8.2"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.18"},
+      {:jabbax, "~> 1.0"},
       {:jason, "~> 1.2"},
       {:phoenix, "~> 1.6.15"},
       {:phoenix_ecto, "~> 4.4"},
@@ -46,6 +50,7 @@ defmodule ElixirApi.MixProject do
       {:phoenix_live_dashboard, "~> 0.6"},
       {:plug_cowboy, "~> 2.5"},
       {:postgrex, ">= 0.0.0"},
+      {:surgex, "~> 4.9"},
       {:swoosh, "~> 1.3"},
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"}
