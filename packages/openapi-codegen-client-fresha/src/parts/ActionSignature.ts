@@ -140,67 +140,67 @@ export class ActionSignature {
   protected addRequestBodyParams(argsParamType: TypeLiteralNode, schema: SchemaModel): void {
     assert(schema.type === 'object');
 
-    for (const [propName, propSchema] of schema.properties) {
-      switch (propSchema.type) {
+    for (const prop of schema.getProperties()) {
+      switch (prop.schema.type) {
         case null:
           addImportDeclaration(argsParamType.getSourceFile(), '@fresha/noname-core', 't:JSONValue');
-          addTypeLiteralProperty(argsParamType, propName, 'JSONValue');
+          addTypeLiteralProperty(argsParamType, prop.name, 'JSONValue');
           break;
         case 'boolean':
           addTypeLiteralProperty(
             argsParamType,
-            propName,
-            propSchema.nullable ? 'boolean | null' : 'boolean',
+            prop.name,
+            prop.schema.nullable ? 'boolean | null' : 'boolean',
           );
           break;
         case 'number':
         case 'integer':
           addTypeLiteralProperty(
             argsParamType,
-            propName,
-            propSchema.nullable ? 'number | null' : 'number',
+            prop.name,
+            prop.schema.nullable ? 'number | null' : 'number',
           );
           break;
         case 'string': {
           let propType = 'string';
-          if (propSchema.enum) {
-            if (propSchema.enum.length === 1) {
-              propType = `'${String(propSchema.enum[0])}'`;
-            } else if (propSchema.enum.length > 1) {
-              propType = propSchema.enum?.map(elem => `'${String(elem)}'`).join(' | ');
+          if (prop.schema.enum) {
+            if (prop.schema.enum.length === 1) {
+              propType = `'${String(prop.schema.enum[0])}'`;
+            } else if (prop.schema.enum.length > 1) {
+              propType = prop.schema.enum?.map(elem => `'${String(elem)}'`).join(' | ');
             }
-            if (propSchema.nullable) {
+            if (prop.schema.nullable) {
               propType = `${propType} | null`;
             }
           }
-          addTypeLiteralProperty(argsParamType, propName, propType);
+          addTypeLiteralProperty(argsParamType, prop.name, propType);
           break;
         }
         case 'object': {
-          if (propSchema.properties.size) {
-            const propType = addTypeLiteralProperty(argsParamType, propName, '{}');
-            this.addRequestBodyParams(propType.asKindOrThrow(SyntaxKind.TypeLiteral), propSchema);
+          if (prop.schema.properties.size) {
+            const propType = addTypeLiteralProperty(argsParamType, prop.name, '{}');
+            this.addRequestBodyParams(propType.asKindOrThrow(SyntaxKind.TypeLiteral), prop.schema);
           } else {
             addImportDeclaration(
               argsParamType.getSourceFile(),
               '@fresha/noname-core',
               't:JSONObject',
             );
-            addTypeLiteralProperty(argsParamType, propName, 'JSONObject');
+            addTypeLiteralProperty(argsParamType, prop.name, 'JSONObject');
           }
           break;
         }
         case 'array':
           addImportDeclaration(argsParamType.getSourceFile(), '@fresha/noname-core', 't:JSONArray');
-          addTypeLiteralProperty(argsParamType, propName, 'JSONArray');
+          addTypeLiteralProperty(argsParamType, prop.name, 'JSONArray');
           break;
         default:
-          this.logger.warn(`Cannot handle schema type ${String(propSchema.type)}`);
+          this.logger.warn(`Cannot handle schema type ${String(prop.schema.type)}`);
       }
 
       argsParamType
-        .getPropertyOrThrow(propName)
-        .setHasQuestionToken(!schema.required.has(propName));
+        .getPropertyOrThrow(prop.name)
+        .setHasQuestionToken(!schema.required.has(prop.name));
     }
   }
 }
