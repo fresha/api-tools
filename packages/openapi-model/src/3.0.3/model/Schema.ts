@@ -208,10 +208,20 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     if (
       params != null &&
       typeof params !== 'string' &&
-      !('root' in params && params.root != null) &&
-      params.required != null
+      !('root' in params && params.root != null)
     ) {
-      this.setPropertyRequired(name, !!params.required);
+      if (params.required != null) {
+        this.setPropertyRequired(name, !!params.required);
+      }
+      if (params.nullable != null) {
+        propertySchema.nullable = !!params.nullable;
+      }
+      if (params.readOnly != null) {
+        propertySchema.readOnly = !!params.readOnly;
+      }
+      if (params.writeOnly != null) {
+        propertySchema.writeOnly = !!params.writeOnly;
+      }
     }
 
     if (
