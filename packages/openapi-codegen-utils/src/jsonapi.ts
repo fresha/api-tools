@@ -82,21 +82,24 @@ export const addResourceRelationship = (
   assert(relationshipsSchema.type === 'object');
 
   if (typeof options === 'string') {
-    const dataSchema = relationshipsSchema
-      .setProperty(name, { type: 'object', required: false })
-      .setProperty('data', { type: 'object', required: true });
-    dataSchema.nullable = true;
-    setResourceIdSchema(dataSchema, options);
+    setResourceIdSchema(
+      relationshipsSchema
+        .setProperty(name, { type: 'object', required: false })
+        .setProperty('data', { type: 'object', required: true, nullable: true }),
+      options,
+    );
   } else if (options.multiple) {
     const dataSchema = relationshipsSchema
       .setProperty(name, { type: 'object', required: !!options.required })
       .setProperty('data', { type: 'array', required: true });
     dataSchema.items = createResourceIdSchema(dataSchema, options.type);
   } else {
-    const dataSchema = relationshipsSchema
-      .setProperty(name, { type: 'object', required: !!options.required })
-      .setProperty('data', { type: 'object', required: true });
-    setResourceIdSchema(dataSchema, options.type);
+    setResourceIdSchema(
+      relationshipsSchema
+        .setProperty(name, { type: 'object', required: !!options.required })
+        .setProperty('data', { type: 'object', required: true }),
+      options.type,
+    );
   }
 };
 

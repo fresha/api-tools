@@ -21,6 +21,14 @@ describe('SchemaFactory', () => {
     const dateTimeSchema = SchemaFactory.create(openapi.components, 'date-time');
     expect(dateTimeSchema.type).toBe('string');
     expect(dateTimeSchema.format).toBe('date-time');
+
+    const emailSchema = SchemaFactory.create(openapi.components, 'email');
+    expect(emailSchema).toHaveProperty('type', 'string');
+    expect(emailSchema).toHaveProperty('format', 'email');
+
+    const decimalSchema = SchemaFactory.create(openapi.components, 'decimal');
+    expect(decimalSchema).toHaveProperty('type', 'string');
+    expect(decimalSchema).toHaveProperty('format', 'decimal');
   });
 
   test('createArray()', () => {
@@ -96,18 +104,17 @@ describe('Schema', () => {
       expect(schema.required.size).toBe(0);
     });
 
-    test.only('common attributes', () => {
+    test('common attributes', () => {
       schema.setProperty('prop1', { type: 'boolean', required: true });
       expect(schema.isPropertyRequired('prop1')).toBeTruthy();
 
-      const prop2 = schema.setProperty('prop2', { type: 'integer', nullable: true });
-      global.console.log(prop2);
+      const prop2 = schema.setProperty('prop2', { type: 'decimal', nullable: true });
       expect(prop2).toHaveProperty('nullable', true);
 
       const prop3 = schema.setProperty('prop3', { type: 'string', readOnly: true });
       expect(prop3).toHaveProperty('readOnly', true);
 
-      const prop4 = schema.setProperty('prop4', { type: 'number', writeOnly: true });
+      const prop4 = schema.setProperty('prop4', { type: 'email', writeOnly: true });
       expect(prop4).toHaveProperty('writeOnly', true);
     });
 
@@ -282,6 +289,70 @@ describe('Schema', () => {
             type: 'date',
             enum: ['2022-02-03'],
             default: '2022-12-12',
+          }),
+        ).toThrow();
+      });
+    });
+
+    describe('email', () => {
+      test('defaults', () => {
+        const prop = schema.setProperty('emailProp', 'email');
+        expect(prop).toHaveProperty('type', 'string');
+        expect(prop).toHaveProperty('format', 'email');
+        expect(prop).toHaveProperty('enum', null);
+        expect(prop).toHaveProperty('default', null);
+      });
+
+      test('enum', () => {
+        const enumValues = ['john@example.com'];
+        const prop = schema.setProperty('emailSubset', { type: 'email', enum: enumValues });
+        expect(prop).toHaveProperty('enum', ['john@example.com']);
+
+        enumValues.push('mary@example.com');
+        expect(prop).toHaveProperty('enum', ['john@example.com']);
+      });
+
+      test('default value', () => {
+        const prop = schema.setProperty('prop', { type: 'email', default: 'john@example.com' });
+        expect(prop.default).toBe('john@example.com');
+
+        expect(() =>
+          schema.setProperty('prop2', {
+            type: 'date',
+            enum: ['mary@example.com'],
+            default: 'john@example.com',
+          }),
+        ).toThrow();
+      });
+    });
+
+    describe('decimal', () => {
+      test('defaults', () => {
+        const prop = schema.setProperty('tipAmount', 'decimal');
+        expect(prop).toHaveProperty('type', 'string');
+        expect(prop).toHaveProperty('format', 'decimal');
+        expect(prop).toHaveProperty('enum', null);
+        expect(prop).toHaveProperty('default', null);
+      });
+
+      test('enum', () => {
+        const enumValues = ['12.34', '-0.000001'];
+        const prop = schema.setProperty('decimalWithChoice', { type: 'decimal', enum: enumValues });
+        expect(prop).toHaveProperty('enum', ['12.34', '-0.000001']);
+
+        enumValues.push('1.1111');
+        expect(prop).toHaveProperty('enum', ['12.34', '-0.000001']);
+      });
+
+      test('default value', () => {
+        const prop = schema.setProperty('prop', { type: 'decimal', default: '0.00' });
+        expect(prop.default).toBe('0.00');
+
+        expect(() =>
+          schema.setProperty('prop2', {
+            type: 'decimal',
+            enum: ['0.01'],
+            default: '1.00',
           }),
         ).toThrow();
       });

@@ -86,7 +86,7 @@ export type SchemaCreateObject = (
       default?: number;
     }
   | {
-      type: 'date' | 'date-time';
+      type: 'date' | 'date-time' | 'email' | 'decimal';
       enum?: string[];
       default?: string;
     }
