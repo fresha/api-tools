@@ -115,6 +115,16 @@ export type SchemaModelParent =
   | HTTPSecuritySchemaModel;
 
 /**
+ * SchemaModel iterators yield this objects. This reduces number of objects that should be
+ * passed around, to one.
+ */
+export type SchemaPropertyObject = {
+  readonly name: string;
+  readonly schema: SchemaModel;
+  readonly required: boolean;
+};
+
+/**
  * @see https://spec.openapis.org/oas/v3.0.3#schema-object
  */
 export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationExtensionsModel {
@@ -154,6 +164,7 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   example: Nullable<JSONValue>;
   deprecated: boolean;
 
+  getProperties(): IterableIterator<SchemaPropertyObject>;
   getProperty(name: string): SchemaModel | undefined;
   getPropertyOrThrow(name: string): SchemaModel;
   setProperty(name: string, options: SchemaCreateOptions): SchemaModel;
@@ -161,6 +172,7 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   deleteProperty(name: string): void;
   clearProperties(): void;
 
+  isPropertyRequired(name: string): boolean;
   setPropertyRequired(name: string, value: boolean): void;
 
   addAllOf(options: SchemaCreateOptions): SchemaModel;

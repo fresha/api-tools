@@ -108,8 +108,8 @@ describe('Schema', () => {
         expect(prop2).toHaveProperty('enum', null);
         expect(prop2).toHaveProperty('default', null);
 
-        expect(schema.required.has('prop1')).toBeFalsy();
-        expect(schema.required.has('prop2')).toBeFalsy();
+        expect(schema.isPropertyRequired('prop1')).toBeFalsy();
+        expect(schema.isPropertyRequired('prop2')).toBeFalsy();
       });
 
       test('required-ness', () => {
@@ -182,15 +182,15 @@ describe('Schema', () => {
         expect(numberProp).toHaveProperty('enum', null);
         expect(numberProp).toHaveProperty('default', null);
 
-        expect(schema.required.has('int32Prop')).toBeFalsy();
-        expect(schema.required.has('int64Prop')).toBeFalsy();
-        expect(schema.required.has('intProp')).toBeFalsy();
-        expect(schema.required.has('numberProp')).toBeFalsy();
+        expect(schema.isPropertyRequired('int32Prop')).toBeFalsy();
+        expect(schema.isPropertyRequired('int64Prop')).toBeFalsy();
+        expect(schema.isPropertyRequired('intProp')).toBeFalsy();
+        expect(schema.isPropertyRequired('numberProp')).toBeFalsy();
       });
 
       test('required-ness', () => {
         schema.setProperty('propR', { type: 'integer', required: true });
-        expect(schema.required.has('propR')).toBeTruthy();
+        expect(schema.isPropertyRequired('propR')).toBeTruthy();
       });
 
       test('enum', () => {
@@ -261,7 +261,7 @@ describe('Schema', () => {
 
       test('required-ness', () => {
         schema.setProperty('propR', { type: 'date', required: true });
-        expect(schema.required.has('propR')).toBeTruthy();
+        expect(schema.isPropertyRequired('propR')).toBeTruthy();
       });
 
       test('enum', () => {

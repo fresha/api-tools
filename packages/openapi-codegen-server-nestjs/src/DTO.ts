@@ -10,7 +10,7 @@ import {
 
 import type { Generator } from './Generator';
 import type { Nullable } from '@fresha/api-tools-core';
-import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import type { SchemaModel, SchemaPropertyObject } from '@fresha/openapi-model/build/3.0.3';
 import type { ClassDeclaration, CodeBlockWriter, SourceFile } from 'ts-morph';
 
 export class DTO {
@@ -46,67 +46,55 @@ export class DTO {
     if (schema) {
       assert(schema.type === 'object', `Schema type '${String(schema.type)}'`);
 
-      for (const [propName, propSchema] of schema.properties) {
-        switch (propSchema.type) {
+      for (const prop of schema.getProperties()) {
+        switch (prop.schema.type) {
           case null:
-            this.addUnknownProperty(classDecl, propName, propSchema);
+            this.addUnknownProperty(classDecl, prop);
             break;
           case 'boolean':
-            this.addBooleanProperty(classDecl, propName, propSchema);
+            this.addBooleanProperty(classDecl, prop);
             break;
           case 'number':
-            this.addNumericProperty(classDecl, propName, propSchema);
+            this.addNumericProperty(classDecl, prop);
             break;
           case 'string':
-            this.addStringProperty(classDecl, propName, propSchema);
+            this.addStringProperty(classDecl, prop);
             break;
           case 'object':
-            this.addObjectProperty(classDecl, propName, propSchema);
+            this.addObjectProperty(classDecl, prop);
             break;
           case 'array':
-            this.addArrayProperty(classDecl, propName, propSchema);
+            this.addArrayProperty(classDecl, prop);
             break;
           default:
-            assert.fail(`Unexpected schema type: ${String(propSchema.type)}`);
+            assert.fail(`Unexpected schema type: ${String(prop.schema.type)}`);
         }
       }
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected addUnknownProperty(
-    classDecl: ClassDeclaration,
-    propName: string,
-    propSchema: SchemaModel,
-  ): void {
-    const parentSchema = propSchema.parent as SchemaModel;
+  protected addUnknownProperty(classDecl: ClassDeclaration, prop: SchemaPropertyObject): void {
     const propDef = classDecl.addProperty({
-      name: propName,
+      name: prop.name,
       type: 'unknown',
-      hasQuestionToken: !parentSchema.required.has(propName),
+      hasQuestionToken: !prop.required,
     });
     propDef.prependWhitespace('\n');
 
     addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
 
-    if (propSchema.allOf?.length || propSchema.oneOf?.length || propSchema.anyOf?.length) {
+    if (prop.schema.allOf?.length || prop.schema.oneOf?.length || prop.schema.anyOf?.length) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'ValidateNested');
       addDecorator(propDef, 'ValidateNested', undefined);
     }
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected addBooleanProperty(
-    classDecl: ClassDeclaration,
-    propName: string,
-    propSchema: SchemaModel,
-  ): void {
-    const parentSchema = propSchema.parent as SchemaModel;
+  protected addBooleanProperty(classDecl: ClassDeclaration, prop: SchemaPropertyObject): void {
     const propDef = classDecl.addProperty({
-      name: propName,
+      name: prop.name,
       type: 'boolean',
-      hasQuestionToken: !parentSchema.required.has(propName),
+      hasQuestionToken: !prop.required,
     });
     propDef.prependWhitespace('\n');
 
@@ -116,85 +104,70 @@ export class DTO {
     addDecorator(propDef, 'IsBoolean', undefined);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected addNumericProperty(
-    classDecl: ClassDeclaration,
-    propName: string,
-    propSchema: SchemaModel,
-  ): void {
-    const parentSchema = propSchema.parent as SchemaModel;
+  protected addNumericProperty(classDecl: ClassDeclaration, prop: SchemaPropertyObject): void {
     const propDef = classDecl.addProperty({
-      name: propName,
-      type: propSchema.nullable ? 'number | null' : 'number',
-      hasQuestionToken: !parentSchema.required.has(propName),
+      name: prop.name,
+      type: prop.schema.nullable ? 'number | null' : 'number',
+      hasQuestionToken: !prop.required,
     });
     propDef.prependWhitespace('\n');
 
     addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
-    if (propSchema.minimum != null) {
+    if (prop.schema.minimum != null) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'Min');
-      addDecorator(propDef, 'Min', propSchema.minimum);
+      addDecorator(propDef, 'Min', prop.schema.minimum);
     }
-    if (propSchema.exclusiveMinimum != null) {
+    if (prop.schema.exclusiveMinimum != null) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'Min');
-      addDecorator(propDef, 'Min', propSchema.exclusiveMinimum);
+      addDecorator(propDef, 'Min', prop.schema.exclusiveMinimum);
     }
-    if (propSchema.maximum != null) {
+    if (prop.schema.maximum != null) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'Max');
-      addDecorator(propDef, 'Max', propSchema.maximum);
+      addDecorator(propDef, 'Max', prop.schema.maximum);
     }
-    if (propSchema.exclusiveMaximum != null) {
+    if (prop.schema.exclusiveMaximum != null) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'Max');
-      addDecorator(propDef, 'Max', propSchema.exclusiveMaximum);
+      addDecorator(propDef, 'Max', prop.schema.exclusiveMaximum);
     }
     addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsInt');
     addDecorator(propDef, 'IsInt', undefined);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected addStringProperty(
-    classDecl: ClassDeclaration,
-    propName: string,
-    propSchema: SchemaModel,
-  ): void {
-    const parentSchema = propSchema.parent as SchemaModel;
+  protected addStringProperty(classDecl: ClassDeclaration, prop: SchemaPropertyObject): void {
     const propDef = classDecl.addProperty({
-      name: propName,
-      type: propSchema.nullable ? 'string | null' : 'string',
-      hasQuestionToken: !parentSchema.required.has(propName),
+      name: prop.name,
+      type: prop.schema.nullable ? 'string | null' : 'string',
+      hasQuestionToken: !prop.required,
     });
     propDef.prependWhitespace('\n');
 
     addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
-    if (propSchema.minLength) {
+    if (prop.schema.minLength) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'MinLength');
-      addDecorator(propDef, 'MinLength', propSchema.minLength);
+      addDecorator(propDef, 'MinLength', prop.schema.minLength);
     }
-    if (propSchema.maxLength) {
+    if (prop.schema.maxLength) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'MaxLength');
-      addDecorator(propDef, 'MaxLength', propSchema.maxLength);
+      addDecorator(propDef, 'MaxLength', prop.schema.maxLength);
     }
     addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsString');
     addDecorator(propDef, 'IsString', undefined);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  protected addObjectProperty(
-    classDecl: ClassDeclaration,
-    propName: string,
-    propSchema: SchemaModel,
-  ): void {
-    const propClassName = titleCase(`${classDecl.getName() ?? ''}-${propName}`).replace(/\s+/g, '');
+  protected addObjectProperty(classDecl: ClassDeclaration, prop: SchemaPropertyObject): void {
+    const propClassName = titleCase(`${classDecl.getName() ?? ''}-${prop.name}`).replace(
+      /\s+/g,
+      '',
+    );
 
-    this.addClassDecl(propClassName, propSchema);
+    this.addClassDecl(propClassName, prop.schema);
 
-    const parentSchema = propSchema.parent as SchemaModel;
     const propDef = classDecl.addProperty({
-      name: propName,
+      name: prop.name,
       type: propClassName,
-      hasQuestionToken: !parentSchema.required?.has(propName),
+      hasQuestionToken: !prop.required,
     });
     propDef.prependWhitespace('\n');
 
@@ -208,15 +181,11 @@ export class DTO {
     addDecorator(propDef, 'ValidateNested', undefined);
   }
 
-  protected addArrayProperty(
-    classDecl: ClassDeclaration,
-    propName: string,
-    propSchema: SchemaModel,
-  ): void {
+  protected addArrayProperty(classDecl: ClassDeclaration, prop: SchemaPropertyObject): void {
     assert(this.schema);
 
     let itemTypeString = 'unknown[]';
-    switch (propSchema.items?.type) {
+    switch (prop.schema.items?.type) {
       case 'boolean':
         itemTypeString = 'boolean[]';
         break;
@@ -234,25 +203,25 @@ export class DTO {
       case null:
         break;
       default:
-        assert.fail(`Unsupported schema type ${String(propSchema.items?.type)}`);
+        assert.fail(`Unsupported schema type ${String(prop.schema.items?.type)}`);
     }
 
     const propDef = classDecl.addProperty({
-      name: propName,
+      name: prop.name,
       type: itemTypeString,
-      hasQuestionToken: !this.schema.required.has(propName),
+      hasQuestionToken: !prop.required,
     });
     propDef.prependWhitespace('\n');
 
     addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
-    if (propSchema.minItems != null) {
+    if (prop.schema.minItems != null) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'ArrayMinSize');
-      addDecorator(propDef, 'ArrayMinSize', propSchema.minItems);
+      addDecorator(propDef, 'ArrayMinSize', prop.schema.minItems);
     }
-    if (propSchema.maxItems != null) {
+    if (prop.schema.maxItems != null) {
       addImportDeclaration(this.tsSourceFile, 'class-validator', 'ArrayMaxSize');
-      addDecorator(propDef, 'ArrayMaxSize', propSchema.maxItems);
+      addDecorator(propDef, 'ArrayMaxSize', prop.schema.maxItems);
     }
     addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsArray');
     addDecorator(propDef, 'IsArray', undefined);

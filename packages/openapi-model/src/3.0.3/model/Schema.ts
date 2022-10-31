@@ -13,6 +13,7 @@ import type {
   SchemaModel,
   SchemaModelFactory,
   SchemaModelParent,
+  SchemaPropertyObject,
   SchemaType,
   XMLModel,
 } from './types';
@@ -184,6 +185,12 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.deprecated = false;
   }
 
+  *getProperties(): IterableIterator<SchemaPropertyObject> {
+    for (const [name, schema] of this.properties) {
+      yield { name, schema, required: this.isPropertyRequired(name) };
+    }
+  }
+
   getProperty(name: string): SchemaModel | undefined {
     return this.properties.get(name);
   }
@@ -311,6 +318,10 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   clearProperties(): void {
     this.properties.clear();
     this.required.clear();
+  }
+
+  isPropertyRequired(name: string): boolean {
+    return this.required.has(name);
   }
 
   setPropertyRequired(name: string, value: boolean): void {
