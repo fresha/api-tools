@@ -1,4 +1,4 @@
-import { kebabCase, kebabCaseDeep, camelCase } from './utils';
+import { kebabCase, kebabCaseDeep, camelCase, titleCase, snakeCase } from './utils';
 
 describe('kebabCase', () => {
   it('should convert strings to kebab case', () => {
@@ -58,4 +58,16 @@ describe('kebabCaseDeep', () => {
       },
     });
   });
+});
+
+test('titleCase', () => {
+  expect(titleCase('forget-me-not')).toBe('ForgetMeNot');
+  expect(titleCase('forgetMeNot')).toBe('ForgetMeNot');
+});
+
+test('snakeCase', () => {
+  expect(snakeCase('forget-me-not')).toBe('forget_me_not');
+  expect(snakeCase('Forget-me-not')).toBe('forget_me_not');
+  expect(snakeCase('forgetMeNot')).toBe('forget_me_not');
+  expect(snakeCase('--Forget--MeNot')).toBe('forget_me_not');
 });

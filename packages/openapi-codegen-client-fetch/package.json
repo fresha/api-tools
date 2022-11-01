@@ -24,7 +24,12 @@
     "LICENSE",
     "README.md"
   ],
-  "keywords": ["OpenAPI", "code generator", "Fetch API", "TypeScript"],
+  "keywords": [
+    "OpenAPI",
+    "code generator",
+    "Fetch API",
+    "TypeScript"
+  ],
   "author": "Fresha Engineering",
   "contributors": [
     {
@@ -42,8 +47,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/openapi-model": "0.3.0",
+    "@fresha/api-tools-core": "^0.2.1",
     "@fresha/openapi-codegen-utils": "0.1.0",
+    "@fresha/openapi-model": "0.3.0",
     "ts-morph": "^16.0.0"
   },
   "devDependencies": {

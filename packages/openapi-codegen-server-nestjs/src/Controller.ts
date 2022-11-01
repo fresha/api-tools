@@ -1,12 +1,12 @@
 import path from 'path';
 
+import { titleCase } from '@fresha/api-tools-core';
 import {
   addDecorator,
   commonStringPrefix,
   kebabCase,
   Logger,
   significantNameParts,
-  titleCase,
   addImportDeclaration,
 } from '@fresha/openapi-codegen-utils';
 
