@@ -34,4 +34,8 @@ defmodule ElixirApi.Factory do
       employee_id: employee.id,
     }
   end
+
+  def blocked_times_factory do
+    blocked_time_factory()
+  end
 end

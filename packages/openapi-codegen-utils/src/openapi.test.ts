@@ -9,16 +9,9 @@ import {
   getOperationIdOrThrow,
   getRootUrl,
   getRootUrlOrThrow,
-  significantNameParts,
   getOperationCacheOptionsOrThrow,
   getOperationCacheOptions,
 } from './openapi';
-
-test('significantNameParts', () => {
-  expect(significantNameParts('/')).toStrictEqual([]);
-  expect(significantNameParts('/x/y/z')).toStrictEqual(['x', 'y', 'z']);
-  expect(significantNameParts('/{id}/a/{q}')).toStrictEqual(['a']);
-});
 
 test('getAPIName', () => {
   const openapi = OpenAPIFactory.create('Some Api', '0.1.2');
