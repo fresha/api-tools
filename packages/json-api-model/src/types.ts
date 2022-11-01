@@ -1,11 +1,5 @@
 import type { JSONObject, Nullable } from '@fresha/api-tools-core';
-import type {
-  AddBooleanPropertyOptions,
-  AddNumberPropertyOptions,
-  AddStringPropertyOptions,
-  ISchemaRegistry,
-  JSONSchema,
-} from '@fresha/json-schema-model';
+import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 /**
  * @see https://jsonapi.org/format/#introduction
@@ -25,120 +19,97 @@ export type DocumentId = string;
 /**
  * @see https://jsonapi.org/format/#document-top-level
  */
-export interface IDataDocument {
-  readonly id: DocumentId;
-  readonly data: IResource | ReadonlyArray<IResource>;
-  readonly included: ReadonlyArray<IResource>;
+export interface DataDocumentModel {
+  readonly data: ResourceModel | ReadonlyArray<ResourceModel>;
+  readonly included: ReadonlyArray<ResourceModel>;
   readonly meta: Nullable<JSONObject>;
 
   /**
    * Returns JSON Schema model for this document.
    */
-  jsonSchema(): JSONSchema;
-}
-
-/**
- * @see https://jsonapi.org/format/#error-objects
- */
-export interface IErrorObject {
-  id: string;
+  jsonSchema(): SchemaModel;
 }
 
 /**
  * @see https://jsonapi.org/format/#document-top-level
  */
-export interface IErrorDocument {
-  readonly id: DocumentId;
-  readonly errors: ReadonlyArray<IErrorObject>;
-
+export interface ErrorDocumentModel {
   /**
    * Returns JSON Schema model for this document.
    */
-  jsonSchema(): JSONSchema;
+  jsonSchema(): SchemaModel;
 }
 
 /**
  * @see https://jsonapi.org/format/#document-structure
  */
-export type IDocument = IDataDocument | IErrorDocument;
+export type DocumentModel = DataDocumentModel | ErrorDocumentModel;
 
 /**
  * @see https://jsonapi.org/format/#document-resource-object-attributes
  */
-export interface IAttribute {
+export interface AttributeModel {
+  readonly resource: ResourceModel;
+  readonly name: string;
+
   /**
    * Returns JSON Schema model for this attribute.
    */
-  jsonSchema(): JSONSchema;
+  jsonSchema(): SchemaModel;
 }
-
-export type RelationshipType = 'one-to-one' | 'one-to-many' | 'many-to-one' | 'many-to-many';
 
 /**
  * @see https://jsonapi.org/format/#document-resource-object-relationships
  */
-export interface IRelationship {
-  // source: IResource;
-  // sourceName: string;
-  // destination: IResource;
-  // destinationName: string;
-  minCardinality: number;
-  maxCardinality: number;
-}
+export interface RelationshipModel {
+  readonly name: string;
+  readonly otherResourceType: string;
+  readonly otherResource: Nullable<ResourceModel>;
 
-export type AddRelationshipOptions = Partial<{
-  type: RelationshipType;
-}>;
+  /**
+   * Returns JSON Schema model for this relationship.
+   */
+  jsonSchema(): SchemaModel;
+}
 
 /**
  * @see https://jsonapi.org/format/#document-resource-objects
  */
-export interface IResource {
+export interface ResourceModel {
   readonly type: ResourceType;
-  readonly id: IAttribute;
-  readonly attributes: ReadonlyMap<string, IAttribute>;
+  readonly attributes: ReadonlyMap<string, AttributeModel>;
+  readonly relationships: ReadonlyMap<string, RelationshipModel>;
 
-  addAttribute(name: string, type: 'boolean', options?: AddBooleanPropertyOptions): IAttribute;
-  addAttribute(name: string, type: 'number', options?: AddNumberPropertyOptions): IAttribute;
-  addAttribute(name: string, type: 'string', options?: AddStringPropertyOptions): IAttribute;
-  addAttribute(name: string, type: 'object'): IAttribute;
-  addAttribute(name: string, type: 'array'): IAttribute;
-  removeAttribute(name: string): void;
-  clearAttributes(): void;
+  getAttributeNames(): string[];
+  getAttribute(name: string): AttributeModel | undefined;
+  getAttributeOrThrow(name: string): AttributeModel;
 
-  readonly relationships: ReadonlyMap<string, IRelationship>;
-
-  addRelationship(
-    name: string,
-    other: IResource,
-    otherName: string,
-    options?: AddRelationshipOptions,
-  ): IRelationship;
-  removeRelationship(name: string): void;
-  clearRelationships(): void;
+  getRelationshipNames(): string[];
+  getRelationship(name: string): RelationshipModel | undefined;
+  getRelationshipOrThrow(name: string): RelationshipModel;
 
   /**
    * Returns JSON Schema describing shape of this resource's data.
    */
-  jsonSchema(): JSONSchema;
+  jsonSchema(): Nullable<SchemaModel>;
 }
 
 /**
  * Manages JSON:API resources.
  */
-export interface IRegistry {
-  readonly schemaRegistry: ISchemaRegistry;
+export interface RegistryModel {
+  readonly resources: ReadonlyMap<ResourceType, ResourceModel>;
 
-  readonly resources: ReadonlyMap<ResourceType, IResource>;
+  getResource(resourceType: ResourceType): ResourceModel | undefined;
+  getResourceOrThrow(resourceType: ResourceType): ResourceModel;
 
-  addResource(type: ResourceType): IResource;
-  deleteResource(type: ResourceType): void;
-  clearResources(): void;
+  createResource(type: string): ResourceModel;
+  parseResource(schema: SchemaModel): ResourceModel;
 
-  readonly documents: ReadonlyMap<DocumentId, IDocument>;
+  readonly documents: ReadonlyMap<DocumentId, DocumentModel>;
 
-  addDataDocument(id: DocumentId): IDataDocument;
-  addErrorDocument(id: DocumentId): IErrorDocument;
-  deleteDocument(id: DocumentId): void;
-  clearDocuments(): void;
+  getDocument(documentId: DocumentId): DocumentModel | undefined;
+  getDocumentOrThrow(documentId: DocumentId): DocumentModel;
+
+  parseDocument(schema: SchemaModel, documentId: DocumentId): DocumentModel;
 }

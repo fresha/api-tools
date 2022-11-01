@@ -1,104 +1,87 @@
-import { ITreeParent, TreeNode } from '@fresha/api-tools-core';
+import assert from 'assert';
 
 import { Attribute } from './Attribute';
 import { Relationship } from './Relationship';
 
-import type { IAttribute, IRegistry, IRelationship, IResource } from './types';
 import type {
-  AddBooleanPropertyOptions,
-  AddNumberPropertyOptions,
-  AddStringPropertyOptions,
-  JSONSchema,
-  JSONSchemaType,
-} from '@fresha/json-schema-model';
+  AttributeModel,
+  DocumentModel,
+  RegistryModel,
+  RelationshipModel,
+  ResourceModel,
+} from './types';
+import type { Nullable } from '@fresha/api-tools-core';
+import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
-type ResourceParent = ITreeParent<IRegistry> | Resource;
+export class Resource implements ResourceModel {
+  readonly registry: RegistryModel | DocumentModel;
+  readonly schema: Nullable<SchemaModel>;
 
-export class Resource extends TreeNode<IRegistry, ResourceParent> implements IResource {
   readonly type: string;
-  readonly id: IAttribute;
-  readonly attributes: Map<string, IAttribute>;
-  readonly relationships: Map<string, IRelationship>;
+  readonly attributes: Map<string, AttributeModel>;
+  readonly relationships: Map<string, RelationshipModel>;
 
-  constructor(parent: ResourceParent, type: string) {
-    super(parent);
-    this.type = type;
-    this.id = new Attribute(this, 'string');
-    this.attributes = new Map<string, Attribute>();
-    this.relationships = new Map<string, Relationship>();
-  }
+  constructor(registry: RegistryModel | DocumentModel, schema: string | SchemaModel) {
+    this.registry = registry;
 
-  addAttribute(name: string, type: 'boolean', options?: AddBooleanPropertyOptions): IAttribute;
-  addAttribute(name: string, type: 'number', options?: AddNumberPropertyOptions): IAttribute;
-  addAttribute(name: string, type: 'string', options?: AddStringPropertyOptions): IAttribute;
-  addAttribute(name: string, type: 'object'): IAttribute;
-  addAttribute(name: string, type: 'array'): IAttribute;
-  addAttribute(
-    name: string,
-    type: JSONSchemaType,
-    options?: AddBooleanPropertyOptions | AddNumberPropertyOptions | AddStringPropertyOptions,
-  ): IAttribute {
-    if (this.attributes.has(name)) {
-      throw new Error(`Duplicate attribute ${name}`);
+    if (typeof schema === 'string') {
+      this.type = schema;
+      this.schema = null;
+    } else {
+      this.schema = schema;
+      const resourceType = this.schema.getPropertyOrThrow('type').enum?.at(0);
+      assert(resourceType && typeof resourceType === 'string');
+      this.type = resourceType;
     }
-    switch (type) {
-      case 'boolean': {
-        const result = new Attribute(this, type, options as AddBooleanPropertyOptions);
-        this.attributes.set(name, result);
-        return result;
+
+    this.attributes = new Map<string, AttributeModel>();
+    this.relationships = new Map<string, RelationshipModel>();
+
+    if (this.schema) {
+      const attributesSchema = this.schema.getPropertyOrThrow('attributes');
+      for (const [attrName, attrSchema] of attributesSchema.properties) {
+        const attribute = new Attribute(this, attrName, attrSchema);
+        this.attributes.set(attrName, attribute);
       }
-      case 'number': {
-        const result = new Attribute(this, type, options as AddNumberPropertyOptions);
-        this.attributes.set(name, result);
-        return result;
+      const relationshipsSchema = this.schema.getProperty('relationships');
+      if (relationshipsSchema) {
+        for (const [relName, relSchema] of relationshipsSchema.properties) {
+          const relationship = new Relationship(this, relName, relSchema);
+          this.relationships.set(relName, relationship);
+        }
       }
-      case 'string': {
-        const result = new Attribute(this, type, options as AddStringPropertyOptions);
-        this.attributes.set(name, result);
-        return result;
-      }
-      case 'object': {
-        const result = new Attribute(this, type);
-        this.attributes.set(name, result);
-        return result;
-      }
-      case 'array': {
-        const result = new Attribute(this, type);
-        this.attributes.set(name, result);
-        return result;
-      }
-      default:
-        throw new Error(`Unsupported attribute type ${type}`);
     }
   }
 
-  removeAttribute(name: string): void {
-    this.attributes.delete(name);
+  getAttributeNames(): string[] {
+    return Array.from(this.attributes.keys());
   }
 
-  clearAttributes(): void {
-    this.attributes.clear();
+  getAttribute(name: string): AttributeModel | undefined {
+    return this.attributes.get(name);
   }
 
-  addRelationship(name: string): IRelationship {
-    if (this.relationships.has(name)) {
-      throw new Error(`Duplicate relationship ${name}`);
-    }
-    const result = new Relationship();
-    this.relationships.set(name, result);
+  getAttributeOrThrow(name: string): AttributeModel {
+    const result = this.getAttribute(name);
+    assert(result, `Missing attribute "${name}" in resource "${this.type}"`);
     return result;
   }
 
-  removeRelationship(name: string): void {
-    this.relationships.delete(name);
+  getRelationshipNames(): string[] {
+    return Array.from(this.relationships.keys());
   }
 
-  clearRelationships(): void {
-    this.relationships.clear();
+  getRelationship(name: string): RelationshipModel | undefined {
+    return this.relationships.get(name);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  jsonSchema(): JSONSchema {
-    throw new Error('Method not implemented.');
+  getRelationshipOrThrow(name: string): RelationshipModel {
+    const result = this.getRelationship(name);
+    assert(result, `Missing relationship "${name}" in resource "${this.type}"`);
+    return result;
+  }
+
+  jsonSchema(): Nullable<SchemaModel> {
+    return this.schema;
   }
 }

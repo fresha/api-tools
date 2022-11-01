@@ -32,10 +32,10 @@ jobs:
       - run: npm run -w @fresha/ex-morph --if-present build && exit 0
       - run: npm run -w @fresha/har-extract --if-present build && exit 0
       - run: npm run -w @fresha/json-api-codegen --if-present build && exit 0
-      - run: npm run -w @fresha/json-schema-model --if-present build && exit 0
+      - run: npm run -w @fresha/openapi-model --if-present build && exit 0
       - run: npm run -w @fresha/json-api-model --if-present build && exit 0
       - run: npm run -w @fresha/json-schema-codegen --if-present build && exit 0
-      - run: npm run -w @fresha/openapi-model --if-present build && exit 0
+      - run: npm run -w @fresha/json-schema-model --if-present build && exit 0
       - run: npm run -w @fresha/openapi-codegen-utils --if-present build && exit 0
       - run: npm run -w @fresha/openapi-codegen-client-fresha --if-present build && exit
           0

@@ -1,28 +1,41 @@
-import { JSONObject, Nullable, TreeNode } from '@fresha/api-tools-core';
-import { JSONSchema } from '@fresha/json-schema-model';
+import type { DocumentId, DataDocumentModel, ResourceModel, RegistryModel } from './types';
+import type { JSONObject, Nullable } from '@fresha/api-tools-core';
+import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
-import { Registry } from './Registry';
-import { Resource } from './Resource';
-import { DocumentId, IDataDocument, IRegistry, IResource } from './types';
-
-type DataDocumentParent = Registry;
-
-export class DataDocument extends TreeNode<IRegistry, DataDocumentParent> implements IDataDocument {
+export class DataDocument implements DataDocumentModel {
+  readonly registry: RegistryModel;
+  readonly schema: SchemaModel;
   readonly id: DocumentId;
-  data: IResource | readonly IResource[];
-  readonly included: IResource[];
+
+  data: ResourceModel | ResourceModel[];
+  included: ResourceModel[];
   meta: Nullable<JSONObject>;
 
-  constructor(parent: DataDocumentParent, id: DocumentId) {
-    super(parent);
+  constructor(registry: RegistryModel, id: DocumentId, schema: SchemaModel) {
+    this.registry = registry;
     this.id = id;
-    this.data = new Resource(this, 'new');
+    this.schema = schema;
+
+    this.data = [];
     this.included = [];
     this.meta = null;
+
+    this.parseResources();
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  jsonSchema(): JSONSchema {
-    throw new Error('Method not implemented');
+  protected parseResources(): void {
+    const data = this.schema.getPropertyOrThrow('data');
+    if (data.type === 'object') {
+      this.registry.parseResource(data);
+    } else if (data.type === 'array') {
+      const items = data.getPropertyOrThrow('items');
+      if (items.type === 'object') {
+        this.registry.parseResource(items);
+      }
+    }
+  }
+
+  jsonSchema(): SchemaModel {
+    return this.schema;
   }
 }
