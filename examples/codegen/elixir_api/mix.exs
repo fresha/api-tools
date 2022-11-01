@@ -38,6 +38,7 @@ defmodule ElixirApi.MixProject do
       {:ecto_sql, "~> 3.6"},
       {:ecto_sqlite3, "~> 0.8.2"},
       {:esbuild, "~> 0.4", runtime: Mix.env() == :dev},
+      {:ex_machina, "~> 2.7.0", only: :test},
       {:floki, ">= 0.30.0", only: :test},
       {:gettext, "~> 0.18"},
       {:jabbax, "~> 1.0"},
