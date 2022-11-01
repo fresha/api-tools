@@ -1,13 +1,12 @@
 import assert from 'assert';
 
-import { camelCase } from '@fresha/api-tools-core';
+import { camelCase, titleCase } from '@fresha/api-tools-core';
 import {
   addConstant,
   addTypeLiteralAlias,
   getOperationEntryKeyOrThrow,
   getOperationId,
   Logger,
-  titleCase,
 } from '@fresha/openapi-codegen-utils';
 
 import { ActionSignature } from './ActionSignature';

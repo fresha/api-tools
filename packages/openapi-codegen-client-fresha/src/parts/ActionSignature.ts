@@ -1,12 +1,12 @@
 import assert from 'assert';
 
+import { titleCase } from '@fresha/api-tools-core';
 import {
   addImportDeclaration,
   addTypeAlias,
   addTypeLiteralCall,
   addTypeLiteralProperty,
   Logger,
-  titleCase,
 } from '@fresha/openapi-codegen-utils';
 import { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import { CodeBlockWriter, SyntaxKind, TypeLiteralNode } from 'ts-morph';

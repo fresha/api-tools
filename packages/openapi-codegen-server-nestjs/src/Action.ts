@@ -1,9 +1,8 @@
 import assert from 'assert';
 
+import { Nullable, camelCase, titleCase } from '@fresha/api-tools-core';
 import {
   Logger,
-  camelCase,
-  titleCase,
   addImportDeclarations,
   addImportDeclaration,
   addDecorator,
@@ -13,7 +12,6 @@ import { ClassDeclaration, Scope } from 'ts-morph';
 import { ActionParam } from './ActionParam';
 
 import type { Controller } from './Controller';
-import type { Nullable } from '@fresha/api-tools-core';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 const jsonApiMediaType = 'application/vnd.api+json';

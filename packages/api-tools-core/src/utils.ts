@@ -38,3 +38,20 @@ export const camelCase: KeyTransformFunc = str => {
 };
 
 export const camelCaseDeep: TransformFunc = obj => transformKeysDeep(obj, camelCase);
+
+export const titleCase = (str: string): string => {
+  const camelized = camelCase(str);
+  return `${camelized[0].toUpperCase()}${camelized.slice(1)}`;
+};
+
+export const snakeCase = (str: string): string => {
+  return str
+    .replace(/^[-_]+/, '')
+    .replace(/^[A-Z]/, (match: string): string => match.toLowerCase())
+    .replace(/-+/g, '_')
+    .replace(/[-_]+[A-Z]/g, (match: string): string => String(match.at(-1)))
+    .replace(
+      /[a-z0-9][A-Z]/g,
+      (match: string): string => `${String(match.at(0))}_${String(match.at(-1)).toLowerCase()}`,
+    );
+};

@@ -1,15 +1,10 @@
 import assert from 'assert';
 import path from 'path';
 
-import {
-  addDecorator,
-  addImportDeclaration,
-  Logger,
-  titleCase,
-} from '@fresha/openapi-codegen-utils';
+import { Nullable, titleCase } from '@fresha/api-tools-core';
+import { addDecorator, addImportDeclaration, Logger } from '@fresha/openapi-codegen-utils';
 
 import type { Generator } from './Generator';
-import type { Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel, SchemaPropertyObject } from '@fresha/openapi-model/build/3.0.3';
 import type { ClassDeclaration, CodeBlockWriter, SourceFile } from 'ts-morph';
 

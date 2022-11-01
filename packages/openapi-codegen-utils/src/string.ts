@@ -6,11 +6,6 @@ export { kebabCase } from '@fresha/api-tools-core';
 
 export { camelCase };
 
-export const titleCase = (str: string): string => {
-  const camelized = camelCase(str);
-  return `${camelized[0].toUpperCase()}${camelized.slice(1)}`;
-};
-
 const maybeAddLeadingSlash = (str: string): string => {
   return str.startsWith('/') ? str : `/${str}`;
 };

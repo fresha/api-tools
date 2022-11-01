@@ -1,9 +1,4 @@
-import { titleCase, commonStringPrefix } from './string';
-
-test('titleCase', () => {
-  expect(titleCase('forget-me-not')).toBe('ForgetMeNot');
-  expect(titleCase('forgetMeNot')).toBe('ForgetMeNot');
-});
+import { commonStringPrefix } from './string';
 
 test('empty array', () => {
   expect(() => commonStringPrefix([])).toThrow();

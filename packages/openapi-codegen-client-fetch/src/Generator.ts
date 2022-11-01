@@ -1,10 +1,10 @@
 import assert from 'assert';
 import path from 'path';
 
+import { titleCase } from '@fresha/api-tools-core';
 import {
   addTypeLiteralProperty,
   Logger,
-  titleCase,
   getOperationIdOrThrow,
   addTypeLiteralAlias,
   addImportDeclaration,
