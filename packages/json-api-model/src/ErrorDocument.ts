@@ -1,27 +1,18 @@
-import { TreeNode } from '@fresha/api-tools-core';
+import type { DocumentId, ErrorDocumentModel, RegistryModel } from './types';
+import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
-import { Registry } from './Registry';
+export class ErrorDocument implements ErrorDocumentModel {
+  readonly registry: RegistryModel;
+  readonly id: DocumentId;
+  readonly schema: SchemaModel;
 
-import type { DocumentId, IErrorDocument, IErrorObject, IRegistry } from './types';
-import type { JSONSchema } from '@fresha/json-schema-model';
-
-export type ErrorDocumentParent = Registry;
-
-export class ErrorDocument
-  extends TreeNode<IRegistry, ErrorDocumentParent>
-  implements IErrorDocument
-{
-  readonly id: string;
-  readonly errors: IErrorObject[];
-
-  constructor(parent: ErrorDocumentParent, id: DocumentId) {
-    super(parent);
+  constructor(registry: RegistryModel, id: DocumentId, schema: SchemaModel) {
+    this.registry = registry;
     this.id = id;
-    this.errors = [];
+    this.schema = schema;
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  jsonSchema(): JSONSchema {
-    throw new Error('Method not implemented.');
+  jsonSchema(): SchemaModel {
+    return this.schema;
   }
 }

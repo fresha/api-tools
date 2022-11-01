@@ -1,4 +1,4 @@
-import { ITreeParent } from '@fresha/api-tools-core/build/TreeNode';
+import assert from 'assert';
 
 import { DataDocument } from './DataDocument';
 import { ErrorDocument } from './ErrorDocument';
@@ -6,73 +6,82 @@ import { Resource } from './Resource';
 
 import type {
   DocumentId,
-  IDataDocument,
-  IDocument,
-  IErrorDocument,
-  IRegistry,
-  IResource,
+  DocumentModel,
+  RegistryModel,
+  ResourceModel,
   ResourceType,
 } from './types';
-import type { ISchemaRegistry } from '@fresha/json-schema-model';
+import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
-export class Registry implements ITreeParent<IRegistry>, IRegistry {
-  readonly schemaRegistry: ISchemaRegistry;
-  readonly resources: Map<ResourceType, IResource>;
-  readonly documents: Map<DocumentId, IDocument>;
+export class Registry implements RegistryModel {
+  readonly resources: Map<ResourceType, ResourceModel>;
+  readonly documents: Map<DocumentId, DocumentModel>;
 
-  constructor(schemaRegistry: ISchemaRegistry) {
-    this.schemaRegistry = schemaRegistry;
-    this.resources = new Map<ResourceType, IResource>();
-    this.documents = new Map<DocumentId, IDocument>();
+  constructor() {
+    this.resources = new Map<ResourceType, ResourceModel>();
+    this.documents = new Map<DocumentId, DocumentModel>();
   }
 
-  get root(): IRegistry {
-    return this;
+  getResource(resourceType: ResourceType): ResourceModel | undefined {
+    return this.resources.get(resourceType);
   }
 
-  addResource(type: ResourceType): IResource {
-    if (this.resources.has(type)) {
-      throw new Error(`Duplicate resource type ${type}`);
-    }
+  getResourceOrThrow(resourceType: ResourceType): ResourceModel {
+    const result = this.getResource(resourceType);
+    assert(result, `Expected resource of type "${resourceType}" to exist`);
+    return result;
+  }
+
+  createResource(type: string): ResourceModel {
+    assert(!this.resources.has(type));
+
     const resource = new Resource(this, type);
     this.resources.set(type, resource);
     return resource;
   }
 
-  deleteResource(type: ResourceType): void {
-    this.resources.delete(type);
-  }
+  parseResource(schema: SchemaModel): ResourceModel {
+    assert(schema.type === 'object', 'Resource schemas must have type "object"');
 
-  clearResources(): void {
-    this.resources.clear();
-  }
+    const typeAttr = schema.getPropertyOrThrow('type');
+    assert(typeAttr.enum?.length === 1, `Resource schemas must have a single enum value`);
 
-  addDataDocument(id: DocumentId): IDataDocument {
-    if (this.documents.has(id)) {
-      throw new Error(`Duplicate document type ${id}`);
-    }
-    const result = new DataDocument(this, id);
-    this.documents.set(id, result);
+    const resourceType = typeAttr.enum[0];
+    assert(
+      resourceType && typeof resourceType === 'string',
+      'Resource types must be non-empty strings',
+    );
+
+    const result = new Resource(this, schema);
+    this.resources.set(resourceType, result);
+
     return result;
   }
 
-  addErrorDocument(id: DocumentId): IErrorDocument {
-    if (this.documents.has(id)) {
-      throw new Error(`Duplicate document type ${id}`);
-    }
-    const result = new ErrorDocument(this, id);
-    this.documents.set(id, result);
+  getDocument(documentId: DocumentId): DocumentModel | undefined {
+    return this.documents.get(documentId);
+  }
+
+  getDocumentOrThrow(documentId: DocumentId): DocumentModel {
+    const result = this.getDocument(documentId);
+    assert(result, `Expected to find document for ID "${documentId}"`);
     return result;
   }
 
-  deleteDocument(id: DocumentId): void {
-    this.documents.delete(id);
-  }
+  parseDocument(schema: SchemaModel, documentId: DocumentId): DocumentModel {
+    assert(schema.type === 'object', 'Document schemas must have type "object"');
 
-  clearDocuments(): void {
-    this.documents.clear();
+    const dataAttr = schema.getProperty('data');
+    if (dataAttr) {
+      const result = new DataDocument(this, documentId, schema);
+      this.documents.set(documentId, result);
+      return result;
+    }
+
+    const result = new ErrorDocument(this, documentId, schema);
+    this.documents.set(documentId, result);
+    return result;
   }
 }
 
-export const createRegistry = (schemaRegistry: ISchemaRegistry): IRegistry =>
-  new Registry(schemaRegistry);
+export const createRegistry = (): RegistryModel => new Registry();

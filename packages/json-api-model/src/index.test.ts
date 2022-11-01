@@ -1,30 +1,101 @@
-import { createSchemaRegistry } from '@fresha/json-schema-model';
+import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 
 import { createRegistry } from './index';
 
 test('define resources and relationshipns between them', () => {
-  const schemaRegistry = createSchemaRegistry();
-  const registry = createRegistry(schemaRegistry);
+  const openapi = OpenAPIFactory.create();
 
-  const provider = registry.addResource('providers');
-  provider.addAttribute('name', 'string');
+  const providerSchema = openapi.components.setSchema('Provider', 'object');
+  providerSchema.setProperties({
+    type: { type: 'string', required: true, enum: ['providers'] },
+    id: { type: 'string', required: true },
+    attributes: { type: 'object', required: true },
+    relationships: { type: 'object', required: true },
+  });
+  providerSchema.getPropertyOrThrow('attributes').setProperties({
+    name: { type: 'string', required: true },
+  });
 
-  const employee = registry.addResource('customers');
-  employee.addAttribute('name', 'string');
-  employee.addAttribute('gender', 'string', { allowed: ['male', 'female'] });
-  employee.addAttribute('age', 'number', { minimum: 21, maximum: 150 });
+  const employeeSchema = openapi.components.setSchema('Employee', 'object');
+  employeeSchema.setProperties({
+    type: { type: 'string', required: true, enum: ['employees'] },
+    id: { type: 'string', required: true },
+    attributes: { type: 'object', required: true },
+    relationships: { type: 'object', required: true },
+  });
+  employeeSchema.getPropertyOrThrow('attributes').setProperties({
+    name: { type: 'string', required: true },
+    gender: { type: 'string' },
+    age: { type: 'integer' },
+  });
+  employeeSchema
+    .getPropertyOrThrow('relationships')
+    .setProperty('provider', 'object')
+    .setProperty('data', { type: 'object', required: true })
+    .setProperties({
+      type: { type: 'string', required: true, enum: ['providers'] },
+      id: { type: 'string', required: true },
+    });
 
-  const location = registry.addResource('locations');
-  location.addAttribute('name', 'string');
+  const locationSchema = openapi.components.setSchema('Location', 'object');
+  locationSchema.setProperties({
+    type: { type: 'string', required: true, enum: ['locations'] },
+    id: { type: 'string', required: true },
+    attributes: { type: 'object', required: true },
+    relationships: { type: 'object', required: true },
+  });
+  locationSchema.getPropertyOrThrow('attributes').setProperties({
+    name: { type: 'string', required: true },
+  });
+  locationSchema
+    .getPropertyOrThrow('relationships')
+    .setProperty('provider', 'object')
+    .setProperty('data', { type: 'object', required: true })
+    .setProperties({
+      type: { type: 'string', required: true, enum: ['providers'] },
+      id: { type: 'string', required: true },
+    });
 
-  const booking = registry.addResource('bookings');
-  booking.addAttribute('date', 'string');
-  booking.addAttribute('status', 'string', { allowed: ['ready', 'in-progress', 'completed'] });
+  const bookingSchema = openapi.components.setSchema('Booking', 'object');
+  bookingSchema.setProperties({
+    type: { type: 'string', required: true, enum: ['bookings'] },
+    id: { type: 'string', required: true },
+    attributes: { type: 'object', required: true },
+    relationships: { type: 'object', required: true },
+  });
+  bookingSchema.getPropertyOrThrow('attributes').setProperties({
+    date: { type: 'string', required: true },
+    status: { type: 'string', required: true },
+  });
+  bookingSchema
+    .getPropertyOrThrow('relationships')
+    .setProperty('provider', 'object')
+    .setProperty('data', { type: 'object', required: true })
+    .setProperties({
+      type: { type: 'string', required: true, enum: ['employees'] },
+      id: { type: 'string', required: true },
+    });
 
-  provider.addRelationship('locations', location, 'provider', { type: 'one-to-many' });
-  provider.addRelationship('bookings', booking, 'provider', { type: 'one-to-many' });
+  const registry = createRegistry();
 
-  location.addRelationship('bookings', booking, 'location', { type: 'one-to-many' });
+  registry.parseResource(providerSchema);
+  registry.parseResource(employeeSchema);
+  registry.parseResource(locationSchema);
+  registry.parseResource(bookingSchema);
 
-  booking.addRelationship('employee', employee, 'bookings', { type: 'many-to-one' });
+  const provider = registry.getResourceOrThrow('providers');
+  expect(provider.getAttributeNames()).toStrictEqual(['name']);
+  expect(provider.getRelationshipNames()).toStrictEqual([]);
+
+  const employee = registry.getResourceOrThrow('employees');
+  expect(employee.getAttributeNames()).toStrictEqual(['name', 'gender', 'age']);
+  expect(employee.getRelationshipNames()).toStrictEqual(['provider']);
+
+  const location = registry.getResourceOrThrow('locations');
+  expect(location.getAttributeNames()).toStrictEqual(['name']);
+  expect(location.getRelationshipNames()).toStrictEqual(['provider']);
+
+  const booking = registry.getResourceOrThrow('bookings');
+  expect(booking.getAttributeNames()).toStrictEqual(['date', 'status']);
+  expect(employee.getRelationshipNames()).toStrictEqual(['provider']);
 });
