@@ -29,6 +29,7 @@ jobs:
       - run: npm run -w @fresha/designer-app --if-present build && exit 0
       - run: npm run -w @fresha/browser-extension --if-present build && exit 0
       - run: npm run -w @fresha/designer-web --if-present build && exit 0
+      - run: npm run -w @fresha/ex-morph --if-present build && exit 0
       - run: npm run -w @fresha/har-extract --if-present build && exit 0
       - run: npm run -w @fresha/json-api-codegen --if-present build && exit 0
       - run: npm run -w @fresha/json-schema-model --if-present build && exit 0
