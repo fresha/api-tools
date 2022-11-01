@@ -1,26 +1,51 @@
+import console from 'console';
+
 import type { Controller } from './Controller';
-import type { Generator } from './Generator';
-import type { Logger } from '@fresha/openapi-codegen-utils';
+import type { Context } from './types';
+
+type Entry = {
+  url: string;
+  controllerName: string;
+  actions: string[];
+};
 
 export class Router {
-  static makeFileName(): string {
-    return '';
+  protected readonly context: Context;
+  protected readonly entries: Entry[];
+
+  constructor(context: Context) {
+    this.context = context;
+    this.entries = [];
   }
 
-  readonly parent: Generator;
-  readonly logger: Logger;
+  collectData(controller: Controller): void {
+    this.context.logger.info(`Collecting routes for "${controller.moduleName}" controller`);
 
-  constructor(parent: Generator) {
-    this.parent = parent;
-    this.logger = this.parent.logger;
-  }
+    const entry: Entry = {
+      url: '""',
+      controllerName: controller.moduleName.split('.').at(-1)!,
+      actions: [],
+    };
 
-  // eslint-disable-next-line class-methods-use-this
-  processController(controller: Controller): void {
-    this.logger.info('Processing controller');
+    for (const [actionName] of controller.actionEntries()) {
+      entry.actions.push(actionName);
+    }
+
+    this.entries.push(entry);
   }
 
   generateCode(): void {
-    this.logger.info('Generating code');
+    this.context.logger.info('Generating routing code');
+
+    const lines = ['', '', '# TODO put JSON:API routes here', '', 'scope "/api", ElixirApiWeb do'];
+
+    for (const entry of this.entries) {
+      const actions = entry.actions.map(a => `:${a}`).join(', ');
+      lines.push(`  resources("/", ${entry.controllerName}, only: [${actions}])`);
+    }
+
+    lines.push('end');
+
+    console.log(lines.join('\n'));
   }
 }
