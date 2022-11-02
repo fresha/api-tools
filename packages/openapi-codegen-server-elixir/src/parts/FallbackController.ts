@@ -17,11 +17,7 @@ export class FallbackController {
   collectData(_pathItem: PathItemModel): void {}
 
   generateCode(): void {
-    this.context.logger.info(
-      `Collecting data for the controller: "${
-        this.moduleName
-      }", file "${this.sourceFile.getFilePath()}"`,
-    );
+    this.context.logger.info(`Generating code for the controller: "${this.moduleName}"`);
 
     this.sourceFile.writeDefmodule(this.moduleName, () => {
       this.sourceFile.writeUse(this.context.project.getAppModuleName(), ':controller');
