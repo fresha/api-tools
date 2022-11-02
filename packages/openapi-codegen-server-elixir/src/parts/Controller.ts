@@ -32,14 +32,18 @@ const actionNameFromOperationKey = (
 
 export class Controller {
   readonly context: Context;
+  readonly urlExp: string;
   readonly moduleName: string;
+  readonly moduleAlias: string;
   readonly sourceFile: SourceFile;
   protected readonly actions: Map<string, Action>;
 
-  constructor(context: Context, moduleName: string) {
+  constructor(context: Context, urlExp: string, moduleName: string) {
     this.context = context;
+    this.urlExp = urlExp;
     this.moduleName = moduleName;
-    this.sourceFile = this.context.project.createControllerFile(moduleName);
+    this.moduleAlias = this.context.project.getModuleAlias(this.moduleName);
+    this.sourceFile = this.context.project.createControllerFile(this.moduleName);
     this.actions = new Map<string, Action>();
   }
 

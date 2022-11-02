@@ -1,3 +1,5 @@
+import console from 'console';
+
 import { Project } from '@fresha/ex-morph';
 import { createRegistry } from '@fresha/json-api-model';
 import { createLogger } from '@fresha/openapi-codegen-utils';
@@ -66,6 +68,7 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     openapi,
     project,
     registry: createRegistry(),
+    consoleWriter: console.log,
     logger,
   });
 

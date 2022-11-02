@@ -20,6 +20,7 @@ export const makeContext = (phoenixApp: string, rootDir = '/'): Context => {
     openapi: OpenAPIFactory.create(),
     project,
     registry: createRegistry(),
+    consoleWriter: jest.fn(),
     logger: createLogger(false),
   };
 };

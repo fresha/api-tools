@@ -13,13 +13,13 @@ test('parameter-less action, minimal implementation', () => {
   const operation = pathItem.setOperation('post');
   operation.operationId = 'createEmployee';
 
-  const controller = new Controller(context, 'app');
+  const controller = new Controller(context, '/pracownicy', 'AwesoneWeb.EmployeesController');
   controller.collectData(pathItem);
   controller.generateCode();
 
   expect(controller.sourceFile.getText()).toBe(
     poorMansElixirFormat(`
-    defmodule app do
+    defmodule AwesoneWeb.EmployeesController do
       @moduledoc false
 
       use AwesomeWeb, :controller
@@ -47,13 +47,13 @@ test('ID parameter leads to generating parse_XXXX_param function, as well as err
   const idParam = operation.addParameter('id', 'path');
   idParam.schema = SchemaFactory.create(idParam, 'string');
 
-  const controller = new Controller(context, 'app');
+  const controller = new Controller(context, 'employees', 'EmployeeController');
   controller.collectData(pathItem);
   controller.generateCode();
 
   expect(controller.sourceFile.getText()).toBe(
     poorMansElixirFormat(`
-    defmodule app do
+    defmodule EmployeeController do
       @moduledoc false
 
       use AwesomeWeb, :controller
@@ -116,7 +116,7 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
   addResourceRelationship(resourceSchema, 'location', { type: 'locations', required: true });
   addResourceRelationship(resourceSchema, 'employee', { type: 'employees', required: false });
 
-  const controller = new Controller(context, 'ProfileController');
+  const controller = new Controller(context, '/profile', 'AwesomeWeb.ProfileController');
   controller.collectData(pathItem);
   controller.generateCode();
 
@@ -126,7 +126,7 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
   // trim options for :string
   expect(controller.sourceFile.getText()).toBe(
     poorMansElixirFormat(`
-      defmodule ProfileController do
+      defmodule AwesomeWeb.ProfileController do
         @moduledoc false
 
         use AwesomeWeb, :controller
