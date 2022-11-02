@@ -224,4 +224,10 @@ export class SourceFile {
     this.writeIndented(contentWriter);
     this.writeLine('},');
   }
+
+  writeTestFunction(description: string, content: () => void): void {
+    this.writeLine(`test "${description}" do`);
+    this.writeIndented(content);
+    this.writeLine('end');
+  }
 }

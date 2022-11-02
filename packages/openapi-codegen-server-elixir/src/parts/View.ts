@@ -7,7 +7,7 @@ export class View {
   readonly context: Context;
   readonly moduleName: string;
   readonly sourceFile: SourceFile;
-  protected readonly actions: Action[];
+  readonly actions: Action[];
 
   constructor(context: Context, moduleName: string) {
     this.context = context;
