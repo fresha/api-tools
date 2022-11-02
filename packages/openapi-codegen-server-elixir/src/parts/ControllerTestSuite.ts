@@ -38,9 +38,9 @@ export class ControllerTestSuite {
         this.sourceFile.writeLine(`test "${action.getName()}", %{conn: conn} do`);
         this.sourceFile.writeIndented(() =>
           this.sourceFile.writeLines(
-            '# 1. add setup code here',
-            '# 2. add SUT manipulation here',
-            '# 3. add expectation checking here',
+            '# TODO add setup code here',
+            '# TODO add SUT manipulation here',
+            '# TODO add expectation checking here',
           ),
         );
         this.sourceFile.writeLine('end');
