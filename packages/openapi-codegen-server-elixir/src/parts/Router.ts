@@ -1,16 +1,14 @@
-import console from 'console';
-
 import type { Controller } from './Controller';
 import type { Context } from './types';
 
 type Entry = {
-  url: string;
-  controllerName: string;
-  actions: string[];
+  urlExp: string;
+  controllerModuleAlias: string;
+  actionNames: string[];
 };
 
 export class Router {
-  protected readonly context: Context;
+  readonly context: Context;
   protected readonly entries: Entry[];
 
   constructor(context: Context) {
@@ -21,31 +19,41 @@ export class Router {
   collectData(controller: Controller): void {
     this.context.logger.info(`Collecting routes for "${controller.moduleName}" controller`);
 
-    const entry: Entry = {
-      url: '""',
-      controllerName: controller.moduleName.split('.').at(-1)!,
-      actions: [],
-    };
-
-    for (const [actionName] of controller.actionEntries()) {
-      entry.actions.push(actionName);
+    const actionNames: string[] = [];
+    for (const [, action] of controller.actionEntries()) {
+      actionNames.push(action.getName());
     }
 
-    this.entries.push(entry);
+    this.entries.push({
+      urlExp: controller.urlExp,
+      controllerModuleAlias: controller.moduleAlias,
+      actionNames,
+    });
   }
 
   generateCode(): void {
     this.context.logger.info('Generating routing code');
 
-    const lines = ['', '', '# TODO put JSON:API routes here', '', 'scope "/api", ElixirApiWeb do'];
+    const lines = [
+      '',
+      '#',
+      '# ROUTER',
+      '# In your router file, add the following lines',
+      '#',
+      `scope "/api", ${this.context.project.getAppModuleName()} do`,
+      '  pipe_through :api',
+      '',
+    ];
 
     for (const entry of this.entries) {
-      const actions = entry.actions.map(a => `:${a}`).join(', ');
-      lines.push(`  resources("/", ${entry.controllerName}, only: [${actions}])`);
+      const actions = entry.actionNames.map(a => `:${a}`).join(', ');
+      lines.push(
+        `  resources("${entry.urlExp}", ${entry.controllerModuleAlias}, only: [${actions}])`,
+      );
     }
 
-    lines.push('end');
+    lines.push('end', '');
 
-    console.log(lines.join('\n'));
+    this.context.consoleWriter(lines.join('\n'));
   }
 }

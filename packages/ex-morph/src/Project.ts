@@ -72,6 +72,12 @@ export class Project {
     return `${this.appModuleNamePrefix}.${name}`;
   }
 
+  getModuleAlias(moduleName: string): string {
+    const result = moduleName.split('.').at(-1);
+    assert(typeof result === 'string', `"${moduleName}" does not look like a module name`);
+    return result;
+  }
+
   // Phoenix-specific
 
   getRouterFilePath(): string {

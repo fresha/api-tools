@@ -1,4 +1,5 @@
 import { parseOpenApi } from '@fresha/json-api-model';
+import { pathUrlToUrlExp } from '@fresha/openapi-codegen-utils';
 
 import { Controller } from './Controller';
 import { ControllerTestSuite } from './ControllerTestSuite';
@@ -78,7 +79,7 @@ export class Generator {
       const controllerModuleName = this.context.project.getControllerModuleName(pathUrl);
       let controller = this.controllers.get(controllerModuleName);
       if (!controller) {
-        controller = new Controller(this.context, controllerModuleName);
+        controller = new Controller(this.context, pathUrlToUrlExp(pathUrl), controllerModuleName);
         this.controllers.set(controllerModuleName, controller);
       }
       controller.collectData(pathItem);
