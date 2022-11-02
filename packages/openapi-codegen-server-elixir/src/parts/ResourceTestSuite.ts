@@ -9,7 +9,7 @@ import type { ResourceModel } from '@fresha/json-api-model';
 
 export class ResourceTestSuite {
   protected readonly context: Context;
-  protected readonly moduleName: string;
+  readonly moduleName: string;
   protected readonly resourceModuleName: string;
   protected readonly resourceModuleAlias: string;
   protected readonly resource: ResourceModel;

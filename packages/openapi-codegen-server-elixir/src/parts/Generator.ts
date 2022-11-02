@@ -6,6 +6,7 @@ import { ControllerTestSuite } from './ControllerTestSuite';
 import { ErrorView } from './ErrorView';
 import { FallbackController } from './FallbackController';
 import { Resource } from './Resource';
+import { ResourceTestSuite } from './ResourceTestSuite';
 import { Router } from './Router';
 import { View } from './View';
 import { ViewTestSuite } from './ViewTestSuite';
@@ -22,6 +23,7 @@ export class Generator {
   protected readonly viewTests: Map<string, ViewTestSuite>;
   protected readonly errorView: ErrorView;
   protected readonly resources: Map<string, Resource>;
+  protected readonly resourceTests: Map<string, ResourceTestSuite>;
 
   constructor(context: Context) {
     this.context = context;
@@ -39,6 +41,7 @@ export class Generator {
       `${this.context.project.appModuleNamePrefix}.ErrorView`,
     );
     this.resources = new Map<string, Resource>();
+    this.resourceTests = new Map<string, ResourceTestSuite>();
   }
 
   run(): void {
@@ -50,6 +53,7 @@ export class Generator {
     this.context.logger.info('Collecting data');
 
     this.collectResources();
+    this.collectResourceTests();
     this.collectControllers();
     this.collectControllerTests();
     this.collectViews();
@@ -71,6 +75,18 @@ export class Generator {
         resource,
       );
       this.resources.set(resourceType, resourceGen);
+    }
+  }
+
+  protected collectResourceTests(): void {
+    for (const resource of this.resources.values()) {
+      const testSuite = new ResourceTestSuite(
+        this.context,
+        `${resource.moduleName}Test`,
+        resource.moduleName,
+        resource.resource,
+      );
+      this.resourceTests.set(testSuite.moduleName, testSuite);
     }
   }
 
@@ -125,6 +141,13 @@ export class Generator {
   protected generateCode(): void {
     this.context.logger.info('Generating code');
 
+    for (const resource of this.resources.values()) {
+      resource.generateCode();
+    }
+    for (const testSuite of this.resourceTests.values()) {
+      testSuite.generateCode();
+    }
+
     for (const controller of this.controllers.values()) {
       controller.generateCode();
     }
@@ -142,10 +165,6 @@ export class Generator {
     }
 
     this.errorView.generateCode();
-
-    for (const resource of this.resources.values()) {
-      resource.generateCode();
-    }
 
     this.router.generateCode();
 
