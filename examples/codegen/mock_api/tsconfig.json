@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "commonjs",
+    "lib": [
+      "es2020",
+    ],
+    "types": [
+      "node",
+      "jest"
+    ],
+    "jsx": "react",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noErrorTruncation": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./build",
+    "rootDir": "./src"
+  },
+  "include": [
+    "./src/**/*.ts"
+  ],
+  "exclude": [
+    "**/*.test.ts"
+  ]
+}

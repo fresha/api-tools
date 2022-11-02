@@ -1,0 +1,26 @@
+{
+  "name": "mock-api",
+  "version": "0.0.1",
+  "description": "Example MirageJS project to test OpenAPI codegens",
+  "author": "Fresha Engineering",
+  "contributors": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Andriy Mykulyak",
+      "email": "andriy@fresha.com",
+      "url": "https://github.com/mykulyak"
+    }
+  ],
+  "license": "MIT",
+  "scripts": {},
+  "dependencies": {
+    "miragejs": "^0.1.45",
+    "typescript": "^4.8.4"
+  }
+}
