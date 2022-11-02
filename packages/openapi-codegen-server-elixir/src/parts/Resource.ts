@@ -1,7 +1,5 @@
 import { snakeCase } from '@fresha/api-tools-core';
 
-import { ResourceTestSuite } from './ResourceTestSuite';
-
 import type { Context } from './types';
 import type { SourceFile } from '@fresha/ex-morph';
 import type { ResourceModel } from '@fresha/json-api-model';
@@ -10,26 +8,17 @@ export class Resource {
   readonly context: Context;
   readonly moduleName: string;
   readonly sourceFile: SourceFile;
-  protected readonly resource: ResourceModel;
-  protected readonly testSuite: ResourceTestSuite;
+  readonly resource: ResourceModel;
 
   constructor(context: Context, moduleName: string, resource: ResourceModel) {
     this.context = context;
     this.moduleName = moduleName;
     this.sourceFile = this.context.project.createResourceFile(moduleName);
     this.resource = resource;
-    this.testSuite = new ResourceTestSuite(
-      this.context,
-      `${this.moduleName}Test`,
-      this.moduleName,
-      this.resource,
-    );
   }
 
   collectData(): void {
     this.context.logger.info(`Generating code for resource ${this.moduleName}`);
-
-    this.testSuite.collectData();
   }
 
   generateCode(): void {
@@ -42,8 +31,6 @@ export class Resource {
       this.writeLinkFunction();
       this.maybeWriteLinkRelationshipsFunctions();
     });
-
-    this.testSuite.generateCode();
   }
 
   protected maybeWriteBuildFunction(): void {
