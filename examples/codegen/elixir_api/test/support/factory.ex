@@ -38,4 +38,12 @@ defmodule ElixirApi.Factory do
   def blocked_times_factory do
     blocked_time_factory()
   end
+
+  def export_job_factory do
+    %{}
+  end
+
+  def export_jobs_factory do
+    export_job_factory()
+  end
 end
