@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-client-fresha",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "OpenAPI code generation for Fresha clients",
   "main": "build/index.js",
   "scripts": {
