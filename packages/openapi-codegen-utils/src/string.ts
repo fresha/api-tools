@@ -6,7 +6,7 @@ export { kebabCase } from '@fresha/api-tools-core';
 
 export { camelCase };
 
-const maybeAddLeadingSlash = (str: string): string => {
+export const maybeAddLeadingSlash = (str: string): string => {
   return str.startsWith('/') ? str : `/${str}`;
 };
 
