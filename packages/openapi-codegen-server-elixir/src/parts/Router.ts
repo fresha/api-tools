@@ -1,3 +1,5 @@
+import { maybeAddLeadingSlash } from '@fresha/openapi-codegen-utils';
+
 import type { Controller } from './Controller';
 import type { Context } from './types';
 
@@ -48,7 +50,9 @@ export class Router {
     for (const entry of this.entries) {
       const actions = entry.actionNames.map(a => `:${a}`).join(', ');
       lines.push(
-        `  resources("${entry.urlExp}", ${entry.controllerModuleAlias}, only: [${actions}])`,
+        `  resources("${maybeAddLeadingSlash(entry.urlExp)}", ${
+          entry.controllerModuleAlias
+        }, only: [${actions}])`,
       );
     }
 

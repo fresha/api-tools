@@ -1,22 +1,29 @@
-import { commonStringPrefix } from './string';
+import { maybeAddLeadingSlash, commonStringPrefix } from './string';
 
-test('empty array', () => {
-  expect(() => commonStringPrefix([])).toThrow();
+test('maybeAddLeadingSlash', () => {
+  expect(maybeAddLeadingSlash('/blocked-times')).toBe('/blocked-times');
+  expect(maybeAddLeadingSlash('blocked-times/exports')).toBe('/blocked-times/exports');
 });
 
-test('1 elemnt', () => {
-  expect(commonStringPrefix(['/prefix'])).toBe('/prefix');
-});
+describe('commonStringPrefix', () => {
+  test('empty array', () => {
+    expect(() => commonStringPrefix([])).toThrow();
+  });
 
-test('2+ elements', () => {
-  expect(commonStringPrefix(['/b/x', '/b/r'])).toBe('/b');
-  expect(commonStringPrefix(['/p/refix', '/p/fx', '/p/dz'])).toBe('/p');
-});
+  test('1 elemnt', () => {
+    expect(commonStringPrefix(['/prefix'])).toBe('/prefix');
+  });
 
-test('leading /', () => {
-  expect(commonStringPrefix(['/items', 'items'])).toBe('/items');
-});
+  test('2+ elements', () => {
+    expect(commonStringPrefix(['/b/x', '/b/r'])).toBe('/b');
+    expect(commonStringPrefix(['/p/refix', '/p/fx', '/p/dz'])).toBe('/p');
+  });
 
-test('only complete URL parts', () => {
-  expect(commonStringPrefix(['/prefix', '/pfx', '/pdz'])).toBe('');
+  test('leading /', () => {
+    expect(commonStringPrefix(['/items', 'items'])).toBe('/items');
+  });
+
+  test('only complete URL parts', () => {
+    expect(commonStringPrefix(['/prefix', '/pfx', '/pdz'])).toBe('');
+  });
 });
