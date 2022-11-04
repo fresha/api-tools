@@ -2,7 +2,10 @@ openapi: 3.0.3
 info:
   title: openapi-codegen-test-api
   version: 0.1.0
-  description: A simple API used as a reference for code generators.
+  description: >
+    A simple API used as a reference for code generators.
+    It defines as service for managing blocked times (= busy slots)
+    in someone's calendar.
   contact:
     name: Andriy Mykulyak
     url: https://github.com/mykulyak
@@ -10,6 +13,7 @@ info:
 paths:
   /blocked-times:
     get:
+      description: Returns list of blocked time resources, based on search criteria
       operationId: readBlockedTimeList
       parameters:
         - name: dateFrom
@@ -43,15 +47,16 @@ paths:
         200:
           description: |
             Returns a list of BlockedTime resources.
-            Because the response is defined inline, corresponding type name will be derived
-            from operation name. In this case, it should be ReadBlockedTimeListResponse.
+            Because the response is defined inline, and not in the components
+            section, name of the generated response type (in code) will be derived
+            from operation ID. In this case, it should be ReadBlockedTimeListResponse.
           content:
             application/vnd.api+json:
               schema:
                 $ref: "#/components/schemas/BlockedTimeListDocument"
         400:
           $ref: "#/components/responses/JSONAPIErrorResponse400"
-      x-entry-key: blockedTime
+      x-entry-key: blockedTime # this extension is used only in frontend code generators
     post:
       operationId: createBlockedTime
       requestBody:
@@ -70,7 +75,7 @@ paths:
                 jsonapi:
                   $ref: "#/components/schemas/JSONAPIVersion"
                 data:
-                  $ref: "#/components/schemas/BlockedTimeCreateRequestDocument"
+                  $ref: "#/components/schemas/BlockedTimeCreateRequestResource"
       responses:
         202:
           description: Returned when new blocked has been successfully created
@@ -92,8 +97,8 @@ paths:
       requestBody:
         description: |
           Parameters to update a blocked time.
-          This request body is defined inline, and therefore its name will be derived from
-          operation name. In this case, it should be UpdateBlockedTimeRequestBody.
+          This request body is defined inline, and therefore its name will be
+          derived from operation ID. In this case, it should be UpdateBlockedTimeRequestBody.
         required: true
         content:
           application/vnd.api+json:
@@ -105,18 +110,19 @@ paths:
                 jsonapi:
                   $ref: "#/components/schemas/JSONAPIVersion"
                 data:
-                  $ref: "#/components/schemas/BlockedTimeUpdateRequestDocument"
+                  $ref: "#/components/schemas/BlockedTimeUpdateRequestResource"
       responses:
         200:
           $ref: "#/components/responses/BlockedTimeResponse"
         404:
-          description: Cannot find blocked time
+          description: Returned when given blocked times couldn't be found
           content:
             application/vnd.api+json:
               schema:
                 $ref: "#/components/schemas/JSONAPIErrorDocument"
       x-entry-key: blockedTime
     delete:
+      description: Deletes blocked time with given ID
       operationId: deleteBlockedTime
       parameters:
         - name: id
@@ -138,6 +144,53 @@ paths:
               schema:
                 $ref: "#/components/schemas/JSONAPIErrorDocument"
       x-entry-key: blockedTime
+  /blocked-times/export:
+    post:
+      description: Requests for an export of blocked times
+      operationId: createBlockedTimesExport
+      requestBody:
+        content:
+          application/vnd.api+json:
+            schema:
+              type: object
+              required:
+                - data
+              properties:
+                jsonapi:
+                  $ref: "#/components/schemas/JSONAPIVersion"
+                data:
+                  $ref: "#/components/schemas/ExportJobCreateResource"
+      responses:
+        202:
+          $ref: "#/components/responses/ExportJobResponse"
+        400:
+          description: Wrong job parameters
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorDocument"
+  "/blocked-times/export/{id}":
+    get:
+      description: Returns status of given export job
+      operationId: readBlockedTimesExportStatus
+      parameters:
+        - name: id
+          in: path
+          description: Export job ID
+          required: true
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        200:
+          $ref: "#/components/responses/ExportJobResponse"
+        404:
+          description: Returns when job with given ID doesn't exist
+          content:
+            application/vnd.api+json:
+              schema:
+                $ref: "#/components/schemas/JSONAPIErrorDocument"
+      x-entry-key: blockedTimeExport
 servers:
   - url: http://localhost:{port}
     description: local server
@@ -184,7 +237,7 @@ components:
             id:
               type: string
               minLength: 1
-    BlockedTime:
+    BlockedTimeResource:
       type: object
       required:
         - type
@@ -231,7 +284,7 @@ components:
         jsonapi:
           $ref: "#/components/schemas/JSONAPIVersion"
         data:
-          $ref: "#/components/schemas/BlockedTime"
+          $ref: "#/components/schemas/BlockedTimeResource"
     BlockedTimeListDocument:
       type: object
       required:
@@ -242,8 +295,8 @@ components:
         data:
           type: array
           items:
-            $ref: "#/components/schemas/BlockedTime"
-    BlockedTimeCreateRequestDocument:
+            $ref: "#/components/schemas/BlockedTimeResource"
+    BlockedTimeCreateRequestResource:
       description: Passed when one needs to create a new blocked time
       type: object
       required:
@@ -282,7 +335,7 @@ components:
               $ref: "#/components/schemas/EmployeeRelationship"
             location:
               $ref: "#/components/schemas/LocationRelationship"
-    BlockedTimeUpdateRequestDocument:
+    BlockedTimeUpdateRequestResource:
       type: object
       required:
         - type
@@ -315,6 +368,63 @@ components:
           properties:
             employee:
               $ref: "#/components/schemas/EmployeeRelationship"
+    ExportJobCreateResource:
+      description: Passed when one needs to create a new blocked time export
+      type: object
+      required:
+        - type
+        - attributes
+        - relationships
+      properties:
+        type:
+          type: string
+          enum:
+            - export-job-create-requests
+        attributes:
+          type: object
+          required:
+            - start
+            - end
+          properties:
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+        relationships:
+          type: object
+    ExportJobResource:
+      type: object
+      required:
+        - type
+        - id
+        - attributes
+      properties:
+        type:
+          type: string
+          enum:
+            - export-jobs
+        id:
+          type: string
+          minLength: 1
+        attributes:
+          type: object
+          required:
+            - status
+            - donwload-link
+          properties:
+            status:
+              type: string
+              enum:
+                - waiting
+                - complete
+                - failed
+            download-link:
+              type: string
+              nullable: true
+        relationships:
+          type: object
     JSONAPIVersion:
       type: object
       required:
@@ -369,7 +479,21 @@ components:
               jsonapi:
                 $ref: "#/components/schemas/JSONAPIVersion"
               data:
-                $ref: "#/components/schemas/BlockedTime"
+                $ref: "#/components/schemas/BlockedTimeResource"
+    ExportJobResponse:
+      description: Export request has been added to the queue
+      content:
+        application/vnd.api+json:
+          schema:
+            type: object
+            required:
+              - jsonapi
+              - data
+            properties:
+              jsonapi:
+                $ref: "#/components/schemas/JSONAPIVersion"
+              data:
+                $ref: "#/components/schemas/ExportJobResource"
     JSONAPIErrorResponse:
       description: Generic JSON:API error response
       content:
