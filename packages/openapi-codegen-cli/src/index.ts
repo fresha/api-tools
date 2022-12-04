@@ -1,5 +1,6 @@
 import * as fetchClientCommand from '@fresha/openapi-codegen-client-fetch/build/command';
 import * as freshaClientCommand from '@fresha/openapi-codegen-client-fresha/build/command';
+import * as jsonApiDocgenCommand from '@fresha/openapi-codegen-docs-json-api/build/command';
 import * as elixirCodegenCommand from '@fresha/openapi-codegen-server-elixir/build/command';
 import * as mockServerCommand from '@fresha/openapi-codegen-server-mock/build/command';
 import * as nestJsServerCommand from '@fresha/openapi-codegen-server-nestjs/build/command';
@@ -16,6 +17,7 @@ const argv = yargs(hideBin(process.argv))
 argv.command(freshaClientCommand);
 argv.command(fetchClientCommand);
 argv.command(elixirCodegenCommand);
+argv.command(jsonApiDocgenCommand);
 argv.command(mockServerCommand);
 argv.command(nestJsServerCommand);
 

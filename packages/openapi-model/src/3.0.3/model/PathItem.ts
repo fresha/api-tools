@@ -158,7 +158,6 @@ export class PathItem extends BasicNode<PathItemModelParent> implements PathItem
 
   addParameterModel(model: ParameterModel): void {
     assert(!this.parameters.includes(model));
-    assert.equal(model.parent, this);
     this.parameters.push(model);
   }
 }
