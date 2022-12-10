@@ -116,6 +116,11 @@ export type JSONRef = {
  */
 export type ObjectOrRef<T> = T | JSONRef;
 
+/**
+ * Convenience type, representing an empty JSON object.
+ */
+export type EmptyObject = Record<string, never>;
+
 //
 // JSON:API spec
 //
@@ -137,111 +142,286 @@ export type JSONAPILink = string | { href: string; meta?: JSONAPIMeta };
 /**
  * Represents a resource ID.
  *
+ * @typeParam TResourceType resource type string. To identify specific resource,
+ *  pass a string literal.
+ *
+ * @example
+ * // generic type, able to represent any resource's ID
+ * type AnyResourceID = JSONAPIResourceID;
+ *
+ * // represents a resource with specific type
+ * type EmployeeResourceID = JSONAPIResourceID<'employees'>;
+ *
  * @see https://jsonapi.org/format/#document-resource-identifier-objects
  */
-export type JSONAPIResourceID = {
-  type: string;
+export interface JSONAPIResourceID<TResourceType extends string = string> {
+  type: TResourceType;
   id: string;
   meta?: JSONAPIMeta;
-};
+}
 
 /**
- * Represents a resource relationship (both single and multiple).
- *
- * @see https://jsonapi.org/format/#document-resource-object-relationships
+ * Common part for all resource linkage objects.
  */
-export type JSONAPIResourceRelationship = {
-  data: JSONAPIResourceID[] | JSONAPIResourceID | null;
+interface JSONAPIResourceRelationshipBase {
   links?: {
     self: JSONAPILink;
     related: JSONAPILink;
     [other: string]: JSONAPILink;
   };
-};
+}
 
 /**
- * @see https://jsonapi.org/format/#document-resource-objects
+ * Represents an optional one-to-one (or, 0-1) resource relationship.
+ *
+ * @typeParam TResourceType resource type string. To identify specific resource,
+ *  pass a string literal.
+ *
+ * @example
+ * // a 0-1 relationship to any resource
+ * type AnyRelationship0 = JSONAPIResourceRelationship0;
+ *
+ * // a 0-1 relationshop to specific resource
+ * type CompanyRelationship0 = JSONAPIResourceRelationship0<'companies'>;
+ *
+ * @see https://jsonapi.org/format/#document-resource-object-relationships
+ * @see https://jsonapi.org/format/#document-resource-object-linkage
+ * @see {@link JSONAPIResourceID}
  */
-type JSONAPIResourceBase = {
-  type: string;
-  attributes?: JSONObject;
-  relationships?: Record<string, JSONAPIResourceRelationship>;
+export interface JSONAPIResourceRelationship0<TResourceType extends string = string>
+  extends JSONAPIResourceRelationshipBase {
+  data: JSONAPIResourceID<TResourceType> | null;
+}
+
+/**
+ * Represents a one-to-one resource relationship.
+ *
+ * @typeParam TResourceType resource type string. To identify specific resource,
+ *  pass a string literal.
+ *
+ * @example
+ * // a 1-1 relationship to any resource
+ * type AnyRelationship1 = JSONAPIResourceRelationship1;
+ *
+ * // a 1-1 relationshop to specific resource
+ * type CompanyRelationship1 = JSONAPIResourceRelationship1<'companies'>;
+ *
+ * @see https://jsonapi.org/format/#document-resource-object-relationships
+ * @see https://jsonapi.org/format/#document-resource-object-linkage
+ * @see {@link JSONAPIResourceID}
+ */
+export interface JSONAPIResourceRelationship1<TResourceType extends string = string>
+  extends JSONAPIResourceRelationshipBase {
+  data: JSONAPIResourceID<TResourceType>;
+}
+
+/**
+ * Represents a one-to-many resource relationship.
+ *
+ * @typeParam TResourceType resource type string. To identify specific resource,
+ *  pass a string literal.
+ *
+ * @example
+ * // a 1-N relationship to any resource
+ * type AnyRelationshipN = JSONAPIResourceRelationshipN;
+ *
+ * // a 1-N relationshop to specific resource
+ * type CompanyRelationshipN = JSONAPIResourceRelationshipN<'companies'>;
+ *
+ * @see https://jsonapi.org/format/#document-resource-object-relationships
+ * @see https://jsonapi.org/format/#document-resource-object-linkage
+ * @see {@link JSONAPIResourceID}
+ */
+export interface JSONAPIResourceRelationshipN<TResourceType extends string = string>
+  extends JSONAPIResourceRelationshipBase {
+  data: JSONAPIResourceID<TResourceType>[];
+}
+
+/**
+ * Represents a resource relationship of any type (both single and multiple).
+ *
+ * @typeParam TResourceType resource type string. To identify specific resource,
+ *  pass a string literal.
+ *
+ * @see https://jsonapi.org/format/#document-resource-object-relationships
+ * @see {@link JSONAPIResourceRelationship0}
+ * @see {@link JSONAPIResourceRelationship1}
+ * @see {@link JSONAPIResourceRelationshipN}
+ */
+export type JSONAPIResourceRelationship<TResourceType extends string = string> =
+  | JSONAPIResourceRelationship0<TResourceType>
+  | JSONAPIResourceRelationship1<TResourceType>
+  | JSONAPIResourceRelationshipN<TResourceType>;
+
+/**
+ * Base definition of a JSON:API resource.
+ *
+ * @typeParam TResourceType resource type string
+ * @typeParam TAttributesType type of resource attributes.
+ *  By default, resources do not have any attributes.
+ * @typeParam TRelationshipsType type of resource relationships.
+ *  By default, relationships are empty.
+ *
+ * @example
+ * // this type represents a "pet" resource, which has 2 attributes
+ * // and 3 relationships
+ * type PetResource = JSONAPIServerResource<
+ *  'pets',
+ *  {
+ *    nickName: string;
+ *    age?: number;
+ *  },
+ *  {
+ *    shelter: JSONAPIResourceRelationship1<'shelters'>;
+ *    owner: JSONAPIResourceRelationship0<'people'>;
+ *    siblings: JSONAPIResourceRelationshipN<'pets'>;
+ *  }
+ * >;
+ *
+ * @see https://jsonapi.org/format/#document-resource-objects
+ * @see {@link JSONAPIServerResource}
+ * @see {@link JSONAPIClientResource}
+ */
+interface JSONAPIResourceBase<
+  TResourceType extends string,
+  TAttributesType extends JSONObject,
+  TRelationshipsType extends Record<string, JSONAPIResourceRelationship>,
+> {
+  type: TResourceType;
+  attributes: TAttributesType;
+  relationships?: TRelationshipsType;
   links?: {
     self: JSONAPILink;
   };
   meta?: JSONAPIMeta;
-};
+}
 
 /**
- * Resource originated from the server.
+ * Represents a JSON:API resource originated from the server.
+ *
+ * @typeParam TResourceType resource type string
+ * @typeParam TAttributesType type of resource attributes.
+ *  By default, resources do not have any attributes.
+ * @typeParam TRelationshipsType type of resource relationships.
+ *  By default, relationships are empty.
  *
  * @see https://jsonapi.org/format/#document-resource-objects
+ * @see {@link JSONAPIResourceBase}
+ * @see {@link JSONAPIResourceID}
+ * @see {@link JSONAPIResourceRelationship}
  */
-export type JSONAPIServerResource = JSONAPIResourceBase & {
+export interface JSONAPIServerResource<
+  TResourceType extends string = string,
+  TAttributesType extends JSONObject = JSONObject,
+  TRelationshipsType extends Record<string, JSONAPIResourceRelationship> = Record<
+    string,
+    JSONAPIResourceRelationship
+  >,
+> extends JSONAPIResourceBase<TResourceType, TAttributesType, TRelationshipsType> {
   id: string;
-};
+}
 
 /**
  * Resource originated from the client, that does not yet exist on the server.
  *
+ * @typeParam TResourceType resource type string
+ * @typeParam TAttributesType type of resource attributes.
+ *  By default, resources do not have any attributes.
+ * @typeParam TRelationshipsType type of resource relationships.
+ *  By default, relationships are empty.
+ *
  * @see https://jsonapi.org/format/#document-resource-objects
+ * @see {@link JSONAPIResourceID}
+ * @see {@link JSONAPIResourceRelationship}
  */
-export type JSONAPIClientResource = JSONAPIResourceBase & {
+export interface JSONAPIClientResource<
+  TResourceType extends string = string,
+  TAttributesType extends JSONObject = JSONObject,
+  TRelationshipsType extends Record<string, JSONAPIResourceRelationship> = Record<
+    string,
+    JSONAPIResourceRelationship
+  >,
+> extends JSONAPIResourceBase<TResourceType, TAttributesType, TRelationshipsType> {
   id?: string;
-};
+}
 
 /**
- * Represents any resource.
+ * Represents any JSON:API resource.
  *
  * @see https://jsonapi.org/format/#document-resource-objects
  */
-export type JSONAPIResource = JSONAPIClientResource | JSONAPIServerResource;
+export type JSONAPIResource<
+  TResourceType extends string = string,
+  TAttributesType extends JSONObject = EmptyObject,
+  TRelationshipsType extends Record<string, JSONAPIResourceRelationship> = EmptyObject,
+> =
+  | JSONAPIClientResource<TResourceType, TAttributesType, TRelationshipsType>
+  | JSONAPIServerResource<TResourceType, TAttributesType, TRelationshipsType>;
 
 /**
  * Holds information about JSON:API implementation.
  *
  * @see https://jsonapi.org/format/#document-jsonapi-object
  */
-export type JSONAPIImplementationInfo = {
+export interface JSONAPIImplementationInfo {
   version?: '1.0';
   meta?: JSONAPIMeta;
-};
+}
 
 /**
  * Holds links for the whole document.
  *
  * @see https://jsonapi.org/format/#document-top-level
  */
-export type JSONAPITopLevelLinks = {
+export interface JSONAPITopLevelLinks {
   self?: JSONAPILink;
   related?: JSONAPILink;
-};
+}
 
 /**
  * @see https://jsonapi.org/format/#document-top-level
  */
-type JSONAPIDocumentBase = {
-  jsonapi?: JSONAPIImplementationInfo;
+interface JSONAPIDocumentBase {
+  jsonapi: JSONAPIImplementationInfo;
   links?: JSONAPITopLevelLinks;
   meta?: JSONAPIMeta;
-};
+}
 
 /**
  * Document that contains data.
  *
+ * @typeParam TPrimaryData determines the type of document's primary data. This
+ *  must be either resource ID type or a resource type
+ * @typeParam TIncludedData determines the type(-s) of resources included in
+ *  the document. This must be a resource or a union of resource types.
+ *
+ * @example
+ * type Company = JSONAPIResource<'companies', ...>;
+ * type Department = JSONAPIResource<'departments', ...>;
+ * type Person = JSONAPIResource<'people', ...>;
+ *
+ * // this document has a single company resource as its primary data,
+ * // and a list of either department of person resources included
+ * type CompanyDocument = JSONAPIDataDocument<Company, Department | Person>;
+ *
  * @see https://jsonapi.org/format/#document-top-level
  */
-export type JSONAPIDataDocument = JSONAPIDocumentBase & {
-  data: JSONAPIResource[] | JSONAPIResource | JSONAPIResourceID[] | JSONAPIResourceID | null;
-  included?: JSONAPIResource[];
-};
+export interface JSONAPIDataDocument<
+  TPrimaryData extends JSONAPIServerResource | JSONAPIResourceID | null =
+    | JSONAPIServerResource
+    | JSONAPIResourceID,
+  TIncludedData extends JSONAPIServerResource = JSONAPIServerResource,
+> extends JSONAPIDocumentBase {
+  data: TPrimaryData[] | TPrimaryData | null;
+  included?: TIncludedData[];
+}
 
 /**
  * A single error object.
  *
  * @see https://jsonapi.org/format/#error-objects
  */
-export type JSONAPIError = {
+export interface JSONAPIError {
   id?: string;
   links?: {
     about: JSONAPILink;
@@ -255,23 +435,28 @@ export type JSONAPIError = {
     parameter?: string;
   };
   meta?: JSONAPIMeta;
-};
+}
 
 /**
  * Document that contains error objects.
  *
  * @see https://jsonapi.org/format/#document-top-level
  */
-export type JSONAPIErrorDocument = JSONAPIDocumentBase & {
+export interface JSONAPIErrorDocument extends JSONAPIDocumentBase {
   errors: JSONAPIError[];
-};
+}
 
 /**
  * Represents any document.
  *
  * @see https://jsonapi.org/format/#document-top-level
  */
-export type JSONAPIDocument = JSONAPIDataDocument | JSONAPIErrorDocument;
+export type JSONAPIDocument<
+  TPrimaryData extends JSONAPIServerResource | JSONAPIResourceID =
+    | JSONAPIServerResource
+    | JSONAPIResourceID,
+  TIncludedData extends JSONAPIServerResource = JSONAPIServerResource,
+> = JSONAPIDataDocument<TPrimaryData, TIncludedData> | JSONAPIErrorDocument;
 
 //
 // General purpose
