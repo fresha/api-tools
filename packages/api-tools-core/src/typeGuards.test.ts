@@ -29,12 +29,14 @@ test('isJSONRef', () => {
 
 test('JSON:API document types', () => {
   const doc1: JSONAPIDocument = {
+    jsonapi: { version: '1.0' },
     data: [],
   };
   expect(isJSONAPIDataDocument(doc1)).toBeTruthy();
   expect(isJSONAPIErrorDocument(doc1)).toBeFalsy();
 
   const doc2: JSONAPIDocument = {
+    jsonapi: { version: '1.0' },
     errors: [],
   };
   expect(isJSONAPIDataDocument(doc2)).toBeFalsy();
