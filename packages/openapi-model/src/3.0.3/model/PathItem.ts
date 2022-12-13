@@ -1,5 +1,7 @@
 import assert from 'assert';
 
+import { BidiMap } from '../../BidiMap';
+
 import { BasicNode } from './BasicNode';
 import { Operation } from './Operation';
 import { Server } from './Server';
@@ -12,7 +14,7 @@ import type {
   ParameterModel,
   ServerModel,
 } from './types';
-import type { Nullable } from '@fresha/api-tools-core';
+import type { Nullable, ParametrisedURLString } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#path-item-object
@@ -20,7 +22,7 @@ import type { Nullable } from '@fresha/api-tools-core';
 export class PathItem extends BasicNode<PathItemModelParent> implements PathItemModel {
   summary: Nullable<string>;
   description: Nullable<string>;
-  readonly operations2: Map<PathItemOperationKey, OperationModel>;
+  readonly operations2: BidiMap<PathItemOperationKey, OperationModel>;
   readonly servers: ServerModel[];
   readonly parameters: ParameterModel[];
 
@@ -28,20 +30,47 @@ export class PathItem extends BasicNode<PathItemModelParent> implements PathItem
     super(parent);
     this.summary = null;
     this.description = null;
-    this.operations2 = new Map<PathItemOperationKey, OperationModel>();
+    this.operations2 = new BidiMap<PathItemOperationKey, OperationModel>();
     this.servers = [];
     this.parameters = [];
+  }
+
+  get pathUrl(): ParametrisedURLString {
+    return this.parent.getItemUrlOrThrow(this);
+  }
+
+  getOperation(key: PathItemOperationKey): OperationModel | undefined {
+    return this.operations2.get(key);
+  }
+
+  getOperationOrThrow(key: PathItemOperationKey): OperationModel {
+    const result = this.getOperation(key);
+    assert(result, `Path item does not have '${key}' operation`);
+    return result;
+  }
+
+  getOperationKey(operation: OperationModel): PathItemOperationKey | undefined {
+    return this.operations2.getKey(operation);
+  }
+
+  getOperationKeyOrThrow(operation: OperationModel): PathItemOperationKey {
+    const result = this.getOperationKey(operation);
+    assert(result, `Operation is not associated with any key`);
+    return result;
   }
 
   *operations(): IterableIterator<[PathItemOperationKey, OperationModel]> {
     if (this.get) {
       yield ['get', this.get];
     }
+    if (this.post) {
+      yield ['post', this.post];
+    }
     if (this.put) {
       yield ['put', this.put];
     }
-    if (this.post) {
-      yield ['post', this.post];
+    if (this.patch) {
+      yield ['patch', this.patch];
     }
     if (this.delete) {
       yield ['delete', this.delete];
@@ -51,9 +80,6 @@ export class PathItem extends BasicNode<PathItemModelParent> implements PathItem
     }
     if (this.head) {
       yield ['head', this.head];
-    }
-    if (this.patch) {
-      yield ['patch', this.patch];
     }
     if (this.trace) {
       yield ['trace', this.trace];

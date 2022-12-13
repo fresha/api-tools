@@ -1,5 +1,7 @@
 import assert from 'assert';
 
+import { BidiMap } from '../../BidiMap';
+
 import { BasicNode } from './BasicNode';
 import { PathItem } from './PathItem';
 
@@ -10,11 +12,21 @@ import type { ParametrisedURLString } from '@fresha/api-tools-core';
  * @see http://spec.openapis.org/oas/v3.0.3#callback-object
  */
 export class Callback extends BasicNode<CallbackModelParent> implements CallbackModel {
-  readonly paths: Map<string, PathItemModel>;
+  readonly paths: BidiMap<ParametrisedURLString, PathItemModel>;
 
   constructor(parent: CallbackModelParent) {
     super(parent);
-    this.paths = new Map<ParametrisedURLString, PathItemModel>();
+    this.paths = new BidiMap<ParametrisedURLString, PathItemModel>();
+  }
+
+  getItemUrl(pathItem: PathItemModel): string | undefined {
+    return this.paths.getKey(pathItem);
+  }
+
+  getItemUrlOrThrow(pathItem: PathItemModel): string {
+    const result = this.getItemUrl(pathItem);
+    assert(result, `Cannot find URL associated with path item`);
+    return result;
   }
 
   getPathItem(key: ParametrisedURLString): PathItemModel | undefined {
@@ -23,7 +35,7 @@ export class Callback extends BasicNode<CallbackModelParent> implements Callback
 
   getPathItemOrThrow(key: string): PathItemModel {
     const result = this.getPathItem(key);
-    assert(result);
+    assert(result, `Cannot find path item associated with '${key}' URL`);
     return result;
   }
 

@@ -22,6 +22,15 @@ test('default properties', () => {
   expect(operation.servers).toHaveLength(0);
 });
 
+test('httpMethod property', () => {
+  const pathItem = openapi.setPathItem('/hello');
+  const op1 = pathItem.setOperation('post');
+  const op2 = pathItem.setOperation('delete');
+
+  expect(op1.httpMethod).toBe('post');
+  expect(op2.httpMethod).toBe('delete');
+});
+
 test('tags collection', () => {
   const operation = openapi.setPathItem('/').setOperation('head');
 
@@ -41,6 +50,10 @@ test('tags collection', () => {
   operation.deleteTag('tag4');
   expect(operation.tags).toStrictEqual(['tag1', 'tag3']);
 
+  operation.deleteTag('tag3');
+  expect(operation.tags).toStrictEqual(['tag1']);
+
+  operation.addTag('tag3');
   operation.deleteTagAt(0);
   expect(operation.tags).toStrictEqual(['tag3']);
 

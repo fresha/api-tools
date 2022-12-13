@@ -3,7 +3,8 @@ import path from 'path';
 
 import yaml from 'yaml';
 
-import { OpenAPI } from './OpenAPI';
+import { ExternalDocumentation } from './ExternalDocumentation';
+import { OpenAPI, OpenAPIFactory } from './OpenAPI';
 import { OpenAPIReader } from './OpenAPIReader';
 import { OpenAPIWriter } from './OpenAPIWriter';
 
@@ -160,6 +161,69 @@ test('serialises operation with shared schemas', () => {
     ErrorList: {
       type: 'array',
       items: { $ref: '#/components/schemas/Error' },
+    },
+  });
+});
+
+test('serializes tags', () => {
+  const openapi = new OpenAPI('Barebones', '1.2.3');
+
+  const t1 = openapi.addTag('t1');
+  t1.description = 'The single tag';
+  t1.externalDocs = new ExternalDocumentation(t1, 'http://www.example.com/docs');
+  t1.externalDocs.description = '3rd party docs';
+  t1.setExtension('x', 'y');
+
+  const writer = new OpenAPIWriter();
+
+  expect(writer.write(openapi)).toHaveProperty('tags', [
+    {
+      name: 't1',
+      description: 'The single tag',
+      'x-x': 'y',
+      externalDocs: { description: '3rd party docs', url: 'http://www.example.com/docs' },
+    },
+  ]);
+});
+
+test('security schemas', () => {
+  const openapi = OpenAPIFactory.create();
+
+  const apiKeySchema = openapi.components.setSecuritySchema('key1', 'apiKey');
+  apiKeySchema.setExtension('1', 12);
+
+  const httpSchema = openapi.components.setSecuritySchema('key2', 'http');
+  httpSchema.setExtension('2', 'aaa');
+
+  const oauth2Schema = openapi.components.setSecuritySchema('key3', 'oauth2');
+  oauth2Schema.setExtension('3', {});
+
+  const openIdSchema = openapi.components.setSecuritySchema('key4', 'openIdConnect');
+  openIdSchema.setExtension('4', []);
+
+  const writer = new OpenAPIWriter();
+
+  expect(writer.write(openapi)).toHaveProperty(['components', 'securitySchemes'], {
+    key1: {
+      in: 'header',
+      name: 'key1',
+      type: 'apiKey',
+      'x-1': 12,
+    },
+    key2: {
+      type: 'http',
+      scheme: {},
+      'x-2': 'aaa',
+    },
+    key3: {
+      type: 'oauth2',
+      flows: {},
+      'x-3': {},
+    },
+    key4: {
+      type: 'openIdConnect',
+      openIdConnectUrl: 'http://www.example.com',
+      'x-4': [],
     },
   });
 });
