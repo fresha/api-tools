@@ -297,7 +297,7 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     let result: SecuritySchemaModel;
     switch (kind) {
       case 'apiKey':
-        result = new APIKeySecurityScheme(this, 'x', 'header');
+        result = new APIKeySecurityScheme(this, name, 'header');
         break;
       case 'http':
         result = new HTTPSecurityScheme(this, Schema.create(this));

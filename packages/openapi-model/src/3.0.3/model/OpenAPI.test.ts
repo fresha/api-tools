@@ -13,14 +13,27 @@ test('ownership', () => {
   expect(openapi.info.license.parent).toBe(openapi.info);
 });
 
-test('getExtension + getExtensionOrThrow', () => {
-  openapi.setExtension('a', 1);
-  openapi.setExtension('b', 'log');
+describe('extensions', () => {
+  test('getExtension + getExtensionOrThrow', () => {
+    openapi.setExtension('a', 1);
+    openapi.setExtension('b', 'log');
 
-  expect(openapi.getExtension('a')).not.toBeUndefined();
-  expect(openapi.getExtension('')).toBeUndefined();
-  expect(openapi.getExtensionOrThrow('b')).not.toBeUndefined();
-  expect(() => openapi.getExtensionOrThrow('')).toThrow();
+    expect(openapi.getExtension('a')).not.toBeUndefined();
+    expect(openapi.getExtension('')).toBeUndefined();
+    expect(openapi.getExtensionOrThrow('b')).not.toBeUndefined();
+    expect(() => openapi.getExtensionOrThrow('')).toThrow();
+  });
+
+  test('mutation', () => {
+    openapi.setExtension('a', 1);
+    openapi.setExtension('b', '1234');
+
+    openapi.deleteExtension('b');
+    expect(openapi.getExtension('b')).toBeUndefined();
+
+    openapi.clearExtensions();
+    expect(openapi.getExtension('a')).toBeUndefined();
+  });
 });
 
 describe('server collection', () => {
@@ -33,6 +46,24 @@ describe('server collection', () => {
 
     expect(openapi.getServerOrThrow('https://api2.example.com')).toBe(server2);
     expect(() => openapi.getServerOrThrow('https://api3.example.com')).toThrow();
+  });
+
+  test('mutation', () => {
+    openapi.addServer('http://www.example.com');
+    openapi.addServer('http://www.example.com/2');
+    openapi.addServer('http://www.example.com/3');
+    openapi.addServer('http://www.example.com/4');
+    expect(() => openapi.addServer('http://www.example.com')).toThrow();
+
+    openapi.removeServerAt(2);
+    expect(openapi.servers.map(s => s.url)).toStrictEqual([
+      'http://www.example.com',
+      'http://www.example.com/2',
+      'http://www.example.com/4',
+    ]);
+
+    openapi.clearServers();
+    expect(openapi.servers.map(s => s.url)).toStrictEqual([]);
   });
 });
 
@@ -47,6 +78,32 @@ describe('path items collection', () => {
     expect(openapi.getPathItemOrThrow('/item2')).toBe(pathItem2);
     expect(() => openapi.getPathItemOrThrow('/item3')).toThrow();
   });
+
+  test('mutations', () => {
+    openapi.setPathItem('/hello/{id}');
+    expect(() => openapi.setPathItem('/hello/{id}')).toThrow();
+    openapi.setPathItem('/hello/{other_id}');
+
+    openapi.clearPathItems();
+
+    expect(openapi.paths.size).toBe(0);
+  });
+});
+
+describe('security requirements', () => {
+  test('mutations', () => {
+    const req1 = openapi.addSecurityRequirement();
+    const req2 = openapi.addSecurityRequirement();
+    const req3 = openapi.addSecurityRequirement();
+
+    expect(openapi.security).toStrictEqual([req1, req2, req3]);
+
+    openapi.deleteSecurityRequirementAt(1);
+    expect(openapi.security).toStrictEqual([req1, req3]);
+
+    openapi.clearSecurityRequirements();
+    expect(openapi.security).toStrictEqual([]);
+  });
 });
 
 describe('tags collection', () => {
@@ -59,5 +116,22 @@ describe('tags collection', () => {
 
     expect(openapi.getTagOrThrow('t2')).toBe(tag2);
     expect(() => openapi.getTagOrThrow('t3')).toThrow();
+  });
+
+  test('mutations', () => {
+    openapi.addTag('t1');
+    openapi.addTag('t2');
+    openapi.addTag('t3');
+
+    expect(() => openapi.addTag('t1')).toThrow();
+
+    openapi.deleteTagAt(1);
+    expect(openapi.tags.map(t => t.name)).toStrictEqual(['t1', 't3']);
+
+    openapi.deleteTag('t1');
+    expect(openapi.tags.map(t => t.name)).toStrictEqual(['t3']);
+
+    openapi.clearTags();
+    expect(openapi.tags.map(t => t.name)).toStrictEqual([]);
   });
 });

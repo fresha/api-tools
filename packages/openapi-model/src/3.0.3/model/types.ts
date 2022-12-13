@@ -552,6 +552,11 @@ export interface OperationModel
   readonly security: ReadonlyArray<SecurityRequirementModel>;
   readonly servers: ReadonlyArray<ServerModel>;
 
+  /**
+   * HTTP method this operation is associated with, within its path item.
+   */
+  readonly httpMethod: PathItemOperationKey;
+
   addTag(name: string): void;
   deleteTag(name: string): void;
   deleteTagAt(index: number): void;
@@ -617,6 +622,35 @@ export interface PathItemModel extends TreeNode<PathItemModelParent>, Specificat
   readonly servers: ServerModel[];
   readonly parameters: ParameterModel[];
 
+  /**
+   * URL associated with this path item in item's parent collection.
+   */
+  readonly pathUrl: ParametrisedURLString;
+
+  /**
+   * Returns operation associated with given HTTP method. Returns undefined
+   * if there is no such an operation.
+   */
+  getOperation(key: PathItemOperationKey): OperationModel | undefined;
+
+  /**
+   * Returns operation associated with given HTTP method. Throws an exception
+   * if there is no such an operation.
+   */
+  getOperationOrThrow(key: PathItemOperationKey): OperationModel;
+
+  /**
+   * Returns HTTP method, associated with given operation. If the operation does
+   * not belong to this path item, returns undefined.
+   */
+  getOperationKey(operation: OperationModel): PathItemOperationKey | undefined;
+
+  /**
+   * Returns HTTP method, associated with given operation. If the operation does
+   * not belong to this path item, throws an error.
+   */
+  getOperationKeyOrThrow(operation: OperationModel): PathItemOperationKey;
+
   operations(): IterableIterator<[PathItemOperationKey, OperationModel]>;
 
   setOperation(method: PathItemOperationKey): OperationModel;
@@ -642,6 +676,18 @@ export interface PathsModel
     SpecificationExtensionsModel {
   getItem(url: ParametrisedURLString): PathItemModel | undefined;
   getItemOrThrow(url: ParametrisedURLString): PathItemModel;
+
+  /**
+   * Returns an URL associated with given path item. If the item is not
+   * in this paths collection, return undefined.
+   */
+  getItemUrl(pathItem: PathItemModel): ParametrisedURLString | undefined;
+
+  /**
+   * Returns an URL associated with given path item. If the item is not
+   * in this paths collection, throws an exception.
+   */
+  getItemUrlOrThrow(pathItem: PathItemModel): ParametrisedURLString;
 }
 
 export type SecuritySchemaModelParent = ComponentsModel;
@@ -798,13 +844,25 @@ export type CallbackModelParent = ComponentsModel | OperationModel;
  * @see https://spec.openapis.org/oas/v3.0.3#callback-object
  */
 export interface CallbackModel extends TreeNode<CallbackModelParent>, SpecificationExtensionsModel {
-  readonly paths: ReadonlyMap<string, PathItemModel>;
+  readonly paths: ReadonlyMap<ParametrisedURLString, PathItemModel>;
 
-  getPathItem(key: string): PathItemModel | undefined;
-  getPathItemOrThrow(key: string): PathItemModel;
-  setPathItem(key: string): PathItemModel;
-  deletePathItem(key: string): void;
+  getPathItem(key: ParametrisedURLString): PathItemModel | undefined;
+  getPathItemOrThrow(key: ParametrisedURLString): PathItemModel;
+  setPathItem(key: ParametrisedURLString): PathItemModel;
+  deletePathItem(key: ParametrisedURLString): void;
   clearPathItems(): void;
+
+  /**
+   * Returns an URL associated with given path item. If the item is not
+   * in this paths collection, return undefined.
+   */
+  getItemUrl(pathItem: PathItemModel): ParametrisedURLString | undefined;
+
+  /**
+   * Returns an URL associated with given path item. If the item is not
+   * in this paths collection, throws an exception.
+   */
+  getItemUrlOrThrow(pathItem: PathItemModel): ParametrisedURLString;
 }
 
 export type ComponentsModelParent = OpenAPIModel;

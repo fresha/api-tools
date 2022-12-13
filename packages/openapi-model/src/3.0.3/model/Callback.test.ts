@@ -6,6 +6,27 @@ beforeEach(() => {
   callback = OpenAPIFactory.create().components.setCallback('onData');
 });
 
+test('getPathUrl() + getPathUrlOrThrow()', () => {
+  const item1 = callback.setPathItem('hello');
+
+  const callback2 = callback.root.components.setCallback('onResult');
+  const item2 = callback2.setPathItem('hello');
+
+  expect(callback.getItemUrl(item1)).toBe('hello');
+  expect(callback.getItemUrl(item2)).toBeUndefined();
+
+  expect(() => callback2.getItemUrlOrThrow(item1)).toThrow();
+  expect(callback2.getItemUrlOrThrow(item2)).toBe('hello');
+});
+
+test('getPathUrl() + mutation', () => {
+  const item1 = callback.setPathItem('hello');
+
+  expect(callback.getItemUrl(item1)).toBe('hello');
+  callback.deletePathItem('hello');
+  expect(callback.getItemUrl(item1)).toBeUndefined();
+});
+
 test('getPathItem + getPathItemOrThrow', () => {
   callback.setPathItem('people');
   callback.setPathItem('pets');

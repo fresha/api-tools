@@ -131,11 +131,11 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
   }
 
   setPathItem(url: ParametrisedURLString): PathItemModel {
-    if (this.paths.items.has(url)) {
+    if (this.paths.has(url)) {
       throw new Error(`Duplicate path item ${url}`);
     }
     const pathItem = new PathItem(this.paths);
-    this.paths.items.set(url, pathItem);
+    this.paths.set(url, pathItem);
     return pathItem;
   }
 
@@ -158,7 +158,7 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
   }
 
   clearSecurityRequirements(): void {
-    this.security.splice(1, this.security.length);
+    this.security.splice(0, this.security.length);
   }
 
   getTag(name: string): TagModel | undefined {

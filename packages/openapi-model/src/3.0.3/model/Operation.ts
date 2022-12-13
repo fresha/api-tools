@@ -16,6 +16,7 @@ import type {
   OperationModelParent,
   ParameterLocation,
   ParameterModel,
+  PathItemOperationKey,
   RequestBodyModel,
   ResponseModel,
   SecurityRequirementModel,
@@ -54,6 +55,10 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.deprecated = false;
     this.security = [];
     this.servers = [];
+  }
+
+  get httpMethod(): PathItemOperationKey {
+    return this.parent.getOperationKeyOrThrow(this);
   }
 
   addTag(name: string): void {
