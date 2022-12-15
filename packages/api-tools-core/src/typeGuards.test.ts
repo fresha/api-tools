@@ -6,7 +6,7 @@ import {
   isJSONValueArray,
 } from './typeGuards';
 
-import type { JSONAPIDocument } from './types';
+import type { JSONAPIDocument, JSONAPIServerResource } from './types';
 
 test('isJSONObject', () => {
   expect(isJSONObject({})).toBeTruthy();
@@ -28,7 +28,7 @@ test('isJSONRef', () => {
 });
 
 test('JSON:API document types', () => {
-  const doc1: JSONAPIDocument = {
+  const doc1: JSONAPIDocument<JSONAPIServerResource[]> = {
     jsonapi: { version: '1.0' },
     data: [],
   };

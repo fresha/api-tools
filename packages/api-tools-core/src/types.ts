@@ -391,6 +391,13 @@ interface JSONAPIDocumentBase {
   meta?: JSONAPIMeta;
 }
 
+export type JSONAPIPrimaryDocumentData =
+  | JSONAPIServerResource
+  | JSONAPIServerResource[]
+  | JSONAPIResourceID
+  | JSONAPIResourceID[]
+  | null;
+
 /**
  * Document that contains data.
  *
@@ -411,12 +418,7 @@ interface JSONAPIDocumentBase {
  * @see https://jsonapi.org/format/#document-top-level
  */
 export interface JSONAPIDataDocument<
-  TPrimaryData extends
-    | JSONAPIServerResource
-    | JSONAPIServerResource[]
-    | JSONAPIResourceID
-    | JSONAPIResourceID[]
-    | null = JSONAPIServerResource,
+  TPrimaryData extends JSONAPIPrimaryDocumentData = JSONAPIServerResource,
   TIncludedData extends JSONAPIServerResource = JSONAPIServerResource,
 > extends JSONAPIDocumentBase {
   data: TPrimaryData;
@@ -459,9 +461,7 @@ export interface JSONAPIErrorDocument extends JSONAPIDocumentBase {
  * @see https://jsonapi.org/format/#document-top-level
  */
 export type JSONAPIDocument<
-  TPrimaryData extends JSONAPIServerResource | JSONAPIResourceID =
-    | JSONAPIServerResource
-    | JSONAPIResourceID,
+  TPrimaryData extends JSONAPIPrimaryDocumentData = JSONAPIServerResource,
   TIncludedData extends JSONAPIServerResource = JSONAPIServerResource,
 > = JSONAPIDataDocument<TPrimaryData, TIncludedData> | JSONAPIErrorDocument;
 

@@ -2,6 +2,7 @@ import type {
   JSONAPIDataDocument,
   JSONAPIDocument,
   JSONAPIErrorDocument,
+  JSONAPIPrimaryDocumentData,
   JSONObject,
   JSONRef,
   JSONValue,
@@ -16,8 +17,10 @@ export const isJSONValueArray = (value: JSONValue | JSONValue[] | null): value i
 export const isJSONRef = (arg: unknown): arg is JSONRef =>
   arg != null && typeof arg === 'object' && typeof (arg as JSONObject).$ref === 'string';
 
-export const isJSONAPIDataDocument = (doc: JSONAPIDocument): doc is JSONAPIDataDocument =>
-  'data' in doc;
+export const isJSONAPIDataDocument = <TPrimaryData extends JSONAPIPrimaryDocumentData>(
+  doc: JSONAPIDocument<TPrimaryData>,
+): doc is JSONAPIDataDocument<TPrimaryData> => 'data' in doc;
 
-export const isJSONAPIErrorDocument = (doc: JSONAPIDocument): doc is JSONAPIErrorDocument =>
-  'errors' in doc;
+export const isJSONAPIErrorDocument = <TPrimaryData extends JSONAPIPrimaryDocumentData>(
+  doc: JSONAPIDocument<TPrimaryData>,
+): doc is JSONAPIErrorDocument => 'errors' in doc;
