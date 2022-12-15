@@ -140,7 +140,11 @@ export type JSONAPIMeta = JSONObject;
 export type JSONAPILink = string | { href: string; meta?: JSONAPIMeta };
 
 /**
- * Represents a resource ID.
+ * Represents a resource ID. `JSONAPIResourceID` must either be a string or a string literal.
+ *
+ * @example
+ * JSONAPIResourceID // generic resource ID object
+ * JSONAPIResourceID<'employees'> // resource ID for specific resource
  *
  * @typeParam TResourceType resource type string. To identify specific resource,
  *  pass a string literal.
@@ -407,12 +411,15 @@ interface JSONAPIDocumentBase {
  * @see https://jsonapi.org/format/#document-top-level
  */
 export interface JSONAPIDataDocument<
-  TPrimaryData extends JSONAPIServerResource | JSONAPIResourceID | null =
+  TPrimaryData extends
     | JSONAPIServerResource
-    | JSONAPIResourceID,
+    | JSONAPIServerResource[]
+    | JSONAPIResourceID
+    | JSONAPIResourceID[]
+    | null = JSONAPIServerResource,
   TIncludedData extends JSONAPIServerResource = JSONAPIServerResource,
 > extends JSONAPIDocumentBase {
-  data: TPrimaryData[] | TPrimaryData | null;
+  data: TPrimaryData;
   included?: TIncludedData[];
 }
 
