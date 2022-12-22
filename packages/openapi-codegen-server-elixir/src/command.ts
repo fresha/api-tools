@@ -1,13 +1,10 @@
-import console from 'console';
-
 import { Project } from '@fresha/ex-morph';
 import { createRegistry } from '@fresha/json-api-model';
 import {
-  createLogger,
   builder as basicBuilder,
   Params as BasicParams,
+  createContext,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
 
 import { Generator } from './parts';
 
@@ -32,8 +29,7 @@ export const builder = (yarg: Argv): Argv<Params> =>
     .demandOption('test-factory-module');
 
 export const handler = (args: ArgumentsCamelCase<Params>): void => {
-  const openapiReader = new OpenAPIReader();
-  const openapi = openapiReader.parseFromFile(args.input);
+  const context = createContext(args);
 
   const project = new Project({
     rootDir: args.output,
@@ -41,18 +37,11 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     overwriteFiles: true,
   });
 
-  const logger = createLogger(!!args.verbose);
-
   const generator = new Generator({
-    outputPath: args.output,
-    useJsonApi: !!args.jsonApi,
+    ...context,
     testObjectFactoryModuleName: args.testFactoryModule!,
-    dryRun: !!args.dryRun,
-    openapi,
     project,
     registry: createRegistry(),
-    consoleWriter: console.log,
-    logger,
   });
 
   generator.run();

@@ -58,6 +58,6 @@ export class Router {
 
     lines.push('end', '');
 
-    this.context.consoleWriter(lines.join('\n'));
+    this.context.console.log(lines.join('\n'));
   }
 }
