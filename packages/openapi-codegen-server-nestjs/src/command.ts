@@ -1,6 +1,10 @@
 import path from 'path';
 
-import { createLogger } from '@fresha/openapi-codegen-utils';
+import {
+  createLogger,
+  builder as basicBuilder,
+  Params as BasicParams,
+} from '@fresha/openapi-codegen-utils';
 import { OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
@@ -13,33 +17,14 @@ export const command = 'server-nestjs';
 
 export const description = 'generates code for NestJS';
 
-type Params = {
-  input: string;
-  output: string;
+type Params = BasicParams & {
   nestApp?: string;
-  jsonApi?: boolean;
-  verbose?: boolean;
 };
 
-export const builder = (yarg: Argv): Argv<Params> => {
-  return yarg
-    .string('input')
-    .alias('input', 'i')
-    .describe('input', 'Input schema')
-    .demandOption('input')
-    .string('output')
-    .alias('output', 'o')
-    .describe('output', 'Output directory (NestJS package root)')
-    .demandOption('output')
+export const builder = (yarg: Argv): Argv<Params> =>
+  basicBuilder(yarg)
     .string('nest-app')
-    .describe('nest-app', 'Create files inside given NestJS application name')
-    .string('json-api')
-    .describe('json-api', 'Uses JSON:API extensions')
-    .boolean('verbose')
-    .describe('verbose', 'prints additional information')
-    .boolean('dry-run')
-    .describe('dry-run', 'Does not modify files');
-};
+    .describe('nest-app', 'Create files inside given NestJS application name');
 
 export const handler = (args: ArgumentsCamelCase<Params>): void => {
   const openapiReader = new OpenAPIReader();
