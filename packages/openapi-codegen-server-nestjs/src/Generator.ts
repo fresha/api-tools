@@ -1,6 +1,8 @@
 import assert from 'assert';
 import path from 'path';
 
+import { Generator as GeneratorBase } from '@fresha/openapi-codegen-utils';
+
 import { Controller } from './Controller';
 import { DTO } from './DTO';
 import { Module } from './Module';
@@ -9,14 +11,13 @@ import type { Context } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { PathItemModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
-export class Generator {
-  readonly context: Context;
+export class Generator extends GeneratorBase<Context> {
   protected readonly controllers: Map<string, Controller>;
   protected readonly dtos: Map<string, DTO>;
   protected readonly module: Module;
 
   constructor(context: Context) {
-    this.context = context;
+    super(context);
     this.controllers = new Map<string, Controller>();
     this.dtos = new Map<string, DTO>();
     this.module = new Module(this.context);
@@ -39,11 +40,6 @@ export class Generator {
     const result = new DTO(this.context, name, schema);
     this.dtos.set(name, result);
     return result;
-  }
-
-  run(): void {
-    this.collectData();
-    this.generateCode();
   }
 
   protected collectData(): void {

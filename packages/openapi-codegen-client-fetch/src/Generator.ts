@@ -12,6 +12,7 @@ import {
   addTypeAlias,
   getOperationRequestBodySchema,
   getOperationDefaultResponseSchema,
+  Generator as GeneratorBase,
 } from '@fresha/openapi-codegen-utils';
 
 import type { Context } from './types';
@@ -29,13 +30,12 @@ type APICall = {
   responseSchema: SchemaModel | null;
 };
 
-export class Generator {
-  readonly context: Context;
+export class Generator extends GeneratorBase<Context> {
   protected readonly sourceFile: SourceFile;
   protected readonly apiCalls: APICall[];
 
   constructor(context: Context) {
-    this.context = context;
+    super(context);
     this.sourceFile = this.context.project.createSourceFile(
       path.join(this.context.outputPath, 'src', 'index.ts'),
       '',
@@ -44,7 +44,7 @@ export class Generator {
     this.apiCalls = [];
   }
 
-  collectData(): void {
+  protected collectData(): void {
     for (const [pathUrl, pathItem] of this.context.openapi.paths) {
       for (const [, operation] of pathItem.operations()) {
         const name = getOperationIdOrThrow(operation);
@@ -67,9 +67,7 @@ export class Generator {
     }
   }
 
-  generateCode(): void {
-    this.context.logger.info('Generating preamble code');
-
+  protected generateCode(): void {
     addImportDeclaration(this.sourceFile, 'assert', '.:assert');
 
     this.sourceFile.addClass({

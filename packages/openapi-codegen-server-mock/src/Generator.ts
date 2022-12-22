@@ -1,6 +1,7 @@
 import path from 'path';
 
 import {
+  Generator as GeneratorBase,
   addFunction,
   addImportDeclaration,
   addObjectLiteralObjectProperty,
@@ -11,34 +12,23 @@ import { CodeBlockWriter, ObjectLiteralExpression, SourceFile, SyntaxKind } from
 
 import type { Context } from './types';
 
-export class Generator {
-  readonly context: Context;
-  protected readonly tsSourceFile: SourceFile;
+export class Generator extends GeneratorBase<Context> {
+  protected readonly sourceFile: SourceFile;
 
   constructor(context: Context) {
-    this.context = context;
-    this.tsSourceFile = this.context.project.createSourceFile(
+    super(context);
+    this.sourceFile = this.context.project.createSourceFile(
       path.join(this.context.outputPath, 'src', 'server.ts'),
       '',
       { overwrite: true },
     );
   }
 
-  run(): void {
-    this.collectData();
-    this.generateCode();
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  protected collectData(): void {}
-
   protected generateCode(): void {
-    this.context.logger.info('Generating mock server code');
+    addImportDeclaration(this.sourceFile, 'miragejs', 'createServer');
+    addImportDeclaration(this.sourceFile, 'miragejs', 'Model');
 
-    addImportDeclaration(this.tsSourceFile, 'miragejs', 'createServer');
-    addImportDeclaration(this.tsSourceFile, 'miragejs', 'Model');
-
-    const initFunc = addFunction(this.tsSourceFile, 'init', {}, 'void', true);
+    const initFunc = addFunction(this.sourceFile, 'init', {}, 'void', true);
     initFunc.addStatements((writer: CodeBlockWriter) => {
       writer.writeLine('createServer({});');
     });
