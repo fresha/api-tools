@@ -5,6 +5,7 @@ export type Params = {
   output: string;
   jsonApi?: boolean;
   verbose?: boolean;
+  dryRun?: boolean;
 };
 
 export const builder = <T>(yarg: Argv<T>): Argv<Params> =>
