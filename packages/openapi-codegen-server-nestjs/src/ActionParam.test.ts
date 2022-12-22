@@ -1,4 +1,3 @@
-import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 import { MethodDeclaration, Project } from 'ts-morph';
 
@@ -6,12 +5,10 @@ import '@fresha/jest-config/build/types';
 
 import { ActionParam } from './ActionParam';
 
-import type { Action } from './Action';
+import type { Context } from './types';
 
 let openapi: OpenAPIModel = {} as OpenAPIModel;
 let methodDecl: MethodDeclaration = {} as MethodDeclaration;
-
-const logger = createLogger(false);
 
 beforeEach(() => {
   openapi = OpenAPIFactory.create();
@@ -29,7 +26,7 @@ beforeEach(() => {
 });
 
 test('construction', () => {
-  const param = new ActionParam({} as Action, { in: 'path', name: 'id', schema: null }, logger);
+  const param = new ActionParam({} as Context, { in: 'path', name: 'id', schema: null });
   param.generateCode(methodDecl);
 
   expect(methodDecl.getSourceFile()).toHaveFormattedText(
@@ -42,15 +39,11 @@ test('construction', () => {
 });
 
 test('typed parameters', () => {
-  const param = new ActionParam(
-    {} as Action,
-    {
-      in: 'path',
-      name: 'id',
-      schema: openapi.components.schemas.get('BooleanParam')!,
-    },
-    logger,
-  );
+  const param = new ActionParam({} as Context, {
+    in: 'path',
+    name: 'id',
+    schema: openapi.components.schemas.get('BooleanParam')!,
+  });
   param.generateCode(methodDecl);
 
   expect(methodDecl.getSourceFile()).toHaveFormattedText(
@@ -63,15 +56,11 @@ test('typed parameters', () => {
 });
 
 test('does not support non-primitive parameter schema', () => {
-  const param = new ActionParam(
-    {} as Action,
-    {
-      in: 'path',
-      name: 'obj',
-      schema: openapi.components.schemas.get('ObjectParam')!,
-    },
-    logger,
-  );
+  const param = new ActionParam({} as Context, {
+    in: 'path',
+    name: 'obj',
+    schema: openapi.components.schemas.get('ObjectParam')!,
+  });
 
   expect(() => param.generateCode(methodDecl)).toThrow();
 });

@@ -2,7 +2,6 @@ import assert from 'assert';
 
 import { Nullable, camelCase, titleCase } from '@fresha/api-tools-core';
 import {
-  Logger,
   addImportDeclarations,
   addImportDeclaration,
   addDecorator,
@@ -12,6 +11,7 @@ import { ClassDeclaration, Scope } from 'ts-morph';
 import { ActionParam } from './ActionParam';
 
 import type { Controller } from './Controller';
+import type { Context } from './types';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 const jsonApiMediaType = 'application/vnd.api+json';
@@ -20,43 +20,36 @@ const jsonApiMediaType = 'application/vnd.api+json';
  * Generates code for a single NestJS controller action.
  */
 export class Action {
+  readonly context: Context;
   readonly controller: Controller;
   readonly pathUrl: string;
   readonly httpMethod: string;
   private readonly methodName: string;
   private readonly params: ActionParam[];
   private readonly returnSchema: Nullable<SchemaModel>; // OpenAPI schema
-  private readonly logger: Logger;
   private urlSuffix: string | null;
 
   constructor(
+    context: Context,
     controller: Controller,
     pathUrl: string,
     httpMethod: string,
     operation: OperationModel,
-    logger: Logger,
   ) {
+    this.context = context;
     this.controller = controller;
     this.pathUrl = pathUrl;
     this.httpMethod = httpMethod;
     this.methodName = operation.operationId ?? pathUrl;
-    this.logger = logger;
-    this.params = Array.from(
-      operation.parameters,
-      param => new ActionParam(this, param, this.logger),
-    );
+    this.params = Array.from(operation.parameters, param => new ActionParam(this.context, param));
 
     if (operation.requestBody) {
       this.params.push(
-        new ActionParam(
-          this,
-          {
-            in: 'body',
-            name: 'body',
-            schema: operation.requestBody?.content.get(jsonApiMediaType)?.schema ?? null,
-          },
-          this.logger,
-        ),
+        new ActionParam(this.context, {
+          in: 'body',
+          name: 'body',
+          schema: operation.requestBody?.content.get(jsonApiMediaType)?.schema ?? null,
+        }),
       );
     }
 
@@ -81,7 +74,7 @@ export class Action {
   }
 
   generateCode(classDecl: ClassDeclaration): void {
-    this.logger.info(`Generating code for action ${this.methodName}`);
+    this.context.logger.info(`Generating code for action ${this.methodName}`);
 
     addImportDeclarations(classDecl.getSourceFile(), {
       '@nestjs/common': [titleCase(this.httpMethod), 'HttpException'],
@@ -90,7 +83,7 @@ export class Action {
 
     const returnTypeName = titleCase(`${this.methodName}Response`);
 
-    const dto = this.controller.generator.addDTO(returnTypeName, this.returnSchema);
+    const dto = this.context.addDTO(returnTypeName, this.returnSchema);
     addImportDeclaration(
       classDecl.getSourceFile(),
       this.controller.relativeModulePath(dto.outputPath),

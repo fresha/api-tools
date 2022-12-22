@@ -5,48 +5,29 @@ import { Controller } from './Controller';
 import { DTO } from './DTO';
 import { Module } from './Module';
 
+import type { Context } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
-import type { Logger } from '@fresha/openapi-codegen-utils';
-import type { OpenAPIModel, PathItemModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
-import type { Project } from 'ts-morph';
-
-type GeneratorOptions = {
-  outputPath: string;
-  nestApp: string;
-  useJsonApi: boolean;
-  dryRun: boolean;
-};
+import type { PathItemModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 export class Generator {
-  readonly openapi: OpenAPIModel;
-  readonly tsProject: Project;
-  protected readonly logger: Logger;
-  protected readonly options: GeneratorOptions;
+  readonly context: Context;
   protected readonly controllers: Map<string, Controller>;
   protected readonly dtos: Map<string, DTO>;
   protected readonly module: Module;
 
-  constructor(
-    openapi: OpenAPIModel,
-    tsProject: Project,
-    options: GeneratorOptions,
-    logger: Logger,
-  ) {
-    this.openapi = openapi;
-    this.options = options;
-    this.tsProject = tsProject;
-    this.logger = logger;
+  constructor(context: Context) {
+    this.context = context;
     this.controllers = new Map<string, Controller>();
     this.dtos = new Map<string, DTO>();
-    this.module = new Module(this, this.logger);
+    this.module = new Module(this.context);
   }
 
   get outputPath(): string {
-    return this.options.outputPath;
+    return this.context.outputPath;
   }
 
   get nestApp(): string {
-    return this.options.nestApp;
+    return this.context.nestApp;
   }
 
   getDTO(name: string): DTO | undefined {
@@ -55,13 +36,18 @@ export class Generator {
 
   addDTO(name: string, schema: Nullable<SchemaModel>): DTO {
     assert(!this.dtos.has(name));
-    const result = new DTO(this, name, schema, this.logger);
+    const result = new DTO(this.context, name, schema);
     this.dtos.set(name, result);
     return result;
   }
 
-  collectData(): void {
-    for (const [pathUrl, pathItem] of this.openapi.paths) {
+  run(): void {
+    this.collectData();
+    this.generateCode();
+  }
+
+  protected collectData(): void {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
       this.processPathItem(pathUrl, pathItem);
     }
     for (const controller of this.controllers.values()) {
@@ -70,16 +56,15 @@ export class Generator {
   }
 
   protected processPathItem(pathUrl: string, pathItem: PathItemModel): void {
-    this.logger.info(`Processing '${pathUrl}' item`);
+    this.context.logger.info(`Processing '${pathUrl}' item`);
 
     const className = Controller.makeClassName(pathUrl);
     let controller = this.controllers.get(className);
     if (!controller) {
       controller = new Controller(
-        this,
-        path.join(this.options.outputPath, Controller.makeFileName(pathUrl)),
+        this.context,
+        path.join(this.context.outputPath, Controller.makeFileName(pathUrl)),
         className,
-        this.logger,
       );
       this.controllers.set(className, controller);
     }
@@ -94,9 +79,9 @@ export class Generator {
     for (const dto of this.dtos.values()) {
       dto.generateCode();
     }
-    if (!this.options.dryRun) {
-      this.logger.info('Saving changes');
-      this.tsProject.saveSync();
+    if (!this.context.dryRun) {
+      this.context.logger.info('Saving changes');
+      this.context.project.saveSync();
     }
   }
 }

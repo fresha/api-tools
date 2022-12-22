@@ -1,32 +1,11 @@
 import '@fresha/jest-config/build/types';
 
-import { createLogger } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Schema } from '@fresha/openapi-model/build/3.0.3/model/Schema';
-import { Project } from 'ts-morph';
 
-import { Generator } from './Generator';
+import { makeGenerator } from './testHelpers';
 
-const logger = createLogger(false);
-
-const buildInMemoryTSProject = (): Project => {
-  const result = new Project({ useInMemoryFileSystem: true });
-  result.createSourceFile(
-    '/tmp/web.module.ts',
-    ` import { Module } from '@nestjs/common';
-      @Module({
-        imports: [],
-        controllers: [],
-        providers: [],
-      })
-      export class WebModule {}`,
-  );
-  return result;
-};
-
-const buildBasicJSONAPI = (): OpenAPIModel => {
-  const openapi = OpenAPIFactory.create();
-
+const buildBasicJSONAPI = (openapi: OpenAPIModel): void => {
   const versionSchema = openapi.components.setSchema('JSONAPIVersion', 'object');
   versionSchema.setProperty('version', { type: 'string', required: true });
 
@@ -112,44 +91,28 @@ const buildBasicJSONAPI = (): OpenAPIModel => {
   );
   const errorResponseMediaType = errorResponse.setContent('application/vnd.api+json');
   errorResponseMediaType.schema = errorDocumentSchema;
-
-  return openapi;
 };
 
-let tsProject = buildInMemoryTSProject();
-
-beforeEach(() => {
-  tsProject = buildInMemoryTSProject();
-});
-
 test('simple JSON:API schema', () => {
-  const openapi = buildBasicJSONAPI();
+  const generator = makeGenerator('web', '/tmp');
 
-  const pathItem = openapi.setPathItem('/api');
+  buildBasicJSONAPI(generator.context.openapi);
+
+  const pathItem = generator.context.openapi.setPathItem('/api');
 
   const postOperation = pathItem.setOperation('post');
   postOperation.operationId = 'createEntity';
 
   const postResponse = postOperation.setDefaultResponse('Success response');
   const postResponseContent = postResponse.setContent('application/vnd.api+json');
-  postResponseContent.schema = openapi.components.schemas.get('JSONAPIDataDocument')!;
+  postResponseContent.schema =
+    generator.context.openapi.components.schemas.get('JSONAPIDataDocument')!;
 
-  const generator = new Generator(
-    openapi,
-    tsProject,
-    {
-      outputPath: '/tmp',
-      nestApp: 'web',
-      useJsonApi: true,
-      dryRun: true,
-    },
-    logger,
+  generator.run();
+
+  const dtoFile = generator.context.project.getSourceFileOrThrow(
+    '/tmp/dto/CreateEntityResponse.dto.ts',
   );
-
-  generator.collectData();
-  generator.generateCode();
-
-  const dtoFile = tsProject.getSourceFileOrThrow('/tmp/dto/CreateEntityResponse.dto.ts');
 
   expect(dtoFile).toHaveFormattedText(`
     import { Type, Expose } from 'class-transformer';

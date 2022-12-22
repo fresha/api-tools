@@ -5,14 +5,13 @@ import {
   addDecorator,
   commonStringPrefix,
   kebabCase,
-  Logger,
   significantNameParts,
   addImportDeclaration,
 } from '@fresha/openapi-codegen-utils';
 
 import { Action } from './Action';
 
-import type { Generator } from './Generator';
+import type { Context } from './types';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 import type { SourceFile } from 'ts-morph';
 
@@ -39,24 +38,22 @@ export class Controller {
     return 'controller.ts';
   }
 
-  readonly generator: Generator;
+  readonly context: Context;
   readonly className: string;
   readonly outputPath: string;
-  protected readonly tsSourceFile: SourceFile;
+  protected readonly sourceFile: SourceFile;
   protected readonly actions: Action[];
   protected urlPrefix: string | null;
-  protected readonly logger: Logger;
 
-  constructor(generator: Generator, outputPath: string, className: string, logger: Logger) {
-    this.generator = generator;
+  constructor(context: Context, outputPath: string, className: string) {
+    this.context = context;
     this.outputPath = outputPath;
     this.className = className;
-    this.tsSourceFile = this.generator.tsProject.createSourceFile(this.outputPath, '', {
+    this.sourceFile = this.context.project.createSourceFile(this.outputPath, '', {
       overwrite: true,
     });
     this.actions = [];
     this.urlPrefix = null;
-    this.logger = logger;
   }
 
   relativeModulePath(filePath: string): string {
@@ -68,7 +65,7 @@ export class Controller {
 
   processPathItem(pathUrl: string, pathItem: PathItemModel): void {
     for (const [methodName, operation] of pathItem.operations()) {
-      this.actions.push(new Action(this, pathUrl, methodName, operation, this.logger));
+      this.actions.push(new Action(this.context, this, pathUrl, methodName, operation));
     }
     this.urlPrefix = null;
   }
@@ -81,11 +78,11 @@ export class Controller {
   }
 
   generateCode(): void {
-    this.logger.info(`Generating controller code for ${this.outputPath}`);
+    this.context.logger.info(`Generating controller code for ${this.outputPath}`);
 
-    addImportDeclaration(this.tsSourceFile, '@nestjs/common', 'Controller');
+    addImportDeclaration(this.sourceFile, '@nestjs/common', 'Controller');
 
-    const classDecl = this.tsSourceFile.addClass({
+    const classDecl = this.sourceFile.addClass({
       name: this.className,
       isExported: true,
     });
