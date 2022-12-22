@@ -5,51 +5,35 @@ import {
   addImportDeclaration,
   addObjectLiteralObjectProperty,
   addObjectLiteralProperty,
-  Logger,
   pathUrlToUrlExp,
 } from '@fresha/openapi-codegen-utils';
-import {
-  CodeBlockWriter,
-  ObjectLiteralExpression,
-  Project,
-  SourceFile,
-  SyntaxKind,
-} from 'ts-morph';
+import { CodeBlockWriter, ObjectLiteralExpression, SourceFile, SyntaxKind } from 'ts-morph';
 
-import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
-
-type GeneratorOptions = {
-  outputPath: string;
-  useJsonApi: boolean;
-  logger: Logger;
-  verbose: boolean;
-  dryRun: boolean;
-};
+import type { Context } from './types';
 
 export class Generator {
-  readonly openapi: OpenAPIModel;
-  readonly tsProject: Project;
-  readonly options: GeneratorOptions;
+  readonly context: Context;
   protected readonly tsSourceFile: SourceFile;
-  protected readonly logger: Logger;
 
-  constructor(openapi: OpenAPIModel, tsProject: Project, options: GeneratorOptions) {
-    this.openapi = openapi;
-    this.tsProject = tsProject;
-    this.options = options;
-    this.tsSourceFile = this.tsProject.createSourceFile(
-      path.join(this.options.outputPath, 'src', 'server.ts'),
+  constructor(context: Context) {
+    this.context = context;
+    this.tsSourceFile = this.context.project.createSourceFile(
+      path.join(this.context.outputPath, 'src', 'server.ts'),
       '',
       { overwrite: true },
     );
-    this.logger = this.options.logger;
+  }
+
+  run(): void {
+    this.collectData();
+    this.generateCode();
   }
 
   // eslint-disable-next-line class-methods-use-this
-  collectData(): void {}
+  protected collectData(): void {}
 
-  generateCode(): void {
-    this.logger.info('Generating mock server code');
+  protected generateCode(): void {
+    this.context.logger.info('Generating mock server code');
 
     addImportDeclaration(this.tsSourceFile, 'miragejs', 'createServer');
     addImportDeclaration(this.tsSourceFile, 'miragejs', 'Model');
@@ -68,14 +52,14 @@ export class Generator {
     this.generateSeeds(initArg);
     this.generateRoutes(initArg);
 
-    if (!this.options.dryRun) {
-      this.tsProject.saveSync();
+    if (!this.context.dryRun) {
+      this.context.project.saveSync();
     }
   }
 
   protected generateModelsMap(initArg: ObjectLiteralExpression): void {
     const modelsMap = addObjectLiteralObjectProperty(initArg, 'models');
-    this.logger.info('Generating model definitions');
+    this.context.logger.info('Generating model definitions');
     addObjectLiteralProperty(modelsMap, 'users', 'Model');
     addObjectLiteralProperty(modelsMap, 'pets', 'Model');
   }
@@ -101,7 +85,7 @@ export class Generator {
     });
     routes.prependWhitespace('\n');
 
-    for (const [pathUrl, pathItem] of this.openapi.paths) {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
       const urlExp = pathUrlToUrlExp(pathUrl);
 
       for (const [method, operation] of pathItem.operations()) {
