@@ -1,35 +1,20 @@
-import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
-import { Project } from 'ts-morph';
+
+import { makeContext } from '../testUtils';
 
 import { APIConfig } from './APIConfig';
-
-import type { Generator } from './Generator';
 
 import '@fresha/jest-config';
 
 const makeApiConfig = (openapi: OpenAPIModel): APIConfig => {
-  const logger = createLogger(false);
-  const tsProject = new Project({ useInMemoryFileSystem: true });
-  const tsSourceFile = tsProject.createSourceFile('index.ts', '');
-
-  const apiConfig = new APIConfig({
-    options: {
-      useJsonApi: true,
-    },
-    apiName: 'testApi',
-    apiRootUrl: 'API_CONFIG_URL',
-    openapi,
-    logger,
-    tsSourceFile,
-  } as Generator);
-
-  return apiConfig;
+  const context = makeContext(openapi);
+  const sourceFile = context.project.createSourceFile('index.ts', '');
+  return new APIConfig(context, sourceFile);
 };
 
 test('happy path', () => {
-  const openapi = OpenAPIFactory.create('test-api', '0.1.0');
-  const apiConfig = makeApiConfig(openapi);
+  const openapi = OpenAPIFactory.create('testApi', '0.1.0');
+  openapi.paths.setExtension('root-url', 'API_CONFIG_URL');
 
   const operationQueryParams = openapi.setPathItem('/tasks').setOperation('get');
   operationQueryParams.operationId = 'readTaskList';
@@ -46,10 +31,11 @@ test('happy path', () => {
   searchParam.schema = SchemaFactory.create(searchParam, 'string');
   searchParam.schema.nullable = true;
 
+  const apiConfig = makeApiConfig(openapi);
   apiConfig.collectData();
   apiConfig.generateCode();
 
-  expect(apiConfig.tsSourceFile).toHaveFormattedText(`
+  expect(apiConfig.sourceFile).toHaveFormattedText(`
     import { APIEnvironmentOptions } from '@fresha/connector-utils/build/types/api';
     import store from '@fresha/redux-store';
     import { configureApi } from '@fresha/connector-utils/build/apiConfig';

@@ -1,42 +1,25 @@
-import {
-  addResourceAttributes,
-  createLogger,
-  setDataDocumentSchema,
-} from '@fresha/openapi-codegen-utils';
+import { addResourceAttributes, setDataDocumentSchema } from '@fresha/openapi-codegen-utils';
 import {
   OpenAPIFactory,
   OpenAPIModel,
   OperationModel,
   SchemaFactory,
 } from '@fresha/openapi-model/build/3.0.3';
-import { Project } from 'ts-morph';
+
+import { makeContext } from '../testUtils';
 
 import { ActionsSignatures } from './ActionsSignatures';
-
-import type { Generator } from './Generator';
 
 import '@fresha/jest-config';
 
 const makeActionsSignatures = (openapi: OpenAPIModel): ActionsSignatures => {
-  const logger = createLogger(false);
-  const tsProject = new Project({ useInMemoryFileSystem: true });
-  const tsSourceFile = tsProject.createSourceFile('index.ts', '');
-
-  const actionsSignatures = new ActionsSignatures({
-    options: {
-      useJsonApi: true,
-    },
-    apiName: 'testApi',
-    openapi,
-    logger,
-    tsSourceFile,
-  } as Generator);
-
-  return actionsSignatures;
+  const context = makeContext(openapi);
+  const sourceFile = context.project.createSourceFile('index.ts', '');
+  return new ActionsSignatures(context, sourceFile);
 };
 
 test('action cache', () => {
-  const openapi = OpenAPIFactory.create('cache-api', '2.2.2');
+  const openapi = OpenAPIFactory.create('testApi', '2.2.2');
 
   const operation = openapi.setPathItem('/provider').setOperation('get');
   operation.operationId = 'readProvider';
@@ -47,7 +30,7 @@ test('action cache', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.tsSourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
     export type TestApiActions = {
       readProvider: {
         (): Promise<Response>;
@@ -74,7 +57,7 @@ const addPagingParams = (operation: OperationModel): void => {
 };
 
 test('GET actions', () => {
-  const openapi = OpenAPIFactory.create('test-api', '0.1.0');
+  const openapi = OpenAPIFactory.create('testApi', '0.1.0');
 
   const readList = openapi.setPathItem('/employees').setOperation('get');
   readList.operationId = 'readEmployeeListNoParams';
@@ -88,7 +71,7 @@ test('GET actions', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.tsSourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
     export type TestApiActions = {
       readEmployeeListNoParams: {
         (): Promise<Response>;
@@ -111,7 +94,7 @@ test('GET actions', () => {
 });
 
 test('create actions', () => {
-  const openapi = OpenAPIFactory.create('test-api', '0.1.0');
+  const openapi = OpenAPIFactory.create('testApi', '0.1.0');
 
   const simpleCreate = openapi.setPathItem('/tasks').setOperation('post');
   simpleCreate.operationId = 'createTask';
@@ -138,7 +121,7 @@ test('create actions', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.tsSourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
     import type { JSONObject } from '@fresha/noname-core';
 
     export type TestApiActions = {
@@ -170,7 +153,7 @@ test('create actions', () => {
 });
 
 test('update actions', () => {
-  const openapi = OpenAPIFactory.create('test-api', '0.1.0');
+  const openapi = OpenAPIFactory.create('testApi', '0.1.0');
 
   const simpleUpdate = openapi.setPathItem('/cart').setOperation('put');
 
@@ -196,7 +179,7 @@ test('update actions', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.tsSourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
     import type { JSONArray, JSONValue, JSONObject } from '@fresha/noname-core';
 
     export type TestApiActions = {

@@ -1,36 +1,21 @@
-import { createLogger } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
-import { Project } from 'ts-morph';
+import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import { Generator } from './Generator';
+import { makeContext } from '../testUtils';
+
 import { TestFile } from './TestFile';
 
 import '@fresha/jest-config';
 
-const makeTestFile = (openapi: OpenAPIModel): TestFile => {
-  const logger = createLogger(false);
-  const tsProject = new Project({ useInMemoryFileSystem: true });
-  const tsSourceFile = tsProject.createSourceFile('index.ts', '');
+const makeTestFile = (): TestFile => {
+  const openapi = OpenAPIFactory.create();
+  openapi.paths.setExtension('root-url', 'TEST_FILE_URL');
+  const context = makeContext(openapi);
 
-  const testFile = new TestFile({
-    options: {
-      outputPath: '/',
-      useJsonApi: true,
-    },
-    apiName: 'testApi',
-    apiRootUrl: 'TEST_FILE_URL',
-    openapi,
-    logger,
-    tsProject,
-    tsSourceFile,
-  } as Generator);
-
-  return testFile;
+  return new TestFile(context);
 };
 
 test('happy path', () => {
-  const openapi = OpenAPIFactory.create();
-  const testFile = makeTestFile(openapi);
+  const testFile = makeTestFile();
 
   testFile.collectData();
   testFile.generateCode();
