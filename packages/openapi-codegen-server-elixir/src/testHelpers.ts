@@ -1,6 +1,6 @@
 import { Project } from '@fresha/ex-morph';
 import { createRegistry } from '@fresha/json-api-model';
-import { createLogger } from '@fresha/openapi-codegen-utils';
+import { createLogger, createConsole } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
 import { Context, Generator } from './parts';
@@ -12,6 +12,9 @@ export const makeContext = (phoenixApp: string, rootDir = '/'): Context => {
     useInMemoryFileSystem: true,
   });
 
+  const console = createConsole(false);
+  console.log = jest.fn();
+
   return {
     outputPath: rootDir,
     useJsonApi: true,
@@ -20,7 +23,7 @@ export const makeContext = (phoenixApp: string, rootDir = '/'): Context => {
     openapi: OpenAPIFactory.create(),
     project,
     registry: createRegistry(),
-    consoleWriter: jest.fn(),
+    console,
     logger: createLogger(false),
   };
 };

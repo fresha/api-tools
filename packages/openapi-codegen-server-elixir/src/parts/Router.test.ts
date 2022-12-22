@@ -13,7 +13,7 @@ test('no paths', () => {
   const router = new Router(context);
   router.generateCode();
 
-  const { calls } = (context.consoleWriter as jest.Mock).mock;
+  const { calls } = (context.console.log as jest.Mock).mock;
   expect(calls).toHaveLength(1);
   expect(poorMansElixirFormat((calls as string[][])[0][0])).toBe(
     poorMansElixirFormat(`
@@ -90,7 +90,7 @@ test('multiple controllers and actions', () => {
 
   router.generateCode();
 
-  const { calls } = (context.consoleWriter as jest.Mock).mock;
+  const { calls } = (context.console.log as jest.Mock).mock;
   expect(calls).toHaveLength(1);
   expect(poorMansElixirFormat((calls as string[][])[0][0])).toBe(
     poorMansElixirFormat(`
