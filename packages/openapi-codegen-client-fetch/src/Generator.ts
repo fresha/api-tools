@@ -4,7 +4,6 @@ import path from 'path';
 import { titleCase } from '@fresha/api-tools-core';
 import {
   addTypeLiteralProperty,
-  Logger,
   getOperationIdOrThrow,
   addTypeLiteralAlias,
   addImportDeclaration,
@@ -15,15 +14,10 @@ import {
   getOperationDefaultResponseSchema,
 } from '@fresha/openapi-codegen-utils';
 
-import type { OpenAPIModel, OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
-import type { CodeBlockWriter, Project, SourceFile } from 'ts-morph';
+import type { Context } from './types';
 
-type GeneratorOptions = {
-  outputPath: string;
-  useJsonApi: boolean;
-  logger: Logger;
-  dryRun: boolean;
-};
+import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import type { CodeBlockWriter, SourceFile } from 'ts-morph';
 
 type APICall = {
   operation: OperationModel;
@@ -36,20 +30,14 @@ type APICall = {
 };
 
 export class Generator {
-  readonly openapi: OpenAPIModel;
-  readonly options: GeneratorOptions;
-  readonly logger: Logger;
-  protected readonly tsProject: Project;
-  protected readonly tsSourceFile: SourceFile;
+  readonly context: Context;
+  protected readonly sourceFile: SourceFile;
   protected readonly apiCalls: APICall[];
 
-  constructor(openapi: OpenAPIModel, tsProject: Project, options: GeneratorOptions) {
-    this.openapi = openapi;
-    this.options = options;
-    this.logger = options.logger;
-    this.tsProject = tsProject;
-    this.tsSourceFile = this.tsProject.createSourceFile(
-      path.join(this.options.outputPath, 'src', 'index.ts'),
+  constructor(context: Context) {
+    this.context = context;
+    this.sourceFile = this.context.project.createSourceFile(
+      path.join(this.context.outputPath, 'src', 'index.ts'),
       '',
       { overwrite: true },
     );
@@ -57,13 +45,13 @@ export class Generator {
   }
 
   collectData(): void {
-    for (const [pathUrl, pathItem] of this.openapi.paths) {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
       for (const [, operation] of pathItem.operations()) {
         const name = getOperationIdOrThrow(operation);
-        const requestBodySchema = getOperationRequestBodySchema(operation, this.options.useJsonApi);
+        const requestBodySchema = getOperationRequestBodySchema(operation, this.context.useJsonApi);
         const responseSchema = getOperationDefaultResponseSchema(
           operation,
-          this.options.useJsonApi,
+          this.context.useJsonApi,
         );
 
         this.apiCalls.push({
@@ -80,32 +68,32 @@ export class Generator {
   }
 
   generateCode(): void {
-    this.logger.info('Generating preamble code');
+    this.context.logger.info('Generating preamble code');
 
-    addImportDeclaration(this.tsSourceFile, 'assert', '.:assert');
+    addImportDeclaration(this.sourceFile, 'assert', '.:assert');
 
-    this.tsSourceFile.addClass({
+    this.sourceFile.addClass({
       name: 'APIError',
       extends: 'Error',
     });
 
-    addVariable(this.tsSourceFile, 'rootUrl', "''");
+    addVariable(this.sourceFile, 'rootUrl', "''");
 
     this.generateInitFunction();
     for (const call of this.apiCalls) {
       this.generateApiCall(call);
     }
 
-    if (!this.options.dryRun) {
-      this.tsProject.saveSync();
+    if (!this.context.dryRun) {
+      this.context.project.saveSync();
     }
   }
 
   protected generateInitFunction(): void {
-    const initParamsType = addTypeLiteralAlias(this.tsSourceFile, 'InitParams', true);
+    const initParamsType = addTypeLiteralAlias(this.sourceFile, 'InitParams', true);
     addTypeLiteralProperty(initParamsType, 'rootUrl', 'string');
 
-    const initFunc = addFunction(this.tsSourceFile, 'init', { params: 'InitParams' }, 'void', true);
+    const initFunc = addFunction(this.sourceFile, 'init', { params: 'InitParams' }, 'void', true);
     initFunc.addStatements((writer: CodeBlockWriter) => {
       writer.writeLine("assert(params.rootUrl, 'Expected rootUrl to be a non-empty string');");
       writer.writeLine('rootUrl = params.rootUrl;');
@@ -113,21 +101,21 @@ export class Generator {
   }
 
   protected generateApiCall(call: APICall): void {
-    this.logger.info(`Generating code for ${call.name}`);
+    this.context.console.info(`Generating code for ${call.name}`);
 
-    if (this.options.useJsonApi) {
-      addImportDeclaration(this.tsSourceFile, '@fresha/noname-core', 't:JSONAPIDocument');
+    if (this.context.useJsonApi) {
+      addImportDeclaration(this.sourceFile, '@fresha/noname-core', 't:JSONAPIDocument');
       if (call.requestTypeName) {
-        addTypeAlias(this.tsSourceFile, call.requestTypeName, 'JSONAPIDocument', true);
+        addTypeAlias(this.sourceFile, call.requestTypeName, 'JSONAPIDocument', true);
       }
-      addTypeAlias(this.tsSourceFile, call.responseTypeName, 'JSONAPIDocument', true);
+      addTypeAlias(this.sourceFile, call.responseTypeName, 'JSONAPIDocument', true);
     } else {
       if (call.requestTypeName) {
-        addImportDeclaration(this.tsSourceFile, '@fresha/noname-core', 'JSONObject');
-        addTypeAlias(this.tsSourceFile, call.requestTypeName, 'JSONObject', true);
+        addImportDeclaration(this.sourceFile, '@fresha/noname-core', 'JSONObject');
+        addTypeAlias(this.sourceFile, call.requestTypeName, 'JSONObject', true);
       }
-      addImportDeclaration(this.tsSourceFile, '@fresha/noname-core', 'JSONValue');
-      addTypeAlias(this.tsSourceFile, call.responseTypeName, 'JSONValue', true);
+      addImportDeclaration(this.sourceFile, '@fresha/noname-core', 'JSONValue');
+      addTypeAlias(this.sourceFile, call.responseTypeName, 'JSONValue', true);
     }
 
     const params: Record<string, string> = {};
@@ -152,11 +140,11 @@ export class Generator {
             paramType = 'string';
             break;
           case 'object':
-            addImportDeclaration(this.tsSourceFile, '@fresha/noname-core', 'JSONObject');
+            addImportDeclaration(this.sourceFile, '@fresha/noname-core', 'JSONObject');
             paramType = 'JSONObject';
             break;
           case 'array':
-            addImportDeclaration(this.tsSourceFile, '@fresha/noname-core', 'JSONArray');
+            addImportDeclaration(this.sourceFile, '@fresha/noname-core', 'JSONArray');
             paramType = 'JSONArray';
             break;
           default:
@@ -172,7 +160,7 @@ export class Generator {
     }
 
     const actionFunc = addFunction(
-      this.tsSourceFile,
+      this.sourceFile,
       call.name,
       params,
       `Promise<${call.responseTypeName}>`,
@@ -195,11 +183,11 @@ export class Generator {
         writer.writeLine('headers: {');
         writer.indent(() => {
           writer.writeLine("'X-Requested-With': 'XMLHttpRequest',");
-          if (this.options.useJsonApi) {
+          if (this.context.useJsonApi) {
             writer.writeLine("'Accept': 'application/vnd.api+json',");
           }
           writer.writeLine(
-            this.options.useJsonApi
+            this.context.useJsonApi
               ? "'Content-Type': 'application/vnd.api+json'"
               : "'Content-Type': 'application/json'",
           );
