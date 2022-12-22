@@ -1,28 +1,26 @@
 import assert from 'assert';
 import path from 'path';
 
-import { addImportDeclaration, Logger } from '@fresha/openapi-codegen-utils';
+import { addImportDeclaration } from '@fresha/openapi-codegen-utils';
 import { SourceFile, SyntaxKind } from 'ts-morph';
 
 import type { Controller } from './Controller';
-import type { Generator } from './Generator';
+import type { Context } from './types';
 
 type ModuleName = string;
 type NamedImport = string;
 
 export class Module {
-  readonly generator: Generator;
+  readonly context: Context;
   readonly outputPath: string;
   private readonly controllerImports: Map<ModuleName, NamedImport>;
-  private readonly tsSourceFile: SourceFile;
-  protected readonly logger: Logger;
+  private readonly sourceFile: SourceFile;
 
-  constructor(generator: Generator, logger: Logger) {
-    this.generator = generator;
-    this.outputPath = path.join(this.generator.outputPath, `${this.generator.nestApp}.module.ts`);
+  constructor(context: Context) {
+    this.context = context;
+    this.outputPath = path.join(this.context.outputPath, `${this.context.nestApp}.module.ts`);
     this.controllerImports = new Map<ModuleName, NamedImport>();
-    this.tsSourceFile = this.generator.tsProject.getSourceFileOrThrow(this.outputPath);
-    this.logger = logger;
+    this.sourceFile = this.context.project.getSourceFileOrThrow(this.outputPath);
   }
 
   processController(controller: Controller): void {
@@ -35,9 +33,9 @@ export class Module {
   }
 
   generateCode(): void {
-    this.logger.info(`Generating code for module file ${this.outputPath}`);
+    this.context.logger.info(`Generating code for module file ${this.outputPath}`);
 
-    const moduleClassDecl = this.tsSourceFile.getClasses().at(0);
+    const moduleClassDecl = this.sourceFile.getClasses().at(0);
     assert(moduleClassDecl);
 
     const decoratorArgument = moduleClassDecl
@@ -48,14 +46,14 @@ export class Module {
       .asKindOrThrow(SyntaxKind.ObjectLiteralExpression);
     assert(decoratorArgument);
 
-    addImportDeclaration(this.tsSourceFile, '@nestjs/core', 'APP_PIPE');
-    addImportDeclaration(this.tsSourceFile, '@nestjs/common', 'ValidationPipe');
+    addImportDeclaration(this.sourceFile, '@nestjs/core', 'APP_PIPE');
+    addImportDeclaration(this.sourceFile, '@nestjs/common', 'ValidationPipe');
     const providersProp = decoratorArgument
       .getPropertyOrThrow('providers')
       .asKindOrThrow(SyntaxKind.PropertyAssignment)
       .getNodeProperty('initializer')
       .asKindOrThrow(SyntaxKind.ArrayLiteralExpression);
-    if (!this.tsSourceFile.getText().includes('provide: APP_PIPE')) {
+    if (!this.sourceFile.getText().includes('provide: APP_PIPE')) {
       providersProp.addElement(`{
         provide: APP_PIPE,
         useClass: ValidationPipe,
@@ -63,7 +61,7 @@ export class Module {
     }
 
     for (const [moduleName, controllerName] of this.controllerImports) {
-      this.tsSourceFile.addImportDeclaration({
+      this.sourceFile.addImportDeclaration({
         moduleSpecifier: moduleName,
         namedImports: [{ name: controllerName }],
       });

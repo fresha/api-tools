@@ -1,23 +1,21 @@
-import { createLogger } from '@fresha/openapi-codegen-utils';
+import { createConsole, createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
-import { Generator } from './Generator';
 import { Module } from './Module';
 
 import type { Controller } from './Controller';
+import type { Context } from './types';
 
 import '@fresha/jest-config/build/types';
 
-let fakeGenerator: Generator | null = null;
-
-const logger = createLogger(false);
+let context: Context | null = null;
 
 beforeEach(() => {
   const openapi = OpenAPIFactory.create();
 
-  const tsProject = new Project({ useInMemoryFileSystem: true });
-  tsProject.createSourceFile(
+  const project = new Project({ useInMemoryFileSystem: true });
+  project.createSourceFile(
     '/tmp/web.module.ts',
     `import { Module } from '@nestjs/common';
     import { AppController } from './app.controller';
@@ -31,27 +29,32 @@ beforeEach(() => {
     export class AppModule {}`,
   );
 
-  fakeGenerator = {
+  context = {
     openapi,
     outputPath: '/tmp/',
     nestApp: 'web',
-    tsProject,
-  } as Generator;
+    project,
+    useJsonApi: true,
+    dryRun: false,
+    logger: createLogger(false),
+    console: createConsole(false),
+    addDTO: jest.fn(),
+  };
 });
 
 test('construction', () => {
-  const module = new Module(fakeGenerator!, logger);
+  const module = new Module(context!);
   expect(module.outputPath).toBe('/tmp/web.module.ts');
 });
 
 test('adds controller imports', () => {
-  const module = new Module(fakeGenerator!, logger);
+  const module = new Module(context!);
 
   module.processController({ outputPath: '/tmp/web2.controller', className: 'WebX' } as Controller);
   module.processController({ outputPath: '/tmp/abcd.controller', className: 'WebZ' } as Controller);
   module.generateCode();
 
-  const moduleSourceFile = module.generator.tsProject.getSourceFileOrThrow('/tmp/web.module.ts');
+  const moduleSourceFile = module.context.project.getSourceFileOrThrow('/tmp/web.module.ts');
   expect(moduleSourceFile).toHaveFormattedText(
     `import { Module, ValidationPipe } from '@nestjs/common';
     import { AppController } from './app.controller';

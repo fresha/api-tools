@@ -1,16 +1,16 @@
 import path from 'path';
 
 import {
-  createLogger,
   builder as basicBuilder,
   Params as BasicParams,
+  createContext,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
 import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
 import { getNestJSSubAppPath } from './utils';
 
+import type { DTO } from './DTO';
 import type { Argv, ArgumentsCamelCase } from 'yargs';
 
 export const command = 'server-nestjs';
@@ -27,27 +27,21 @@ export const builder = (yarg: Argv): Argv<Params> =>
     .describe('nest-app', 'Create files inside given NestJS application name');
 
 export const handler = (args: ArgumentsCamelCase<Params>): void => {
-  const openapiReader = new OpenAPIReader();
-  const openapi = openapiReader.parseFromFile(args.input);
-
-  const tsProject = new Project({
+  const project = new Project({
     tsConfigFilePath: path.join(args.output, 'tsconfig.json'),
   });
 
-  const logger = createLogger(!!args.verbose);
+  const context = createContext(args);
 
-  const generator = new Generator(
-    openapi,
-    tsProject,
-    {
-      outputPath: getNestJSSubAppPath(args.output, args.nestApp),
-      nestApp: args.nestApp ?? 'app',
-      useJsonApi: !!args.jsonApi,
-      dryRun: !!args.dryRun,
+  const generator = new Generator({
+    ...context,
+    outputPath: getNestJSSubAppPath(args.output, args.nestApp),
+    project,
+    nestApp: args.nestApp ?? 'app',
+    addDTO(name, schema): DTO {
+      return generator.addDTO(name, schema);
     },
-    logger,
-  );
+  });
 
-  generator.collectData();
-  generator.generateCode();
+  generator.run();
 };

@@ -1,54 +1,39 @@
-import { createLogger } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
-import { Project } from 'ts-morph';
+import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
 import '@fresha/jest-config';
 
 import { DTO } from './DTO';
-import { Generator } from './Generator';
+import { makeGenerator } from './testHelpers';
 
-const logger = createLogger(false);
+import type { Context } from './types';
 
 test('construction', () => {
-  const openapi = OpenAPIFactory.create();
-  const tsProject = new Project({ useInMemoryFileSystem: true });
-  const fakeGenerator: Generator = {
-    openapi,
-    outputPath: '/tmp/',
-    tsProject,
-  } as Generator;
+  const { context } = makeGenerator('app', '/tmp');
 
-  const dto = new DTO(fakeGenerator, 'SomeResponse', null, logger);
+  const dto = new DTO(context, 'SomeResponse', null);
   expect(dto.className).toBe('SomeResponse');
   expect(dto.outputPath).toBe('/tmp/dto/SomeResponse.dto.ts');
 });
 
 describe('serialization', () => {
-  let openapi = OpenAPIFactory.create();
-  let tsProject = new Project({ useInMemoryFileSystem: true });
-  let fakeGenerator: Generator = {} as Generator;
+  let context: Context = {} as Context;
 
   beforeEach(() => {
-    openapi = OpenAPIFactory.create();
-    tsProject = new Project({ useInMemoryFileSystem: true });
-    fakeGenerator = {
-      openapi,
-      outputPath: '/var',
-      tsProject,
-    } as unknown as Generator;
+    context = makeGenerator('app', '/var').context;
   });
 
   test('proper name and ouput path', () => {
-    new DTO(fakeGenerator, 'SomeResponse2', null, logger).generateCode();
+    new DTO(context, 'SomeResponse2', null).generateCode();
 
-    expect(tsProject.getSourceFiles()).toHaveLength(1);
-    expect(tsProject.getSourceFileOrThrow('/var/dto/SomeResponse2.dto.ts')).toHaveFormattedText(
-      `export class SomeResponse2 {}`,
-    );
+    expect(context.project.getSourceFiles()).toHaveLength(2);
+    expect(context.project.getSourceFileOrThrow('/var/app.module.ts')).toBeTruthy();
+    expect(
+      context.project.getSourceFileOrThrow('/var/dto/SomeResponse2.dto.ts'),
+    ).toHaveFormattedText(`export class SomeResponse2 {}`);
   });
 
   test('primitive schemas + optionality', () => {
-    const schema = openapi.components.setSchema('Error', 'object');
+    const schema = context.openapi.components.setSchema('Error', 'object');
     schema.setProperties({
       optionalBool: 'boolean',
       requiredBool: { type: 'boolean', required: true },
@@ -58,9 +43,9 @@ describe('serialization', () => {
       requiredText: { type: 'string', required: true },
     });
 
-    new DTO(fakeGenerator, 'Response', schema, logger).generateCode();
+    new DTO(context, 'Response', schema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
+    expect(context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
       `import { Expose } from 'class-transformer';
       import { IsBoolean, IsInt, IsString } from 'class-validator';
 
@@ -93,7 +78,7 @@ describe('serialization', () => {
   });
 
   test('numeric limits', () => {
-    const schema = openapi.components.setSchema('Error', 'object');
+    const schema = context.openapi.components.setSchema('Error', 'object');
     schema.setProperties({
       min: { type: 'number', minimum: 10 },
       minExclusive: { type: 'number', exclusiveMinimum: 15 },
@@ -101,9 +86,9 @@ describe('serialization', () => {
       maxExclusive: { type: 'number', exclusiveMaximum: 25 },
     });
 
-    new DTO(fakeGenerator, 'Response', schema, logger).generateCode();
+    new DTO(context, 'Response', schema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
+    expect(context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
       `import { Expose } from 'class-transformer';
       import { Min, Max, IsInt } from 'class-validator';
 
@@ -132,15 +117,15 @@ describe('serialization', () => {
   });
 
   test('string limits', () => {
-    const schema = openapi.components.setSchema('Error', 'object');
+    const schema = context.openapi.components.setSchema('Error', 'object');
     schema.setProperties({
       minLen: { type: 'string', minLength: 1 },
       maxLen: { type: 'string', maxLength: 10 },
     });
 
-    new DTO(fakeGenerator, 'Response2', schema, logger).generateCode();
+    new DTO(context, 'Response2', schema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/var/dto/Response2.dto.ts')).toHaveFormattedText(
+    expect(context.project.getSourceFileOrThrow('/var/dto/Response2.dto.ts')).toHaveFormattedText(
       `import { Expose } from 'class-transformer';
       import { MinLength, MaxLength, IsString } from 'class-validator';
 
@@ -159,7 +144,7 @@ describe('serialization', () => {
   });
 
   test('object', () => {
-    const resourceSchema = openapi.components.setSchema('Employee', 'object');
+    const resourceSchema = context.openapi.components.setSchema('Employee', 'object');
     resourceSchema.setProperties({
       type: { type: 'string', required: true, enum: ['1.0'] },
       id: { type: 'string', required: true },
@@ -187,9 +172,9 @@ describe('serialization', () => {
       id: { type: 'string', required: true },
     });
 
-    new DTO(fakeGenerator, 'Employee', resourceSchema, logger).generateCode();
+    new DTO(context, 'Employee', resourceSchema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/var/dto/Employee.dto.ts')).toHaveFormattedText(`
+    expect(context.project.getSourceFileOrThrow('/var/dto/Employee.dto.ts')).toHaveFormattedText(`
       import { Expose, Type } from 'class-transformer';
       import { IsInt, IsBoolean, IsString } from 'class-validator';
 
@@ -254,14 +239,16 @@ describe('serialization', () => {
   });
 
   test('array', () => {
-    const schema = openapi.components.setSchema('Error', 'object');
+    const schema = context.openapi.components.setSchema('Error', 'object');
 
     const intArrayProp = schema.setProperty('intArray', 'array');
     intArrayProp.items = SchemaFactory.create(intArrayProp, 'integer');
 
-    new DTO(fakeGenerator, 'AnotherResponse', schema, logger).generateCode();
+    new DTO(context, 'AnotherResponse', schema).generateCode();
 
-    expect(tsProject.getSourceFileOrThrow('/var/dto/AnotherResponse.dto.ts')).toHaveFormattedText(
+    expect(
+      context.project.getSourceFileOrThrow('/var/dto/AnotherResponse.dto.ts'),
+    ).toHaveFormattedText(
       `import { Expose } from 'class-transformer';
       import { IsArray } from 'class-validator';
 

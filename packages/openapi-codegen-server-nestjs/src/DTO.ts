@@ -2,38 +2,36 @@ import assert from 'assert';
 import path from 'path';
 
 import { Nullable, titleCase } from '@fresha/api-tools-core';
-import { addDecorator, addImportDeclaration, Logger } from '@fresha/openapi-codegen-utils';
+import { addDecorator, addImportDeclaration } from '@fresha/openapi-codegen-utils';
 
-import type { Generator } from './Generator';
+import type { Context } from './types';
 import type { SchemaModel, SchemaPropertyObject } from '@fresha/openapi-model/build/3.0.3';
 import type { ClassDeclaration, CodeBlockWriter, SourceFile } from 'ts-morph';
 
 export class DTO {
-  readonly generator: Generator;
+  readonly context: Context;
   readonly className: string;
   readonly outputPath: string;
   private readonly schema: Nullable<SchemaModel>;
-  private readonly tsSourceFile: SourceFile;
-  private readonly logger: Logger;
+  private readonly sourceFile: SourceFile;
 
-  constructor(generator: Generator, name: string, schema: Nullable<SchemaModel>, logger: Logger) {
-    this.generator = generator;
+  constructor(context: Context, name: string, schema: Nullable<SchemaModel>) {
+    this.context = context;
     this.className = name;
-    this.outputPath = path.join(this.generator.outputPath, 'dto', `${this.className}.dto.ts`);
+    this.outputPath = path.join(this.context.outputPath, 'dto', `${this.className}.dto.ts`);
     this.schema = schema;
-    this.tsSourceFile = this.generator.tsProject.createSourceFile(this.outputPath, '', {
+    this.sourceFile = this.context.project.createSourceFile(this.outputPath, '', {
       overwrite: true,
     });
-    this.logger = logger;
   }
 
   generateCode(): void {
-    this.logger.info(`Generating DTO ${this.outputPath}`);
+    this.context.logger.info(`Generating DTO ${this.outputPath}`);
     this.addClassDecl(this.className, this.schema);
   }
 
   protected addClassDecl(className: string, schema: Nullable<SchemaModel>): void {
-    const classDecl = this.tsSourceFile.addClass({
+    const classDecl = this.sourceFile.addClass({
       name: className,
       isExported: true,
     });
@@ -76,11 +74,11 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
+    addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
 
     if (prop.schema.allOf?.length || prop.schema.oneOf?.length || prop.schema.anyOf?.length) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'ValidateNested');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'ValidateNested');
       addDecorator(propDef, 'ValidateNested', undefined);
     }
   }
@@ -93,9 +91,9 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
+    addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
-    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsBoolean');
+    addImportDeclaration(this.sourceFile, 'class-validator', 'IsBoolean');
     addDecorator(propDef, 'IsBoolean', undefined);
   }
 
@@ -107,25 +105,25 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
+    addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
     if (prop.schema.minimum != null) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Min');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'Min');
       addDecorator(propDef, 'Min', prop.schema.minimum);
     }
     if (prop.schema.exclusiveMinimum != null) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Min');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'Min');
       addDecorator(propDef, 'Min', prop.schema.exclusiveMinimum);
     }
     if (prop.schema.maximum != null) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Max');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'Max');
       addDecorator(propDef, 'Max', prop.schema.maximum);
     }
     if (prop.schema.exclusiveMaximum != null) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'Max');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'Max');
       addDecorator(propDef, 'Max', prop.schema.exclusiveMaximum);
     }
-    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsInt');
+    addImportDeclaration(this.sourceFile, 'class-validator', 'IsInt');
     addDecorator(propDef, 'IsInt', undefined);
   }
 
@@ -137,17 +135,17 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
+    addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
     if (prop.schema.minLength) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'MinLength');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'MinLength');
       addDecorator(propDef, 'MinLength', prop.schema.minLength);
     }
     if (prop.schema.maxLength) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'MaxLength');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'MaxLength');
       addDecorator(propDef, 'MaxLength', prop.schema.maxLength);
     }
-    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsString');
+    addImportDeclaration(this.sourceFile, 'class-validator', 'IsString');
     addDecorator(propDef, 'IsString', undefined);
   }
 
@@ -166,8 +164,8 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
-    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Type');
+    addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
+    addImportDeclaration(this.sourceFile, 'class-transformer', 'Type');
     addDecorator(propDef, 'Expose', undefined);
     addDecorator(propDef, 'Type', (writer: CodeBlockWriter) =>
       writer.write(`() => ${propClassName}`),
@@ -208,17 +206,17 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
-    addImportDeclaration(this.tsSourceFile, 'class-transformer', 'Expose');
+    addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
     if (prop.schema.minItems != null) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'ArrayMinSize');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'ArrayMinSize');
       addDecorator(propDef, 'ArrayMinSize', prop.schema.minItems);
     }
     if (prop.schema.maxItems != null) {
-      addImportDeclaration(this.tsSourceFile, 'class-validator', 'ArrayMaxSize');
+      addImportDeclaration(this.sourceFile, 'class-validator', 'ArrayMaxSize');
       addDecorator(propDef, 'ArrayMaxSize', prop.schema.maxItems);
     }
-    addImportDeclaration(this.tsSourceFile, 'class-validator', 'IsArray');
+    addImportDeclaration(this.sourceFile, 'class-validator', 'IsArray');
     addDecorator(propDef, 'IsArray', undefined);
   }
 }
