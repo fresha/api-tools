@@ -25,6 +25,5 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     project,
   });
 
-  generator.collectData();
-  generator.generateCode();
+  generator.run();
 };

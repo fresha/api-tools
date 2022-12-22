@@ -2,7 +2,7 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 
-import { Context, getMediaType } from '@fresha/openapi-codegen-utils';
+import { Context, Generator as GeneratorBase, getMediaType } from '@fresha/openapi-codegen-utils';
 
 import type { ParametrisedURLString } from '@fresha/api-tools-core/build/types';
 import type { PathItemOperationKey, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
@@ -34,25 +34,19 @@ const getResourceType = (name: string, schema: SchemaModel): string => {
   return result;
 };
 
-export class Generator {
-  readonly context: Context;
+export class Generator extends GeneratorBase<Context> {
   readonly schemaToName: Map<SchemaModel, string>;
   readonly schemaToType: Map<SchemaModel, string>;
   readonly resourceUsage: Map<string, ResourceUsage[]>;
 
   constructor(context: Context) {
-    this.context = context;
+    super(context);
     this.schemaToName = new Map<SchemaModel, string>();
     this.schemaToType = new Map<SchemaModel, string>();
     this.resourceUsage = new Map<string, ResourceUsage[]>();
   }
 
-  run(): void {
-    this.collectData();
-    this.generateCode();
-  }
-
-  collectData(): void {
+  protected collectData(): void {
     for (const [name, schema] of this.context.openapi.components.schemas) {
       if (name.endsWith('Resource')) {
         const type = getResourceType(name, schema);
@@ -132,9 +126,7 @@ export class Generator {
     }
   }
 
-  generateCode(): void {
-    this.context.logger.info('Generating resource usage');
-
+  protected generateCode(): void {
     const outputPath = path.join(this.context.outputPath, 'resource-usage.html');
 
     const rows: string[] = [];

@@ -1,5 +1,5 @@
 import { parseOpenApi } from '@fresha/json-api-model';
-import { pathUrlToUrlExp } from '@fresha/openapi-codegen-utils';
+import { Generator as GeneratorBase, pathUrlToUrlExp } from '@fresha/openapi-codegen-utils';
 
 import { Controller } from './Controller';
 import { ControllerTestSuite } from './ControllerTestSuite';
@@ -13,8 +13,7 @@ import { ViewTestSuite } from './ViewTestSuite';
 
 import type { Context } from './types';
 
-export class Generator {
-  readonly context: Context;
+export class Generator extends GeneratorBase<Context> {
   protected readonly router: Router;
   protected readonly controllers: Map<string, Controller>;
   protected readonly controllerTests: Map<string, ControllerTestSuite>;
@@ -26,7 +25,7 @@ export class Generator {
   protected readonly resourceTests: Map<string, ResourceTestSuite>;
 
   constructor(context: Context) {
-    this.context = context;
+    super(context);
     this.router = new Router(this.context);
     this.controllers = new Map<string, Controller>();
     this.controllerTests = new Map<string, ControllerTestSuite>();
@@ -44,14 +43,7 @@ export class Generator {
     this.resourceTests = new Map<string, ResourceTestSuite>();
   }
 
-  run(): void {
-    this.collectData();
-    this.generateCode();
-  }
-
   protected collectData(): void {
-    this.context.logger.info('Collecting data');
-
     this.collectResources();
     this.collectResourceTests();
     this.collectControllers();
@@ -139,8 +131,6 @@ export class Generator {
   }
 
   protected generateCode(): void {
-    this.context.logger.info('Generating code');
-
     for (const resource of this.resources.values()) {
       resource.generateCode();
     }
