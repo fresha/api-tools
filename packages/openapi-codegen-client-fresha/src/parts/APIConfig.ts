@@ -9,13 +9,12 @@ import {
   getOperationEntryKeyOrThrow,
   getOperationIdOrThrow,
   pathUrlToUrlExp,
-  Logger,
 } from '@fresha/openapi-codegen-utils';
 import { Expression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
 
 import { APIOperationTemplateName, findOperationTemplate } from './operations';
 
-import type { Generator } from './Generator';
+import type { Context } from './types';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 
 type APIOperationConfig =
@@ -48,27 +47,25 @@ type APIEntriesConfig = Record<APIEntryKey, APIEntryConfig>;
  * Generates API initialization function, as well as configured API variable.
  */
 export class APIConfig {
-  protected readonly parent: Generator;
-  readonly tsSourceFile: SourceFile;
-  protected readonly logger: Logger;
+  protected readonly context: Context;
+  readonly sourceFile: SourceFile;
   protected apiConfig: APIEntriesConfig;
 
-  constructor(parent: Generator) {
-    this.parent = parent;
-    this.tsSourceFile = this.parent.tsSourceFile;
-    this.logger = this.parent.logger;
+  constructor(context: Context, sourceFile: SourceFile) {
+    this.context = context;
+    this.sourceFile = sourceFile;
     this.apiConfig = {};
   }
 
   collectData(): void {
-    for (const [pathUrl, pathItem] of this.parent.openapi.paths) {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
       this.processPathItem(pathUrl, pathItem);
     }
   }
 
   protected processPathItem(pathUrl: string, pathItem: PathItemModel): void {
     for (const [operationKey, operation] of pathItem.operations()) {
-      this.logger.info(`Processing path item: "${pathUrl}"`);
+      this.context.logger.info(`Processing path item: "${pathUrl}"`);
 
       const entryKey = getOperationEntryKeyOrThrow(operation);
 
@@ -107,15 +104,15 @@ export class APIConfig {
   }
 
   generateCode(): void {
-    this.logger.info(
-      `Found configuration for ${this.parent.apiRootUrl} ${JSON.stringify(
+    this.context.logger.info(
+      `Found configuration for ${this.context.apiRootUrl} ${JSON.stringify(
         this.apiConfig,
         null,
         2,
       )}`,
     );
 
-    addImportDeclarations(this.tsSourceFile, {
+    addImportDeclarations(this.sourceFile, {
       '@fresha/connector-utils/build/types/api': ['APIEnvironmentOptions'],
       '@fresha/redux-store': ['.:store'],
       '@fresha/connector-utils/build/apiConfig': ['configureApi'],
@@ -125,21 +122,21 @@ export class APIConfig {
 
     this.generateMakeApiConfig();
 
-    addConstant(this.tsSourceFile, 'apiConfig', 'makeApiConfig(env)');
+    addConstant(this.sourceFile, 'apiConfig', 'makeApiConfig(env)');
     addConstant(
-      this.tsSourceFile,
+      this.sourceFile,
       'configuredApi',
-      `configureApi([apiConfig], '${this.parent.apiName}')`,
+      `configureApi([apiConfig], '${this.context.apiName}')`,
       true,
     );
   }
 
   protected generateMakeApiConfig(): void {
     const initFunctionDecl = addFunction(
-      this.tsSourceFile,
+      this.sourceFile,
       'makeApiConfig',
       {
-        [`{ ${this.parent.apiRootUrl} }`]: `Pick<APIEnvironmentOptions, '${this.parent.apiRootUrl}'>`,
+        [`{ ${this.context.apiRootUrl} }`]: `Pick<APIEnvironmentOptions, '${this.context.apiRootUrl}'>`,
       },
       undefined,
       true,
@@ -199,8 +196,8 @@ export class APIConfig {
 
   protected generateCommonConfig(configElementObj: Expression): void {
     addObjectLiteralProperties(configElementObj.asKindOrThrow(SyntaxKind.ObjectLiteralExpression), {
-      rootUrl: this.parent.apiRootUrl,
-      adapter: `'${this.parent.options.useJsonApi ? 'jsonapi' : 'raw'}'`,
+      rootUrl: this.context.apiRootUrl,
+      adapter: `'${this.context.useJsonApi ? 'jsonapi' : 'raw'}'`,
     });
   }
 }

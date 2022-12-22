@@ -3,19 +3,19 @@ import path from 'path';
 import { addConstant, addImportDeclarations } from '@fresha/openapi-codegen-utils';
 import { CodeBlockWriter, SourceFile } from 'ts-morph';
 
-import { Generator } from './Generator';
+import type { Context } from './types';
 
 /**
  * Generates file with basic API tests.
  */
 export class TestFile {
-  readonly parent: Generator;
+  readonly context: Context;
   readonly tsSourceFile: SourceFile;
 
-  constructor(parent: Generator) {
-    this.parent = parent;
-    this.tsSourceFile = this.parent.tsProject.createSourceFile(
-      path.join(this.parent.options.outputPath, 'src', 'index.test.ts'),
+  constructor(context: Context) {
+    this.context = context;
+    this.tsSourceFile = this.context.project.createSourceFile(
+      path.join(this.context.outputPath, 'src', 'index.test.ts'),
       '',
       { overwrite: true },
     );
@@ -31,7 +31,7 @@ export class TestFile {
       './index': 'makeApiConfig',
     });
 
-    addConstant(this.tsSourceFile, this.parent.apiRootUrl, "'http://localhost:3000'");
+    addConstant(this.tsSourceFile, this.context.apiRootUrl, "'http://localhost:3000'");
 
     this.tsSourceFile.addStatements((writer: CodeBlockWriter) => {
       writer.newLine();
@@ -40,7 +40,7 @@ export class TestFile {
         writer.writeLine("it('matches the snapshot', () => {");
         writer.indent(() => {
           writer.writeLine(
-            `const [apiConfig, options] = makeApiConfig({ ${this.parent.apiRootUrl} });`,
+            `const [apiConfig, options] = makeApiConfig({ ${this.context.apiRootUrl} });`,
           );
           writer.writeLine('expect(');
           writer.indent(() => {

@@ -1,6 +1,6 @@
-import { createLogger } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
-import { Project } from 'ts-morph';
+
+import { makeContext } from '../testUtils';
 
 import { Generator } from './Generator';
 
@@ -25,20 +25,13 @@ const makeOpenApi = (): OpenAPIModel => {
 
 test('renders init function, configured api variable, as well as action types', () => {
   const openapi = makeOpenApi();
-  const tsProject = new Project({ useInMemoryFileSystem: true });
-  const logger = createLogger(false);
+  const context = makeContext(openapi);
 
-  const generator = new Generator(
-    openapi,
-    tsProject,
-    { outputPath: '/', useJsonApi: true, dryRun: false },
-    logger,
-  );
+  const generator = new Generator(context);
 
-  generator.collectData();
-  generator.generateCode();
+  generator.run();
 
-  expect(tsProject.getSourceFileOrThrow('/src/index.ts')).toHaveFormattedText(`
+  expect(context.project.getSourceFileOrThrow('/src/index.ts')).toHaveFormattedText(`
     import { APIEnvironmentOptions } from '@fresha/connector-utils/build/types/api';
     import store from '@fresha/redux-store';
     import { configureApi } from '@fresha/connector-utils/build/apiConfig';

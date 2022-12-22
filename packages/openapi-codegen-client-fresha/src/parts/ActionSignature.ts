@@ -6,13 +6,12 @@ import {
   addTypeAlias,
   addTypeLiteralCall,
   addTypeLiteralProperty,
-  Logger,
 } from '@fresha/openapi-codegen-utils';
 import { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import { CodeBlockWriter, SyntaxKind, TypeLiteralNode } from 'ts-morph';
 
-import type { ActionsSignatures } from './ActionsSignatures';
 import type { OperationTemplate } from './operations';
+import type { Context } from './types';
 
 // returns true if action needs args argument (everything except resource ID)
 const actionNeedsArgs = (operation: OperationModel): boolean => {
@@ -32,8 +31,7 @@ const actionNeedsArgs = (operation: OperationModel): boolean => {
 };
 
 export class ActionSignature {
-  readonly parent: ActionsSignatures;
-  readonly logger: Logger;
+  readonly context: Context;
   readonly operation: OperationModel;
   readonly template: OperationTemplate;
   readonly name: string;
@@ -41,13 +39,12 @@ export class ActionSignature {
   readonly responseTypeName: string;
 
   constructor(
-    parent: ActionsSignatures,
+    context: Context,
     name: string,
     operation: OperationModel,
     template: OperationTemplate,
   ) {
-    this.parent = parent;
-    this.logger = this.parent.logger;
+    this.context = context;
     this.operation = operation;
     this.template = template;
     this.name = name;
@@ -56,7 +53,7 @@ export class ActionSignature {
   }
 
   generateCode(type: TypeLiteralNode): void {
-    this.logger.info(`Generating type for action ${this.name}`);
+    this.context.logger.info(`Generating type for action ${this.name}`);
 
     const sourceFile = type.getSourceFile();
 
@@ -120,7 +117,7 @@ export class ActionSignature {
 
       // add request body
       const requestBodySchema = this.operation.requestBody?.getContentOrThrow(
-        this.parent.parent.options.useJsonApi ? 'application/vnd.api+json' : 'application/json',
+        this.context.useJsonApi ? 'application/vnd.api+json' : 'application/json',
       ).schema;
       if (requestBodySchema) {
         this.addRequestBodyParams(argsParamType, requestBodySchema);
@@ -195,7 +192,7 @@ export class ActionSignature {
           addTypeLiteralProperty(argsParamType, prop.name, 'JSONArray');
           break;
         default:
-          this.logger.warn(`Cannot handle schema type ${String(prop.schema.type)}`);
+          this.context.logger.warn(`Cannot handle schema type ${String(prop.schema.type)}`);
       }
 
       argsParamType
