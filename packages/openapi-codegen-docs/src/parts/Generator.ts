@@ -2,21 +2,10 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 
-import { getMediaType, Logger } from '@fresha/openapi-codegen-utils';
+import { Context, getMediaType } from '@fresha/openapi-codegen-utils';
 
 import type { ParametrisedURLString } from '@fresha/api-tools-core/build/types';
-import type {
-  OpenAPIModel,
-  PathItemOperationKey,
-  SchemaModel,
-} from '@fresha/openapi-model/build/3.0.3';
-
-type GeneratorOptions = {
-  outputPath: string;
-  logger: Logger;
-  dryRun: boolean;
-  openapi: OpenAPIModel;
-};
+import type { PathItemOperationKey, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 type ResourceUsage = {
   url: ParametrisedURLString;
@@ -46,17 +35,13 @@ const getResourceType = (name: string, schema: SchemaModel): string => {
 };
 
 export class Generator {
-  readonly openapi: OpenAPIModel;
-  readonly options: GeneratorOptions;
-  readonly logger: Logger;
+  readonly context: Context;
   readonly schemaToName: Map<SchemaModel, string>;
   readonly schemaToType: Map<SchemaModel, string>;
   readonly resourceUsage: Map<string, ResourceUsage[]>;
 
-  constructor(options: GeneratorOptions) {
-    this.options = options;
-    this.openapi = options.openapi;
-    this.logger = options.logger;
+  constructor(context: Context) {
+    this.context = context;
     this.schemaToName = new Map<SchemaModel, string>();
     this.schemaToType = new Map<SchemaModel, string>();
     this.resourceUsage = new Map<string, ResourceUsage[]>();
@@ -68,7 +53,7 @@ export class Generator {
   }
 
   collectData(): void {
-    for (const [name, schema] of this.openapi.components.schemas) {
+    for (const [name, schema] of this.context.openapi.components.schemas) {
       if (name.endsWith('Resource')) {
         const type = getResourceType(name, schema);
         this.schemaToName.set(schema, name);
@@ -78,7 +63,7 @@ export class Generator {
 
     const mediaType = getMediaType(true);
 
-    for (const [pathUrl, pathItem] of this.openapi.paths) {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
       for (const [httpMethod, operation] of pathItem.operations()) {
         // const requestBodySchema = operation.requestBody?.content.get(mediaType)?.schema;
         // if (requestBodySchema && requestBodySchema.type === 'object') {
@@ -148,9 +133,9 @@ export class Generator {
   }
 
   generateCode(): void {
-    this.logger.info('Generating resource usage');
+    this.context.logger.info('Generating resource usage');
 
-    const outputPath = path.join(this.options.outputPath, 'resource-usage.html');
+    const outputPath = path.join(this.context.outputPath, 'resource-usage.html');
 
     const rows: string[] = [];
     for (const [resourceName, usages] of this.resourceUsage) {
@@ -173,7 +158,7 @@ export class Generator {
       }
     }
 
-    if (!this.options.dryRun) {
+    if (!this.context.dryRun) {
       const text = `
         <!DOCTYPE html>
         <html>
@@ -187,7 +172,7 @@ export class Generator {
           </head>
           <body>
             <table>
-              <caption>Resource usage in ${this.openapi.info.title}</caption>
+              <caption>Resource usage in ${this.context.openapi.info.title}</caption>
               <thead>
                 <tr>
                   <th>Resource</th>
