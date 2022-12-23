@@ -1,4 +1,4 @@
-import { Context } from "./context";
+import { Context } from './context';
 
 export class Generator<T extends Context> {
   readonly context: T;
