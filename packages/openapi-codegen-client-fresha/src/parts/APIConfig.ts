@@ -6,6 +6,8 @@ import {
   addObjectLiteralObjectProperty,
   addObjectLiteralProperties,
   addObjectLiteralProperty,
+} from '@fresha/code-morph-ts';
+import {
   getOperationEntryKeyOrThrow,
   getOperationIdOrThrow,
   getOperations,

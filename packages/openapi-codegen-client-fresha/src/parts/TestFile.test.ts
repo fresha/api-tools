@@ -4,7 +4,7 @@ import { makeContext } from '../testUtils';
 
 import { TestFile } from './TestFile';
 
-import '@fresha/jest-config';
+import '@fresha/code-morph-test-utils/build/matchers';
 
 const makeTestFile = (): TestFile => {
   const openapi = OpenAPIFactory.create();
@@ -20,7 +20,7 @@ test('happy path', () => {
   testFile.collectData();
   testFile.generateCode();
 
-  expect(testFile.tsSourceFile).toHaveFormattedText(`
+  expect(testFile.tsSourceFile).toHaveFormattedTypeScriptText(`
     import type { APIEntryConfig } from '@fresha/connector-utils/build/types/api';
     import { generateUrlsMapping } from '@fresha/connector-utils/build/apiConfig/utils';
     import { makeApiConfig } from './index';

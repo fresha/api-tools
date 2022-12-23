@@ -3,13 +3,15 @@ import path from 'path';
 
 import { titleCase } from '@fresha/api-tools-core';
 import {
-  addTypeLiteralProperty,
-  getOperationIdOrThrow,
-  addTypeLiteralAlias,
-  addImportDeclaration,
-  addVariable,
   addFunction,
+  addImportDeclaration,
   addTypeAlias,
+  addTypeLiteralProperty,
+  addTypeLiteralAlias,
+  addVariable,
+} from '@fresha/code-morph-ts';
+import {
+  getOperationIdOrThrow,
   getOperationRequestBodySchema,
   getOperationDefaultResponseSchema,
   Generator as GeneratorBase,

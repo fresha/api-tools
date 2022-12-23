@@ -1,9 +1,8 @@
 import assert from 'assert';
 
 import { camelCase, titleCase } from '@fresha/api-tools-core';
+import { addConstant, addTypeLiteralAlias } from '@fresha/code-morph-ts';
 import {
-  addConstant,
-  addTypeLiteralAlias,
   getOperationEntryKeyOrThrow,
   getOperationId,
   getOperations,

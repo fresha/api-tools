@@ -1,12 +1,14 @@
 import path from 'path';
 
 import {
-  Generator as GeneratorBase,
-  TSProjectContext as Context,
   addFunction,
   addImportDeclaration,
   addObjectLiteralObjectProperty,
   addObjectLiteralProperty,
+} from '@fresha/code-morph-ts';
+import {
+  Generator as GeneratorBase,
+  TSProjectContext as Context,
   pathUrlToUrlExp,
 } from '@fresha/openapi-codegen-utils';
 import { CodeBlockWriter, ObjectLiteralExpression, SourceFile, SyntaxKind } from 'ts-morph';

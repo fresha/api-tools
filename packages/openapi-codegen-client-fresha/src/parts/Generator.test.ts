@@ -4,7 +4,7 @@ import { makeContext } from '../testUtils';
 
 import { Generator } from './Generator';
 
-import '@fresha/jest-config';
+import '@fresha/code-morph-test-utils/build/matchers';
 
 const makeOpenApi = (): OpenAPIModel => {
   const openapi = OpenAPIFactory.create('generator-test-api', '1.2.3');
@@ -31,7 +31,7 @@ test('renders init function, configured api variable, as well as action types', 
 
   generator.run();
 
-  expect(context.project.getSourceFileOrThrow('/src/index.ts')).toHaveFormattedText(`
+  expect(context.project.getSourceFileOrThrow('/src/index.ts')).toHaveFormattedTypeScriptText(`
     import { APIEnvironmentOptions } from '@fresha/connector-utils/build/types/api';
     import store from '@fresha/redux-store';
     import { configureApi } from '@fresha/connector-utils/build/apiConfig';

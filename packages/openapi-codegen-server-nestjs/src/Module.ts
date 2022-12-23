@@ -1,7 +1,7 @@
 import assert from 'assert';
 import path from 'path';
 
-import { addImportDeclaration } from '@fresha/openapi-codegen-utils';
+import { addImportDeclaration } from '@fresha/code-morph-ts';
 import { SourceFile, SyntaxKind } from 'ts-morph';
 
 import type { Controller } from './Controller';

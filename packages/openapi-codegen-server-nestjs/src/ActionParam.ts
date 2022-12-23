@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { addDecorator, addImportDeclaration } from '@fresha/openapi-codegen-utils';
+import { addDecorator, addImportDeclaration } from '@fresha/code-morph-ts';
 
 import type { Context } from './types';
 import type { Nullable } from '@fresha/api-tools-core';

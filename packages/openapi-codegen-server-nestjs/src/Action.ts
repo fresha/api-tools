@@ -1,10 +1,8 @@
 import assert from 'assert';
 
 import { Nullable, camelCase, titleCase } from '@fresha/api-tools-core';
+import { addImportDeclarations, addImportDeclaration, addDecorator } from '@fresha/code-morph-ts';
 import {
-  addImportDeclarations,
-  addImportDeclaration,
-  addDecorator,
   getOperationRequestBodySchema,
   getOperationDefaultResponseSchema,
 } from '@fresha/openapi-codegen-utils';
