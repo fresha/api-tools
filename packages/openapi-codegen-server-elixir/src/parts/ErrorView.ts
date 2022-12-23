@@ -1,6 +1,6 @@
 import type { Controller } from './Controller';
 import type { Context } from './types';
-import type { SourceFile } from '@fresha/ex-morph';
+import type { SourceFile } from '@fresha/code-morph-ex';
 
 export class ErrorView {
   readonly context: Context;

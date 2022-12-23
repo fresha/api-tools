@@ -3,7 +3,7 @@ import assert from 'assert';
 import { Action } from './Action';
 
 import type { Context } from './types';
-import type { SourceFile } from '@fresha/ex-morph';
+import type { SourceFile } from '@fresha/code-morph-ex';
 import type {
   OperationModel,
   PathItemModel,

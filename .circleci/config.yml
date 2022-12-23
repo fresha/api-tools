@@ -26,10 +26,10 @@ jobs:
       - run: npm run -w @fresha/asyncapi-lint --if-present build && exit 0
       - run: npm run -w @fresha/asyncapi-model --if-present build && exit 0
       - run: npm run -w @fresha/asyncapi-validator --if-present build && exit 0
+      - run: npm run -w @fresha/code-morph-ex --if-present build && exit 0
       - run: npm run -w @fresha/designer-app --if-present build && exit 0
       - run: npm run -w @fresha/browser-extension --if-present build && exit 0
       - run: npm run -w @fresha/designer-web --if-present build && exit 0
-      - run: npm run -w @fresha/ex-morph --if-present build && exit 0
       - run: npm run -w @fresha/har-extract --if-present build && exit 0
       - run: npm run -w @fresha/json-api-codegen --if-present build && exit 0
       - run: npm run -w @fresha/openapi-model --if-present build && exit 0

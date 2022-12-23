@@ -4,7 +4,7 @@ import { faker } from '@faker-js/faker';
 import { JSONValue, snakeCase } from '@fresha/api-tools-core';
 
 import type { Context } from './types';
-import type { SourceFile } from '@fresha/ex-morph';
+import type { SourceFile } from '@fresha/code-morph-ex';
 import type { ResourceModel } from '@fresha/json-api-model';
 
 export class ResourceTestSuite {

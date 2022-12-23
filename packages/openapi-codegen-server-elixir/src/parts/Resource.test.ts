@@ -1,5 +1,5 @@
 import { titleCase } from '@fresha/api-tools-core';
-import { poorMansElixirFormat } from '@fresha/ex-morph';
+import { poorMansElixirFormat } from '@fresha/code-morph-ex';
 import {
   addResourceAttributes,
   addResourceRelationship,

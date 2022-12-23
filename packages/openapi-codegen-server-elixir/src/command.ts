@@ -1,4 +1,4 @@
-import { Project } from '@fresha/ex-morph';
+import { Project } from '@fresha/code-morph-ex';
 import { createRegistry } from '@fresha/json-api-model';
 import {
   builder as basicBuilder,

@@ -1,5 +1,5 @@
 import type { Context } from './types';
-import type { SourceFile } from '@fresha/ex-morph';
+import type { SourceFile } from '@fresha/code-morph-ex';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 
 export class FallbackController {
