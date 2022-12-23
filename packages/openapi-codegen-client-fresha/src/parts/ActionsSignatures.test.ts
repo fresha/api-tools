@@ -1,4 +1,8 @@
-import { addResourceAttributes, setDataDocumentSchema } from '@fresha/openapi-codegen-utils';
+import {
+  addResourceAttributes,
+  MEDIA_TYPE_JSON_API,
+  setDataDocumentSchema,
+} from '@fresha/openapi-codegen-utils';
 import {
   OpenAPIFactory,
   OpenAPIModel,
@@ -103,7 +107,7 @@ test('create actions', () => {
 
   const requestBodySchema = simpleCreate
     .setRequestBody()
-    .setContent('application/vnd.api+json')
+    .setContent(MEDIA_TYPE_JSON_API)
     .setSchema('object');
   setDataDocumentSchema(requestBodySchema, 'create-request');
   addResourceAttributes(requestBodySchema.getPropertyOrThrow('data'), {
@@ -113,7 +117,7 @@ test('create actions', () => {
 
   const responseSchema = simpleCreate
     .setDefaultResponse('success')
-    .setContent('application/vnd.api+json')
+    .setContent(MEDIA_TYPE_JSON_API)
     .setSchema('object');
   setDataDocumentSchema(responseSchema, 'employees');
 
@@ -165,7 +169,7 @@ test('update actions', () => {
 
   const requestBodySchema = simpleUpdate
     .setRequestBody()
-    .setContent('application/vnd.api+json')
+    .setContent(MEDIA_TYPE_JSON_API)
     .setSchema('object');
   setDataDocumentSchema(requestBodySchema, 'update-cart-request');
   addResourceAttributes(requestBodySchema.getPropertyOrThrow('data'), {

@@ -1,5 +1,9 @@
 import { poorMansElixirFormat } from '@fresha/ex-morph';
-import { addResourceRelationship, setDataDocumentSchema } from '@fresha/openapi-codegen-utils';
+import {
+  addResourceRelationship,
+  MEDIA_TYPE_JSON_API,
+  setDataDocumentSchema,
+} from '@fresha/openapi-codegen-utils';
 import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
 import { makeContext } from '../testHelpers';
@@ -97,7 +101,7 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
   const requestBodySchema = pathItem
     .setOperation('put')
     .setRequestBody()
-    .setContent('application/vnd.api+json')
+    .setContent(MEDIA_TYPE_JSON_API)
     .setSchema('object');
   setDataDocumentSchema(requestBodySchema, 'profile-settings');
   const attributesSchema = requestBodySchema

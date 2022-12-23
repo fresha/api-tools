@@ -5,6 +5,8 @@ import {
   addImportDeclarations,
   addImportDeclaration,
   addDecorator,
+  getOperationRequestBodySchema,
+  getOperationDefaultResponseSchema,
 } from '@fresha/openapi-codegen-utils';
 import { ClassDeclaration, Scope } from 'ts-morph';
 
@@ -13,8 +15,6 @@ import { ActionParam } from './ActionParam';
 import type { Controller } from './Controller';
 import type { Context } from './types';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
-
-const jsonApiMediaType = 'application/vnd.api+json';
 
 /**
  * Generates code for a single NestJS controller action.
@@ -48,13 +48,12 @@ export class Action {
         new ActionParam(this.context, {
           in: 'body',
           name: 'body',
-          schema: operation.requestBody?.content.get(jsonApiMediaType)?.schema ?? null,
+          schema: getOperationRequestBodySchema(operation, this.context.useJsonApi),
         }),
       );
     }
 
-    this.returnSchema = operation.responses.default?.content.get(jsonApiMediaType)?.schema ?? null;
-
+    this.returnSchema = getOperationDefaultResponseSchema(operation, this.context.useJsonApi);
     this.urlSuffix = null;
   }
 

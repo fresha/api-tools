@@ -1,5 +1,5 @@
 import '@fresha/jest-config/build/types';
-
+import { MEDIA_TYPE_JSON_API } from '@fresha/openapi-codegen-utils';
 import { OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Schema } from '@fresha/openapi-model/build/3.0.3/model/Schema';
 
@@ -75,21 +75,21 @@ const buildBasicJSONAPI = (openapi: OpenAPIModel): void => {
   });
 
   const requestBody = openapi.components.setRequestBody('JSONAPIRequest');
-  const requestMimeType = requestBody.setContent('application/vnd.api+json');
+  const requestMimeType = requestBody.setContent(MEDIA_TYPE_JSON_API);
   requestMimeType.schema = dataDocumentSchema;
 
   const dataResponse = openapi.components.setResponse(
     'JSONAPIDataResponse',
     'Generic success response',
   );
-  const responseMediaType = dataResponse.setContent('application/vnd.api+json');
+  const responseMediaType = dataResponse.setContent(MEDIA_TYPE_JSON_API);
   responseMediaType.schema = dataDocumentSchema;
 
   const errorResponse = openapi.components.setResponse(
     'JSONAPIErrorResponse',
     'Generic error response',
   );
-  const errorResponseMediaType = errorResponse.setContent('application/vnd.api+json');
+  const errorResponseMediaType = errorResponse.setContent(MEDIA_TYPE_JSON_API);
   errorResponseMediaType.schema = errorDocumentSchema;
 };
 
@@ -104,7 +104,7 @@ test('simple JSON:API schema', () => {
   postOperation.operationId = 'createEntity';
 
   const postResponse = postOperation.setDefaultResponse('Success response');
-  const postResponseContent = postResponse.setContent('application/vnd.api+json');
+  const postResponseContent = postResponse.setContent(MEDIA_TYPE_JSON_API);
   postResponseContent.schema =
     generator.context.openapi.components.schemas.get('JSONAPIDataDocument')!;
 

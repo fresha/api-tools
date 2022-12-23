@@ -13,6 +13,7 @@ import {
   getOperationRequestBodySchema,
   getOperationDefaultResponseSchema,
   Generator as GeneratorBase,
+  getMediaType,
 } from '@fresha/openapi-codegen-utils';
 
 import type { Context } from './types';
@@ -180,14 +181,9 @@ export class Generator extends GeneratorBase<Context> {
         writer.writeLine('headers: {');
         writer.indent(() => {
           writer.writeLine("'X-Requested-With': 'XMLHttpRequest',");
-          if (this.context.useJsonApi) {
-            writer.writeLine("'Accept': 'application/vnd.api+json',");
-          }
-          writer.writeLine(
-            this.context.useJsonApi
-              ? "'Content-Type': 'application/vnd.api+json'"
-              : "'Content-Type': 'application/json'",
-          );
+          const mediaType = getMediaType(this.context.useJsonApi);
+          writer.writeLine(`Accept: '${mediaType}'`);
+          writer.writeLine(`'Content-Type': '${mediaType}'`);
         });
         writer.writeLine('},');
       });

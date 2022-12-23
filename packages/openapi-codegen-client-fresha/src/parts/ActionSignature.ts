@@ -6,6 +6,7 @@ import {
   addTypeAlias,
   addTypeLiteralCall,
   addTypeLiteralProperty,
+  getOperationRequestBodySchema,
 } from '@fresha/openapi-codegen-utils';
 import { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import { CodeBlockWriter, SyntaxKind, TypeLiteralNode } from 'ts-morph';
@@ -116,9 +117,10 @@ export class ActionSignature {
       }
 
       // add request body
-      const requestBodySchema = this.operation.requestBody?.getContentOrThrow(
-        this.context.useJsonApi ? 'application/vnd.api+json' : 'application/json',
-      ).schema;
+      const requestBodySchema = getOperationRequestBodySchema(
+        this.operation,
+        this.context.useJsonApi,
+      );
       if (requestBodySchema) {
         this.addRequestBodyParams(argsParamType, requestBodySchema);
       }
