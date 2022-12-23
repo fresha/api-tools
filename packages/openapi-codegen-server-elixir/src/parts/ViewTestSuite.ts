@@ -1,4 +1,4 @@
-import type { Context } from './types';
+import type { Context } from '../context';
 import type { View } from './View';
 import type { SourceFile } from '@fresha/code-morph-ex';
 

@@ -1,11 +1,11 @@
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 import { MethodDeclaration, Project } from 'ts-morph';
 
-import '@fresha/code-morph-test-utils/build/matchers';
+import '@fresha/openapi-codegen-test-utils/build/matchers';
 
 import { ActionParam } from './ActionParam';
 
-import type { Context } from './types';
+import type { Context } from './context';
 
 let openapi: OpenAPIModel = {} as OpenAPIModel;
 let methodDecl: MethodDeclaration = {} as MethodDeclaration;

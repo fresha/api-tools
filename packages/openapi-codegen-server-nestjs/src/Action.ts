@@ -10,8 +10,8 @@ import { ClassDeclaration, Scope } from 'ts-morph';
 
 import { ActionParam } from './ActionParam';
 
+import type { Context } from './context';
 import type { Controller } from './Controller';
-import type { Context } from './types';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 /**

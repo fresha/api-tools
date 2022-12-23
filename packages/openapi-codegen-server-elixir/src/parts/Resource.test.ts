@@ -5,7 +5,7 @@ import {
   setResourceSchema,
 } from '@fresha/openapi-codegen-utils';
 
-import { makeTestingContext } from '../testHelpers';
+import { createGenerator } from '../testHelpers';
 
 import { Resource } from './Resource';
 
@@ -16,11 +16,11 @@ import '@fresha/code-morph-test-utils/build/matchers';
 const makeResource = (
   resourceType: string,
 ): { resource: Resource; resourceSchema: SchemaModel } => {
-  const { openapi, generator } = makeTestingContext();
+  const generator = createGenerator();
 
   const resourceName = titleCase(resourceType);
 
-  const resourceSchema = openapi.components.setSchema(resourceName, 'object');
+  const resourceSchema = generator.context.openapi.components.setSchema(resourceName, 'object');
   setResourceSchema(resourceSchema, resourceType);
 
   const resource = new Resource(
@@ -34,7 +34,7 @@ const makeResource = (
 
 test('for schema-less resources, only link/1 is generated', () => {
   const resourceType = 'schema-less';
-  const { generator } = makeTestingContext();
+  const generator = createGenerator();
   const resource = new Resource(
     generator.context,
     generator.context.project.getResourceModuleName(resourceType),
@@ -94,11 +94,11 @@ test('empty resource', () => {
 });
 
 test('happy path', () => {
-  const { openapi, generator } = makeTestingContext();
+  const generator = createGenerator();
 
   const resourceType = 'users';
   const resourceName = titleCase(resourceType);
-  const resourceSchema = openapi.components.setSchema(resourceName, 'object');
+  const resourceSchema = generator.context.openapi.components.setSchema(resourceName, 'object');
 
   // need to initialize resource schema before calling registry.parseResource
   setResourceSchema(resourceSchema, resourceType);

@@ -11,7 +11,7 @@ import { Router } from './Router';
 import { View } from './View';
 import { ViewTestSuite } from './ViewTestSuite';
 
-import type { Context } from './types';
+import type { Context } from '../context';
 
 export class Generator extends GeneratorBase<Context> {
   protected readonly router: Router;

@@ -11,7 +11,7 @@ import {
 import { ActionSignature } from './ActionSignature';
 import { findOperationTemplate } from './operations';
 
-import type { Context } from './types';
+import type { Context } from '../context';
 import type { SourceFile } from 'ts-morph';
 
 /**

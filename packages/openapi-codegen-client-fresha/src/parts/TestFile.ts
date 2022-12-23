@@ -3,7 +3,7 @@ import path from 'path';
 import { addConstant, addImportDeclarations } from '@fresha/code-morph-ts';
 import { CodeBlockWriter, SourceFile } from 'ts-morph';
 
-import type { Context } from './types';
+import type { Context } from '../context';
 
 /**
  * Generates file with basic API tests.

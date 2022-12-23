@@ -1,14 +1,14 @@
 import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import '@fresha/code-morph-test-utils/build/matchers';
+import '@fresha/openapi-codegen-test-utils/build/matchers';
 
 import { DTO } from './DTO';
-import { makeGenerator } from './testHelpers';
+import { createGenerator } from './testHelpers';
 
-import type { Context } from './types';
+import type { Context } from './context';
 
 test('construction', () => {
-  const { context } = makeGenerator('app', '/tmp');
+  const { context } = createGenerator('app', '/tmp');
 
   const dto = new DTO(context, 'SomeResponse', null);
   expect(dto.className).toBe('SomeResponse');
@@ -19,7 +19,7 @@ describe('serialization', () => {
   let context: Context = {} as Context;
 
   beforeEach(() => {
-    context = makeGenerator('app', '/var').context;
+    context = createGenerator('app', '/var').context;
   });
 
   test('proper name and ouput path', () => {

@@ -1,10 +1,9 @@
-import '@fresha/code-morph-test-utils/build/matchers';
-
+import '@fresha/openapi-codegen-test-utils/build/matchers';
 import { MEDIA_TYPE_JSON_API } from '@fresha/openapi-codegen-utils';
 import { OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Schema } from '@fresha/openapi-model/build/3.0.3/model/Schema';
 
-import { makeGenerator } from './testHelpers';
+import { createGenerator } from './testHelpers';
 
 const buildBasicJSONAPI = (openapi: OpenAPIModel): void => {
   const versionSchema = openapi.components.setSchema('JSONAPIVersion', 'object');
@@ -95,7 +94,7 @@ const buildBasicJSONAPI = (openapi: OpenAPIModel): void => {
 };
 
 test('simple JSON:API schema', () => {
-  const generator = makeGenerator('web', '/tmp');
+  const generator = createGenerator('web', '/tmp');
 
   buildBasicJSONAPI(generator.context.openapi);
 

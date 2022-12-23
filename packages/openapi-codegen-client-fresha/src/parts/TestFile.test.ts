@@ -1,21 +1,21 @@
 import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import { makeContext } from '../testUtils';
+import { createTestContext } from '../testHelpers';
 
 import { TestFile } from './TestFile';
 
-import '@fresha/code-morph-test-utils/build/matchers';
+import '@fresha/openapi-codegen-test-utils/build/matchers';
 
-const makeTestFile = (): TestFile => {
+const createTestFile = (): TestFile => {
   const openapi = OpenAPIFactory.create();
   openapi.paths.setExtension('root-url', 'TEST_FILE_URL');
-  const context = makeContext(openapi);
+  const context = createTestContext(openapi);
 
   return new TestFile(context);
 };
 
 test('happy path', () => {
-  const testFile = makeTestFile();
+  const testFile = createTestFile();
 
   testFile.collectData();
   testFile.generateCode();

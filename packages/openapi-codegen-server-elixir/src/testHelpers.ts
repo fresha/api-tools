@@ -1,43 +1,34 @@
 import { Project } from '@fresha/code-morph-ex';
 import { createRegistry } from '@fresha/json-api-model';
-import { createLogger, createConsole } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { createTestContext as createBaseTestContext } from '@fresha/openapi-codegen-test-utils';
+import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import { Context, Generator } from './parts';
+import { Generator } from './parts';
 
-export const makeContext = (phoenixApp: string, rootDir = '/'): Context => {
+import type { Context } from './context';
+
+export const createTestContext = (phoenixApp: string, rootDir = '/'): Context => {
+  const openapi = OpenAPIFactory.create();
+  const base = createBaseTestContext(openapi, rootDir);
+
   const project = new Project({
     rootDir,
     phoenixApp,
     useInMemoryFileSystem: true,
   });
 
-  const console = createConsole(false);
-  console.log = jest.fn();
-
   return {
-    outputPath: rootDir,
-    useJsonApi: true,
+    ...base,
     testObjectFactoryModuleName: `${project.getAppModuleName()}.Factory`,
-    dryRun: false,
-    openapi: OpenAPIFactory.create(),
+    openapi,
     project,
     registry: createRegistry(),
-    console,
-    logger: createLogger(false),
   };
 };
 
-const makeGenerator = (phoenixApp = 'api_tools_web', rootDir = '/') => {
-  return new Generator(makeContext(phoenixApp, rootDir));
-};
-
-type TestingContext = {
-  openapi: OpenAPIModel;
-  generator: Generator;
-};
-
-export const makeTestingContext = (phoenixApp = 'api_tools_web'): TestingContext => {
-  const generator = makeGenerator(phoenixApp);
-  return { generator, openapi: generator.context.openapi };
+export const createGenerator = (phoenixApp = 'api_tools_web'): Generator => {
+  const context = createTestContext(phoenixApp, '/');
+  const generator = new Generator(context);
+  return generator;
 };

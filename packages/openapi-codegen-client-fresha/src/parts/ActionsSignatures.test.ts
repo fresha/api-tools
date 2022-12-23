@@ -10,14 +10,14 @@ import {
   SchemaFactory,
 } from '@fresha/openapi-model/build/3.0.3';
 
-import { makeContext } from '../testUtils';
+import { createTestContext } from '../testHelpers';
 
 import { ActionsSignatures } from './ActionsSignatures';
 
-import '@fresha/code-morph-test-utils/build/matchers';
+import '@fresha/openapi-codegen-test-utils/build/matchers';
 
-const makeActionsSignatures = (openapi: OpenAPIModel): ActionsSignatures => {
-  const context = makeContext(openapi);
+const createActionsSignatures = (openapi: OpenAPIModel): ActionsSignatures => {
+  const context = createTestContext(openapi);
   const sourceFile = context.project.createSourceFile('index.ts', '');
   return new ActionsSignatures(context, sourceFile);
 };
@@ -30,7 +30,7 @@ test('action cache', () => {
   operation.setExtension('entry-key', 'provider');
   operation.setExtension('cache', 60);
 
-  const actionsSignatures = makeActionsSignatures(openapi);
+  const actionsSignatures = createActionsSignatures(openapi);
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
@@ -71,7 +71,7 @@ test('GET actions', () => {
   readListWithParams.setExtension('entry-key', 'task');
   addPagingParams(readListWithParams);
 
-  const actionsSignatures = makeActionsSignatures(openapi);
+  const actionsSignatures = createActionsSignatures(openapi);
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
@@ -121,7 +121,7 @@ test('create actions', () => {
     .setSchema('object');
   setDataDocumentSchema(responseSchema, 'employees');
 
-  const actionsSignatures = makeActionsSignatures(openapi);
+  const actionsSignatures = createActionsSignatures(openapi);
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
@@ -179,7 +179,7 @@ test('update actions', () => {
     extra: null,
   });
 
-  const actionsSignatures = makeActionsSignatures(openapi);
+  const actionsSignatures = createActionsSignatures(openapi);
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 

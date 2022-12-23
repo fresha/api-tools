@@ -1,8 +1,3 @@
-import path from 'path';
+import basicConfig from '@fresha/code-morph-test-utils/build/jestConfig';
 
-import baseConfig from '@fresha/jest-config';
-
-export default {
-  ...baseConfig,
-  setupFilesAfterEnv: [path.join(__dirname, 'setupEnv.js')],
-};
+export default basicConfig;

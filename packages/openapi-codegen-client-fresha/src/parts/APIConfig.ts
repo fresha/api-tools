@@ -17,7 +17,7 @@ import { Expression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-
 
 import { APIOperationTemplateName, findOperationTemplate } from './operations';
 
-import type { Context } from './types';
+import type { Context } from '../context';
 
 type APIOperationConfig =
   | APIOperationTemplateName

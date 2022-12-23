@@ -1,12 +1,12 @@
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
-import { makeContext } from '../testUtils';
+import { createTestContext } from '../testHelpers';
 
 import { Generator } from './Generator';
 
-import '@fresha/code-morph-test-utils/build/matchers';
+import '@fresha/openapi-codegen-test-utils/build/matchers';
 
-const makeOpenApi = (): OpenAPIModel => {
+const createOpenApi = (): OpenAPIModel => {
   const openapi = OpenAPIFactory.create('generator-test-api', '1.2.3');
   openapi.paths.setExtension('root-url', 'PROFILE_API_URL');
 
@@ -24,8 +24,8 @@ const makeOpenApi = (): OpenAPIModel => {
 };
 
 test('renders init function, configured api variable, as well as action types', () => {
-  const openapi = makeOpenApi();
-  const context = makeContext(openapi);
+  const openapi = createOpenApi();
+  const context = createTestContext(openapi);
 
   const generator = new Generator(context);
 

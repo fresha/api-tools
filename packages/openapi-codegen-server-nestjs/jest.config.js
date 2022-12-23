@@ -1,1 +1,1 @@
-module.exports = require('@fresha/code-morph-test-utils/build/jestConfig');
+module.exports = require('@fresha/openapi-codegen-test-utils/build/jestConfig');

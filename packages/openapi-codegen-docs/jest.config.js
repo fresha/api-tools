@@ -1,1 +1,1 @@
-module.exports = require('@fresha/jest-config');
+module.exports = require('@fresha/openapi-codegen-test-utils/build/jestConfig');

@@ -1,46 +1,45 @@
 import { Nullable } from '@fresha/api-tools-core';
-import { createLogger, createConsole } from '@fresha/openapi-codegen-utils';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { createTSProjectTestContext } from '@fresha/openapi-codegen-test-utils';
 import { OpenAPIFactory, OpenAPIModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
-import { Project } from 'ts-morph';
 
+import { Context } from './context';
 import { Generator } from './Generator';
 
-export const makeGenerator = (nestApp = 'app', rootDir = '/'): Generator => {
-  const project = new Project({ useInMemoryFileSystem: true });
-  project.createSourceFile(
-    `${rootDir}/${nestApp}.module.ts`,
-    `import { Module } from '@nestjs/common';
-     import { AppController } from './app.controller';
-     import { AppService } from './app.service';
+export const createTestContext = (nestApp = 'web', outputPath = '/tmp/'): Context => {
+  const openapi = OpenAPIFactory.create();
+  const base = createTSProjectTestContext(openapi, outputPath);
 
-     @Module({
-       imports: [],
-       controllers: [AppController],
-       providers: [AppService],
-     })
+  base.project.createSourceFile(
+    `${outputPath}/${nestApp}.module.ts`,
+    `import { Module } from '@nestjs/common';
+    import { AppController } from './app.controller';
+    import { AppService } from './app.service';
+
+    @Module({
+      imports: [],
+      controllers: [AppController],
+      providers: [AppService],
+    })
     export class AppModule {}`,
   );
 
-  const console = createConsole(false);
-  console.log = jest.fn();
+  return {
+    ...base,
+    nestApp,
+    addDTO: jest.fn(),
+  };
+};
+
+export const createGenerator = (nestApp = 'app', rootDir = '/'): Generator => {
+  const context = createTestContext(nestApp, rootDir);
 
   let generator: Generator;
-
-  const context = {
-    outputPath: rootDir,
-    useJsonApi: true,
-    dryRun: false,
-    openapi: OpenAPIFactory.create(),
-    project,
-    console,
-    logger: createLogger(false),
-    nestApp,
-    addDTO(name: string, schema: Nullable<SchemaModel>) {
-      return generator.addDTO(name, schema);
-    },
-  };
-
-  generator = new Generator(context);
+  // eslint-disable-next-line prefer-const
+  generator = new Generator({
+    ...context,
+    addDTO: (name: string, schema: Nullable<SchemaModel>) => generator.addDTO(name, schema),
+  });
 
   return generator;
 };
@@ -51,6 +50,6 @@ type TestingContext = {
 };
 
 export const makeTestingContext = (phoenixApp = 'api_tools_web'): TestingContext => {
-  const generator = makeGenerator(phoenixApp);
+  const generator = createGenerator(phoenixApp);
   return { generator, openapi: generator.context.openapi };
 };

@@ -6,10 +6,10 @@
     "rootDir": "./src"
   },
   "include": [
-    "src/jest.d.ts",
     "./src/**/*.ts"
   ],
   "exclude": [
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "./src/testHelpers.ts"
   ]
 }
