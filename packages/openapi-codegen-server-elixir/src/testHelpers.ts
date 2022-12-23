@@ -1,4 +1,4 @@
-import { Project } from '@fresha/ex-morph';
+import { Project } from '@fresha/code-morph-ex';
 import { createRegistry } from '@fresha/json-api-model';
 import { createLogger, createConsole } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';

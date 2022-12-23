@@ -5,7 +5,7 @@ import { getOperationRequestBodySchema } from '@fresha/openapi-codegen-utils';
 
 import { Context } from './types';
 
-import type { SourceFile } from '@fresha/ex-morph';
+import type { SourceFile } from '@fresha/code-morph-ex';
 import type {
   OperationModel,
   PathItemOperationKey,

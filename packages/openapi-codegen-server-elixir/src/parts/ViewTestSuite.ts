@@ -1,6 +1,6 @@
 import type { Context } from './types';
 import type { View } from './View';
-import type { SourceFile } from '@fresha/ex-morph';
+import type { SourceFile } from '@fresha/code-morph-ex';
 
 export class ViewTestSuite {
   readonly context: Context;
