@@ -3,7 +3,12 @@ import assert from 'assert';
 import { camelCase } from './string';
 
 import type { Nullable } from '@fresha/api-tools-core';
-import type { OpenAPIModel, OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import type {
+  OpenAPIModel,
+  OperationModel,
+  ParameterModel,
+  SchemaModel,
+} from '@fresha/openapi-model/build/3.0.3';
 
 export const significantNameParts = (pathUrl: string): string[] =>
   pathUrl.split('/').filter(x => x && !(x.startsWith('{') && x.endsWith('}')));
@@ -24,6 +29,43 @@ export const getRootUrlOrThrow = (openapi: OpenAPIModel): string => {
   return result;
 };
 
+/**
+ * Defines which OpenAPI operations to include in iteration.
+ */
+type OperationFilter = {
+  /**
+   * If true, deprecated operations will be included (by default they are not).
+   */
+  deprecated?: boolean;
+
+  /**
+   * If it is not empty, only operations assigned tags from this set will be
+   * iterated over. If not set, no filtering on tags will be performed.
+   */
+  tags?: string[];
+};
+
+/**
+ * Iterates over Operation objects of an OpenAPI schema, taking into account filtering criteria.
+ */
+export const getOperations = function* getOperations(
+  openapi: OpenAPIModel,
+  options?: OperationFilter,
+): IterableIterator<OperationModel> {
+  const includeDeprecated = options?.deprecated ?? false;
+  const includeTags = options?.tags?.length ? new Set<string>(options.tags) : null;
+
+  for (const pathItem of openapi.paths.values()) {
+    for (const [, operation] of pathItem.operations()) {
+      if (!operation.deprecated || includeDeprecated) {
+        if (includeTags == null || operation.tags.some(tag => includeTags.has(tag))) {
+          yield operation;
+        }
+      }
+    }
+  }
+};
+
 export const getOperationEntryKey = (operation: OperationModel): string | undefined => {
   const result = operation.getExtension('entry-key');
   assert(result === undefined || typeof result === 'string');
@@ -37,6 +79,28 @@ export const getOperationEntryKeyOrThrow = (operation: OperationModel): string =
     `Missing x-entry-key in "${operation.parent.pathUrl}" path item`,
   );
   return entryKey;
+};
+
+/**
+ * Iterates over all Parameter objects applicable to given Operation. This includes
+ * iterating over parameters defined at the operation level, followed by iterating
+ * parameters defined on PathItem level (excluding parameters that were overriden).
+ */
+export const getOperationParameters = function* getOperationParameters(
+  operation: OperationModel,
+): IterableIterator<ParameterModel> {
+  const visited = new Set<string>();
+  for (const param of operation.parameters) {
+    visited.add(`${param.in}:${param.name}`);
+    yield param;
+  }
+  for (const param of operation.parent.parameters) {
+    const key = `${param.in}:${param.name}`;
+    if (!visited.has(key)) {
+      visited.add(key);
+      yield param;
+    }
+  }
 };
 
 export const getOperationId = (operation: OperationModel): string | undefined => {

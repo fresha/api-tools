@@ -1,4 +1,4 @@
-import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OperationModel } from '@fresha/openapi-model/build/3.0.3';
 
 import {
   pathUrlToUrlExp,
@@ -11,6 +11,7 @@ import {
   getRootUrlOrThrow,
   getOperationCacheOptionsOrThrow,
   getOperationCacheOptions,
+  getOperations,
 } from './openapi';
 
 test('getAPIName', () => {
@@ -40,6 +41,53 @@ test('getRootUrlOrThrow', () => {
 
   openapi.paths.setExtension('root-url', 'https://www.example.com');
   expect(getRootUrlOrThrow(openapi)).toBe('https://www.example.com');
+});
+
+test('getOperations', () => {
+  const openapi = OpenAPIFactory.create();
+
+  openapi.addTag('t1');
+  openapi.addTag('t2');
+
+  const pathItem1 = openapi.setPathItem('/hello');
+
+  const op1 = pathItem1.setOperation('get');
+  op1.operationId = 'readHello';
+  op1.deprecated = true;
+  op1.addTag('t1');
+
+  const op2 = pathItem1.setOperation('post');
+  op2.operationId = 'createGreeting';
+  op2.addTag('t1');
+  op2.addTag('t2');
+
+  const pathItem2 = openapi.setPathItem('/world');
+
+  const op3 = pathItem2.setOperation('delete');
+  op3.operationId = 'deleteWorldInfo';
+  op3.deprecated = true;
+
+  const op4 = pathItem2.setOperation('get');
+  op4.operationId = 'fetchWorldInfo';
+  op4.addTag('t2');
+
+  const getOperationNames = (it: IterableIterator<OperationModel>): Set<string> => {
+    return new Set<string>(Array.from(it, op => op.operationId ?? ''));
+  };
+
+  const noDeprecatedOps = getOperationNames(getOperations(openapi));
+  expect(noDeprecatedOps).toStrictEqual(new Set<string>(['createGreeting', 'fetchWorldInfo']));
+
+  const allOps = getOperationNames(getOperations(openapi, { deprecated: true }));
+  expect(allOps).toStrictEqual(
+    new Set<string>(['readHello', 'createGreeting', 'fetchWorldInfo', 'deleteWorldInfo']),
+  );
+
+  const notDeprecatedTag1Ops = getOperationNames(getOperations(openapi, { tags: ['t1'] }));
+  expect(new Set<string>(notDeprecatedTag1Ops)).toStrictEqual(new Set<string>(['createGreeting']));
+
+  const tag1Ops = getOperationNames(getOperations(openapi, { tags: ['t1'], deprecated: true }));
+  expect(tag1Ops).toStrictEqual(new Set<string>(['readHello', 'createGreeting']));
 });
 
 test('getOperationEntryKey', () => {
