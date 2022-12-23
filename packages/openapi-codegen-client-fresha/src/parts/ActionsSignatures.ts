@@ -6,6 +6,7 @@ import {
   addTypeLiteralAlias,
   getOperationEntryKeyOrThrow,
   getOperationId,
+  getOperations,
 } from '@fresha/openapi-codegen-utils';
 
 import { ActionSignature } from './ActionSignature';
@@ -34,22 +35,20 @@ export class ActionsSignatures {
   }
 
   collectData(): void {
-    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
-      for (const [operationKey, operation] of pathItem.operations()) {
-        const entryKey = getOperationEntryKeyOrThrow(operation);
-        const { template } = findOperationTemplate(
-          operationKey,
-          pathUrl,
-          entryKey,
-          getOperationId(operation),
-        );
-        const actionName = getOperationId(operation) ?? template.actionName(entryKey);
-        assert(!this.actions.has(actionName));
-        this.actions.set(
-          actionName,
-          new ActionSignature(this.context, actionName, operation, template),
-        );
-      }
+    for (const operation of getOperations(this.context.openapi)) {
+      const entryKey = getOperationEntryKeyOrThrow(operation);
+      const { template } = findOperationTemplate(
+        operation.httpMethod,
+        operation.parent.pathUrl,
+        entryKey,
+        getOperationId(operation),
+      );
+      const actionName = getOperationId(operation) ?? template.actionName(entryKey);
+      assert(!this.actions.has(actionName));
+      this.actions.set(
+        actionName,
+        new ActionSignature(this.context, actionName, operation, template),
+      );
     }
   }
 

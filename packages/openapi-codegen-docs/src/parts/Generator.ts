@@ -2,7 +2,12 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 
-import { Context, Generator as GeneratorBase, getMediaType } from '@fresha/openapi-codegen-utils';
+import {
+  Context,
+  Generator as GeneratorBase,
+  getMediaType,
+  getOperations,
+} from '@fresha/openapi-codegen-utils';
 
 import type { ParametrisedURLString } from '@fresha/api-tools-core/build/types';
 import type { PathItemOperationKey, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
@@ -57,49 +62,71 @@ export class Generator extends GeneratorBase<Context> {
 
     const mediaType = getMediaType(true);
 
-    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
-      for (const [httpMethod, operation] of pathItem.operations()) {
-        // const requestBodySchema = operation.requestBody?.content.get(mediaType)?.schema;
-        // if (requestBodySchema && requestBodySchema.type === 'object') {
-        //   const primaryData = requestBodySchema.getPropertyOrThrow('data');
-        //   if (schemaToName.has(primaryData)) {
-        //   }
+    for (const operation of getOperations(this.context.openapi)) {
+      // const requestBodySchema = operation.requestBody?.content.get(mediaType)?.schema;
+      // if (requestBodySchema && requestBodySchema.type === 'object') {
+      //   const primaryData = requestBodySchema.getPropertyOrThrow('data');
+      //   if (schemaToName.has(primaryData)) {
+      //   }
 
-        //   // const included = requestBodySchema.getProperty('included');
-        //   // if (included) {
-        //   // }
-        // }
+      //   // const included = requestBodySchema.getProperty('included');
+      //   // if (included) {
+      //   // }
+      // }
 
-        for (const response of operation.responses.codes.values()) {
-          const responseDocumentSchema = response.content.get(mediaType)?.schema;
+      for (const response of operation.responses.codes.values()) {
+        const responseDocumentSchema = response.content.get(mediaType)?.schema;
 
-          let primaryDataSchema = responseDocumentSchema?.getProperty('data') ?? null;
-          if (primaryDataSchema?.type === 'array') {
-            primaryDataSchema = primaryDataSchema.items;
+        let primaryDataSchema = responseDocumentSchema?.getProperty('data') ?? null;
+        if (primaryDataSchema?.type === 'array') {
+          primaryDataSchema = primaryDataSchema.items;
+        }
+        if (primaryDataSchema?.anyOf?.length) {
+          for (const subschema of primaryDataSchema.anyOf) {
+            this.addUsage(
+              subschema,
+              operation.parent.pathUrl,
+              operation.httpMethod,
+              undefined,
+              'data',
+            );
           }
-          if (primaryDataSchema?.anyOf?.length) {
-            for (const subschema of primaryDataSchema.anyOf) {
-              this.addUsage(subschema, pathUrl, httpMethod, undefined, 'data');
-            }
-          } else if (primaryDataSchema) {
-            this.addUsage(primaryDataSchema, pathUrl, httpMethod, undefined, 'data');
-          }
+        } else if (primaryDataSchema) {
+          this.addUsage(
+            primaryDataSchema,
+            operation.parent.pathUrl,
+            operation.httpMethod,
+            undefined,
+            'data',
+          );
+        }
 
-          const includedSchema = responseDocumentSchema?.getProperty('included')?.items ?? null;
-          const subschemas: SchemaModel[] = [];
-          if (includedSchema?.anyOf?.length) {
-            subschemas.push(...includedSchema.anyOf);
+        const includedSchema = responseDocumentSchema?.getProperty('included')?.items ?? null;
+        const subschemas: SchemaModel[] = [];
+        if (includedSchema?.anyOf?.length) {
+          subschemas.push(...includedSchema.anyOf);
+        }
+        if (includedSchema?.oneOf?.length) {
+          subschemas.push(...includedSchema.oneOf);
+        }
+        if (subschemas.length) {
+          for (const subschema of subschemas) {
+            this.addUsage(
+              subschema,
+              operation.parent.pathUrl,
+              operation.httpMethod,
+              undefined,
+              'include',
+            );
           }
-          if (includedSchema?.oneOf?.length) {
-            subschemas.push(...includedSchema.oneOf);
-          }
-          if (subschemas.length) {
-            for (const subschema of subschemas) {
-              this.addUsage(subschema, pathUrl, httpMethod, undefined, 'include');
-            }
-          } else if (includedSchema) {
-            this.addUsage(includedSchema, pathUrl, httpMethod, undefined, 'include');
-          }
+        } else if (includedSchema) {
+          this.addUsage(
+            includedSchema,
+            operation.parent.pathUrl,
+            operation.httpMethod,
+            undefined,
+            'include',
+          );
         }
       }
     }

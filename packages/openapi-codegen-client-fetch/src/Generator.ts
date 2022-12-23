@@ -14,6 +14,7 @@ import {
   getOperationDefaultResponseSchema,
   Generator as GeneratorBase,
   getMediaType,
+  getOperations,
 } from '@fresha/openapi-codegen-utils';
 
 import type { Context } from './types';
@@ -45,25 +46,20 @@ export class Generator extends GeneratorBase<Context> {
   }
 
   protected collectData(): void {
-    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
-      for (const [, operation] of pathItem.operations()) {
-        const name = getOperationIdOrThrow(operation);
-        const requestBodySchema = getOperationRequestBodySchema(operation, this.context.useJsonApi);
-        const responseSchema = getOperationDefaultResponseSchema(
-          operation,
-          this.context.useJsonApi,
-        );
+    for (const operation of getOperations(this.context.openapi)) {
+      const name = getOperationIdOrThrow(operation);
+      const requestBodySchema = getOperationRequestBodySchema(operation, this.context.useJsonApi);
+      const responseSchema = getOperationDefaultResponseSchema(operation, this.context.useJsonApi);
 
-        this.apiCalls.push({
-          operation,
-          name,
-          url: pathUrl,
-          requestSchema: requestBodySchema,
-          requestTypeName: requestBodySchema ? titleCase(`${name}Request`) : null,
-          responseSchema,
-          responseTypeName: titleCase(`${name}Response`),
-        });
-      }
+      this.apiCalls.push({
+        operation,
+        name,
+        url: operation.parent.pathUrl,
+        requestSchema: requestBodySchema,
+        requestTypeName: requestBodySchema ? titleCase(`${name}Request`) : null,
+        responseSchema,
+        responseTypeName: titleCase(`${name}Response`),
+      });
     }
   }
 

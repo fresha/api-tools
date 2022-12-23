@@ -8,6 +8,7 @@ import {
   addObjectLiteralProperty,
   getOperationEntryKeyOrThrow,
   getOperationIdOrThrow,
+  getOperations,
   pathUrlToUrlExp,
 } from '@fresha/openapi-codegen-utils';
 import { Expression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-morph';
@@ -15,7 +16,6 @@ import { Expression, SourceFile, SyntaxKind, VariableDeclarationKind } from 'ts-
 import { APIOperationTemplateName, findOperationTemplate } from './operations';
 
 import type { Context } from './types';
-import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 
 type APIOperationConfig =
   | APIOperationTemplateName
@@ -58,21 +58,15 @@ export class APIConfig {
   }
 
   collectData(): void {
-    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
-      this.processPathItem(pathUrl, pathItem);
-    }
-  }
-
-  protected processPathItem(pathUrl: string, pathItem: PathItemModel): void {
-    for (const [operationKey, operation] of pathItem.operations()) {
-      this.context.logger.info(`Processing path item: "${pathUrl}"`);
+    for (const operation of getOperations(this.context.openapi)) {
+      this.context.logger.info(`Processing path item: "${operation.parent.pathUrl}"`);
 
       const entryKey = getOperationEntryKeyOrThrow(operation);
 
       let apiEntryConfig = this.apiConfig[entryKey];
       if (!apiEntryConfig) {
         apiEntryConfig = {
-          url: pathUrlToUrlExp(pathUrl),
+          url: pathUrlToUrlExp(operation.parent.pathUrl),
           operations: [],
         };
         this.apiConfig[entryKey] = apiEntryConfig;
@@ -80,8 +74,8 @@ export class APIConfig {
 
       const operationId = getOperationIdOrThrow(operation);
       const { template, name } = findOperationTemplate(
-        operationKey,
-        pathUrl,
+        operation.httpMethod,
+        operation.parent.pathUrl,
         entryKey,
         operationId,
       );
