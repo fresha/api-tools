@@ -1,5 +1,3 @@
-import path from 'path';
-
 export default {
   clearMocks: true,
   coverageDirectory: '/tmp/coverage',
@@ -16,7 +14,6 @@ export default {
     'default',
     ['jest-junit', { outputDirectory: '/tmp/test-results', outputName: 'test-results.xml' }],
   ],
-  setupFilesAfterEnv: [path.join(__dirname, 'setupEnv.js')],
   testEnvironment: 'node',
   testMatch: ['**/*.test.ts'],
   testRunner: 'jest-circus/runner',
