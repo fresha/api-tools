@@ -1,4 +1,7 @@
+import path from 'path';
+
 import { OpenAPIModel, OpenAPIReader } from '@fresha/openapi-model/build/3.0.3';
+import { Project } from 'ts-morph';
 
 import { createConsole, createLogger, Logger } from './logging';
 
@@ -14,6 +17,10 @@ export interface Context {
   readonly console: Console;
 }
 
+export interface TSProjectContext extends Context {
+  readonly project: Project;
+}
+
 export const createContext = (args: ArgumentsCamelCase<Params>): Context => {
   const openapiReader = new OpenAPIReader();
   const openapi = openapiReader.parseFromFile(args.input);
@@ -25,5 +32,14 @@ export const createContext = (args: ArgumentsCamelCase<Params>): Context => {
     dryRun: !!args.dryRun,
     logger: createLogger(!!args.verbose),
     console: createConsole(!!args.verbose),
+  };
+};
+
+export const createTSProjectContext = (args: ArgumentsCamelCase<Params>): TSProjectContext => {
+  return {
+    ...createContext(args),
+    project: new Project({
+      tsConfigFilePath: path.join(args.output, 'tsconfig.json'),
+    }),
   };
 };

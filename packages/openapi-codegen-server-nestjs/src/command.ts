@@ -1,11 +1,8 @@
-import path from 'path';
-
 import {
   builder as basicBuilder,
   Params as BasicParams,
-  createContext,
+  createTSProjectContext,
 } from '@fresha/openapi-codegen-utils';
-import { Project } from 'ts-morph';
 
 import { Generator } from './Generator';
 import { getNestJSSubAppPath } from './utils';
@@ -27,16 +24,11 @@ export const builder = (yarg: Argv): Argv<Params> =>
     .describe('nest-app', 'Create files inside given NestJS application name');
 
 export const handler = (args: ArgumentsCamelCase<Params>): void => {
-  const project = new Project({
-    tsConfigFilePath: path.join(args.output, 'tsconfig.json'),
-  });
-
-  const context = createContext(args);
+  const context = createTSProjectContext(args);
 
   const generator = new Generator({
     ...context,
     outputPath: getNestJSSubAppPath(args.output, args.nestApp),
-    project,
     nestApp: args.nestApp ?? 'app',
     addDTO(name, schema): DTO {
       return generator.addDTO(name, schema);
