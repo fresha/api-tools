@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { addConstant, addImportDeclarations } from '@fresha/openapi-codegen-utils';
+import { addConstant, addImportDeclarations } from '@fresha/code-morph-ts';
 import { CodeBlockWriter, SourceFile } from 'ts-morph';
 
 import type { Context } from './types';

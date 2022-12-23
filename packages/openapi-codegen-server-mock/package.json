@@ -46,6 +46,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@fresha/code-morph-ts": "0.1.0",
     "@fresha/openapi-codegen-utils": "^0.1.0",
     "@fresha/openapi-model": "0.4.0",
     "ts-morph": "^16.0.0"

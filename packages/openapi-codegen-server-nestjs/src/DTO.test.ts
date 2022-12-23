@@ -1,6 +1,6 @@
 import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import '@fresha/jest-config';
+import '@fresha/code-morph-test-utils/build/matchers';
 
 import { DTO } from './DTO';
 import { makeGenerator } from './testHelpers';
@@ -29,7 +29,7 @@ describe('serialization', () => {
     expect(context.project.getSourceFileOrThrow('/var/app.module.ts')).toBeTruthy();
     expect(
       context.project.getSourceFileOrThrow('/var/dto/SomeResponse2.dto.ts'),
-    ).toHaveFormattedText(`export class SomeResponse2 {}`);
+    ).toHaveFormattedTypeScriptText(`export class SomeResponse2 {}`);
   });
 
   test('primitive schemas + optionality', () => {
@@ -45,7 +45,9 @@ describe('serialization', () => {
 
     new DTO(context, 'Response', schema).generateCode();
 
-    expect(context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
+    expect(
+      context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts'),
+    ).toHaveFormattedTypeScriptText(
       `import { Expose } from 'class-transformer';
       import { IsBoolean, IsInt, IsString } from 'class-validator';
 
@@ -88,7 +90,9 @@ describe('serialization', () => {
 
     new DTO(context, 'Response', schema).generateCode();
 
-    expect(context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts')).toHaveFormattedText(
+    expect(
+      context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts'),
+    ).toHaveFormattedTypeScriptText(
       `import { Expose } from 'class-transformer';
       import { Min, Max, IsInt } from 'class-validator';
 
@@ -125,7 +129,9 @@ describe('serialization', () => {
 
     new DTO(context, 'Response2', schema).generateCode();
 
-    expect(context.project.getSourceFileOrThrow('/var/dto/Response2.dto.ts')).toHaveFormattedText(
+    expect(
+      context.project.getSourceFileOrThrow('/var/dto/Response2.dto.ts'),
+    ).toHaveFormattedTypeScriptText(
       `import { Expose } from 'class-transformer';
       import { MinLength, MaxLength, IsString } from 'class-validator';
 
@@ -174,7 +180,8 @@ describe('serialization', () => {
 
     new DTO(context, 'Employee', resourceSchema).generateCode();
 
-    expect(context.project.getSourceFileOrThrow('/var/dto/Employee.dto.ts')).toHaveFormattedText(`
+    expect(context.project.getSourceFileOrThrow('/var/dto/Employee.dto.ts'))
+      .toHaveFormattedTypeScriptText(`
       import { Expose, Type } from 'class-transformer';
       import { IsInt, IsBoolean, IsString } from 'class-validator';
 
@@ -248,7 +255,7 @@ describe('serialization', () => {
 
     expect(
       context.project.getSourceFileOrThrow('/var/dto/AnotherResponse.dto.ts'),
-    ).toHaveFormattedText(
+    ).toHaveFormattedTypeScriptText(
       `import { Expose } from 'class-transformer';
       import { IsArray } from 'class-validator';
 

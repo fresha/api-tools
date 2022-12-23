@@ -4,7 +4,7 @@ import { makeContext } from '../testUtils';
 
 import { APIConfig } from './APIConfig';
 
-import '@fresha/jest-config';
+import '@fresha/code-morph-test-utils/build/matchers';
 
 const makeApiConfig = (openapi: OpenAPIModel): APIConfig => {
   const context = makeContext(openapi);
@@ -35,7 +35,7 @@ test('happy path', () => {
   apiConfig.collectData();
   apiConfig.generateCode();
 
-  expect(apiConfig.sourceFile).toHaveFormattedText(`
+  expect(apiConfig.sourceFile).toHaveFormattedTypeScriptText(`
     import { APIEnvironmentOptions } from '@fresha/connector-utils/build/types/api';
     import store from '@fresha/redux-store';
     import { configureApi } from '@fresha/connector-utils/build/apiConfig';

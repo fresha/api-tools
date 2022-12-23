@@ -7,7 +7,7 @@ import { Module } from './Module';
 import type { Controller } from './Controller';
 import type { Context } from './types';
 
-import '@fresha/jest-config/build/types';
+import '@fresha/code-morph-test-utils/build/matchers';
 
 let context: Context | null = null;
 
@@ -55,7 +55,7 @@ test('adds controller imports', () => {
   module.generateCode();
 
   const moduleSourceFile = module.context.project.getSourceFileOrThrow('/tmp/web.module.ts');
-  expect(moduleSourceFile).toHaveFormattedText(
+  expect(moduleSourceFile).toHaveFormattedTypeScriptText(
     `import { Module, ValidationPipe } from '@nestjs/common';
     import { AppController } from './app.controller';
     import { AppService } from './app.service';

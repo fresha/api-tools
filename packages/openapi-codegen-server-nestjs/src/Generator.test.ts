@@ -1,4 +1,5 @@
-import '@fresha/jest-config/build/types';
+import '@fresha/code-morph-test-utils/build/matchers';
+
 import { MEDIA_TYPE_JSON_API } from '@fresha/openapi-codegen-utils';
 import { OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { Schema } from '@fresha/openapi-model/build/3.0.3/model/Schema';
@@ -114,7 +115,7 @@ test('simple JSON:API schema', () => {
     '/tmp/dto/CreateEntityResponse.dto.ts',
   );
 
-  expect(dtoFile).toHaveFormattedText(`
+  expect(dtoFile).toHaveFormattedTypeScriptText(`
     import { Type, Expose } from 'class-transformer';
     import { IsString, ValidateNested, IsArray } from 'class-validator';
 

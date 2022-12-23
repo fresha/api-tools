@@ -1,7 +1,7 @@
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 import { MethodDeclaration, Project } from 'ts-morph';
 
-import '@fresha/jest-config/build/types';
+import '@fresha/code-morph-test-utils/build/matchers';
 
 import { ActionParam } from './ActionParam';
 
@@ -29,7 +29,7 @@ test('construction', () => {
   const param = new ActionParam({} as Context, { in: 'path', name: 'id', schema: null });
   param.generateCode(methodDecl);
 
-  expect(methodDecl.getSourceFile()).toHaveFormattedText(
+  expect(methodDecl.getSourceFile()).toHaveFormattedTypeScriptText(
     `import { Param } from '@nestjs/common';
 
     class X {
@@ -46,7 +46,7 @@ test('typed parameters', () => {
   });
   param.generateCode(methodDecl);
 
-  expect(methodDecl.getSourceFile()).toHaveFormattedText(
+  expect(methodDecl.getSourceFile()).toHaveFormattedTypeScriptText(
     `import { Param, ParseBoolPipe } from '@nestjs/common';
 
     class X {

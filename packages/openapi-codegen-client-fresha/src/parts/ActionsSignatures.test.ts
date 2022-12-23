@@ -14,7 +14,7 @@ import { makeContext } from '../testUtils';
 
 import { ActionsSignatures } from './ActionsSignatures';
 
-import '@fresha/jest-config';
+import '@fresha/code-morph-test-utils/build/matchers';
 
 const makeActionsSignatures = (openapi: OpenAPIModel): ActionsSignatures => {
   const context = makeContext(openapi);
@@ -34,7 +34,7 @@ test('action cache', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedTypeScriptText(`
     export type TestApiActions = {
       readProvider: {
         (): Promise<Response>;
@@ -75,7 +75,7 @@ test('GET actions', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedTypeScriptText(`
     export type TestApiActions = {
       readEmployeeListNoParams: {
         (): Promise<Response>;
@@ -125,7 +125,7 @@ test('create actions', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedTypeScriptText(`
     import type { JSONObject } from '@fresha/noname-core';
 
     export type TestApiActions = {
@@ -183,7 +183,7 @@ test('update actions', () => {
   actionsSignatures.collectData();
   actionsSignatures.generateCode();
 
-  expect(actionsSignatures.sourceFile).toHaveFormattedText(`
+  expect(actionsSignatures.sourceFile).toHaveFormattedTypeScriptText(`
     import type { JSONArray, JSONValue, JSONObject } from '@fresha/noname-core';
 
     export type TestApiActions = {

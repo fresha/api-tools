@@ -2,7 +2,7 @@ import assert from 'assert';
 import path from 'path';
 
 import { Nullable, titleCase } from '@fresha/api-tools-core';
-import { addDecorator, addImportDeclaration } from '@fresha/openapi-codegen-utils';
+import { addDecorator, addImportDeclaration } from '@fresha/code-morph-ts';
 
 import type { Context } from './types';
 import type { SchemaModel, SchemaPropertyObject } from '@fresha/openapi-model/build/3.0.3';
