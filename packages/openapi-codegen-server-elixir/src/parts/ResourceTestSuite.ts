@@ -3,7 +3,7 @@ import assert from 'assert';
 import { faker } from '@faker-js/faker';
 import { JSONValue, snakeCase } from '@fresha/api-tools-core';
 
-import type { Context } from './types';
+import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
 import type { ResourceModel } from '@fresha/json-api-model';
 

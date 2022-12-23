@@ -7,7 +7,7 @@ import { Controller } from './Controller';
 import { DTO } from './DTO';
 import { Module } from './Module';
 
-import type { Context } from './types';
+import type { Context } from './context';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { PathItemModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 

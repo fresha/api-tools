@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import { addDecorator, addImportDeclaration } from '@fresha/code-morph-ts';
 
-import type { Context } from './types';
+import type { Context } from './context';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import type { MethodDeclaration } from 'ts-morph';

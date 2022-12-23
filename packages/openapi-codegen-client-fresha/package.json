@@ -56,6 +56,7 @@
   "devDependencies": {
     "@fresha/code-morph-test-utils": "0.1.0",
     "@fresha/eslint-config": "0.1.0",
+    "@fresha/openapi-codegen-test-utils": "0.1.0",
     "@fresha/typescript-config": "0.1.0",
     "typescript": "^4.7.2"
   }

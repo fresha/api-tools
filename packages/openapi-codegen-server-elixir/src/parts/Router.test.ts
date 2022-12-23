@@ -1,6 +1,6 @@
 import { poorMansElixirFormat } from '@fresha/code-morph-test-utils';
 
-import { makeContext } from '../testHelpers';
+import { createTestContext } from '../testHelpers';
 
 import { Router } from './Router';
 
@@ -8,7 +8,7 @@ import type { Action } from './Action';
 import type { Controller } from './Controller';
 
 test('no paths', () => {
-  const context = makeContext('api_tools_router_web');
+  const context = createTestContext('api_tools_router_web');
 
   const router = new Router(context);
   router.generateCode();
@@ -30,7 +30,7 @@ test('no paths', () => {
 });
 
 test('multiple controllers and actions', () => {
-  const context = makeContext('api_tools_router_web');
+  const context = createTestContext('api_tools_router_web');
 
   const router = new Router(context);
 

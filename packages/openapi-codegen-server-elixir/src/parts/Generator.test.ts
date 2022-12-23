@@ -1,9 +1,9 @@
-import { makeContext } from '../testHelpers';
+import { createTestContext } from '../testHelpers';
 
 import { Generator } from './Generator';
 
 test('happy path', () => {
-  const context = makeContext('awesome_web', '/');
+  const context = createTestContext('awesome_web', '/');
 
   const generator = new Generator(context);
 

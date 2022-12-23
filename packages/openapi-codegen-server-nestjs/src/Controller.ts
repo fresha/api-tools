@@ -6,7 +6,7 @@ import { commonStringPrefix, kebabCase, significantNameParts } from '@fresha/ope
 
 import { Action } from './Action';
 
-import type { Context } from './types';
+import type { Context } from './context';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 import type { SourceFile } from 'ts-morph';
 

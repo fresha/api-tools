@@ -1,7 +1,7 @@
 import { maybeAddLeadingSlash } from '@fresha/openapi-codegen-utils';
 
+import type { Context } from '../context';
 import type { Controller } from './Controller';
-import type { Context } from './types';
 
 type Entry = {
   urlExp: string;

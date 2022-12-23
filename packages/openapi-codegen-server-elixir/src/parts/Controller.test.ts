@@ -5,14 +5,14 @@ import {
 } from '@fresha/openapi-codegen-utils';
 import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import { makeContext } from '../testHelpers';
+import { createTestContext } from '../testHelpers';
 
 import { Controller } from './Controller';
 
 import '@fresha/code-morph-test-utils/build/matchers';
 
 test('parameter-less action, minimal implementation', () => {
-  const context = makeContext('awesome_web');
+  const context = createTestContext('awesome_web');
 
   const pathItem = context.openapi.setPathItem('/employees/:id/tasks');
   const operation = pathItem.setOperation('post');
@@ -42,7 +42,7 @@ test('parameter-less action, minimal implementation', () => {
 });
 
 test('ID parameter leads to generating parse_XXXX_param function, as well as error handling', () => {
-  const context = makeContext('awesome_web');
+  const context = createTestContext('awesome_web');
 
   const pathItem = context.openapi.setPathItem('/employees/:id/tasks');
   const operation = pathItem.setOperation('get');
@@ -92,7 +92,7 @@ test('ID parameter leads to generating parse_XXXX_param function, as well as err
 });
 
 test('request body leads to generating parse_XXXX_conn function, as well as error handling', () => {
-  const context = makeContext('awesome_web');
+  const context = createTestContext('awesome_web');
 
   const pathItem = context.openapi.setPathItem('/profile');
   const requestBodySchema = pathItem

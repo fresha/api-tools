@@ -4,8 +4,8 @@ import path from 'path';
 import { addImportDeclaration } from '@fresha/code-morph-ts';
 import { SourceFile, SyntaxKind } from 'ts-morph';
 
+import type { Context } from './context';
 import type { Controller } from './Controller';
-import type { Context } from './types';
 
 type ModuleName = string;
 type NamedImport = string;

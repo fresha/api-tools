@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import { Action } from './Action';
 
-import type { Context } from './types';
+import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
 import type {
   OperationModel,

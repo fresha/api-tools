@@ -1,13 +1,13 @@
 import { OpenAPIFactory, OpenAPIModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import { makeContext } from '../testUtils';
+import { createTestContext } from '../testHelpers';
 
 import { APIConfig } from './APIConfig';
 
-import '@fresha/code-morph-test-utils/build/matchers';
+import '@fresha/openapi-codegen-test-utils/build/matchers';
 
-const makeApiConfig = (openapi: OpenAPIModel): APIConfig => {
-  const context = makeContext(openapi);
+const createApiConfig = (openapi: OpenAPIModel): APIConfig => {
+  const context = createTestContext(openapi);
   const sourceFile = context.project.createSourceFile('index.ts', '');
   return new APIConfig(context, sourceFile);
 };
@@ -31,7 +31,7 @@ test('happy path', () => {
   searchParam.schema = SchemaFactory.create(searchParam, 'string');
   searchParam.schema.nullable = true;
 
-  const apiConfig = makeApiConfig(openapi);
+  const apiConfig = createApiConfig(openapi);
   apiConfig.collectData();
   apiConfig.generateCode();
 

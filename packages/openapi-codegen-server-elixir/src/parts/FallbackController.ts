@@ -1,4 +1,4 @@
-import type { Context } from './types';
+import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
 import type { PathItemModel } from '@fresha/openapi-model/build/3.0.3';
 
