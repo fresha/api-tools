@@ -12,7 +12,7 @@ import type { SourceFile } from 'ts-morph';
 /**
  * Root generator. It doesn't generate the code itself, instead delegating work to its parts.
  */
-export class Generator  extends GeneratorBase<Context> {
+export class Generator extends GeneratorBase<Context> {
   readonly sourceFile: SourceFile;
   protected apiConfig: APIConfig;
   protected actionsSignatures: ActionsSignatures;
