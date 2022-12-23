@@ -17,7 +17,7 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace, @typescript-eslint/no-unused-vars
   namespace jest {
     interface Matchers<R> {
-      toHaveFormattedElixirTest(test: string): R;
+      toHaveFormattedElixirText(test: string): R;
       toHaveFormattedTypeScriptText(text: string): R;
     }
   }

@@ -1,4 +1,3 @@
-import { poorMansElixirFormat } from '@fresha/code-morph-ex';
 import {
   addResourceRelationship,
   MEDIA_TYPE_JSON_API,
@@ -9,6 +8,8 @@ import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 import { makeContext } from '../testHelpers';
 
 import { Controller } from './Controller';
+
+import '@fresha/code-morph-test-utils/build/matchers';
 
 test('parameter-less action, minimal implementation', () => {
   const context = makeContext('awesome_web');
@@ -21,8 +22,7 @@ test('parameter-less action, minimal implementation', () => {
   controller.collectData(pathItem);
   controller.generateCode();
 
-  expect(controller.sourceFile.getText()).toBe(
-    poorMansElixirFormat(`
+  expect(controller.sourceFile).toHaveFormattedElixirText(`
     defmodule AwesoneWeb.EmployeesController do
       @moduledoc false
 
@@ -38,8 +38,7 @@ test('parameter-less action, minimal implementation', () => {
         render(conn)
       end
     end
-  `),
-  );
+  `);
 });
 
 test('ID parameter leads to generating parse_XXXX_param function, as well as error handling', () => {
@@ -55,8 +54,7 @@ test('ID parameter leads to generating parse_XXXX_param function, as well as err
   controller.collectData(pathItem);
   controller.generateCode();
 
-  expect(controller.sourceFile.getText()).toBe(
-    poorMansElixirFormat(`
+  expect(controller.sourceFile).toHaveFormattedElixirText(`
     defmodule EmployeeController do
       @moduledoc false
 
@@ -90,8 +88,7 @@ test('ID parameter leads to generating parse_XXXX_param function, as well as err
         )
       end
     end
-  `),
-  );
+  `);
 });
 
 test('request body leads to generating parse_XXXX_conn function, as well as error handling', () => {
@@ -128,53 +125,51 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
   // :decimal
   // :email
   // trim options for :string
-  expect(controller.sourceFile.getText()).toBe(
-    poorMansElixirFormat(`
-      defmodule AwesomeWeb.ProfileController do
-        @moduledoc false
+  expect(controller.sourceFile).toHaveFormattedElixirText(`
+    defmodule AwesomeWeb.ProfileController do
+      @moduledoc false
 
-        use AwesomeWeb, :controller
+      use AwesomeWeb, :controller
 
-        action_fallback(AwesomeWeb.FallbackController)
+      action_fallback(AwesomeWeb.FallbackController)
 
-        # add aliases here
+      # add aliases here
 
-        def update(conn, _params) do
-          with {:ok, parsed_opts} <- parse_update_conn(conn) do
-            # TODO this is the part you need to implement by yourself
-            # TODO evaluate extra arguments, then pass them to render()
-            render(conn)
-          else
-            {:error, :invalid_parameters, params} ->
-              {:error, :invalid_parameters, params}
+      def update(conn, _params) do
+        with {:ok, parsed_opts} <- parse_update_conn(conn) do
+          # TODO this is the part you need to implement by yourself
+          # TODO evaluate extra arguments, then pass them to render()
+          render(conn)
+        else
+          {:error, :invalid_parameters, params} ->
+            {:error, :invalid_parameters, params}
 
-            {:error, :invalid_pointers, pointers} ->
-              {:error, :invalid_parameters, pointers}
+          {:error, :invalid_pointers, pointers} ->
+            {:error, :invalid_parameters, pointers}
 
-            {:error, :not_found} ->
-              {:error, :not_found}
-          end
-        end
-
-        defp parse_update_conn(conn) do
-          parse(
-            conn.assigns[:doc],
-            id: [:id, :required],
-            attributes: %{
-              name: [:string, :required],
-              age: [{:integer, min: 18, max: 200}, :required],
-              weight: :float,
-              birth_date: :date,
-              score: :float,
-              gender: [:string, :required, {:contain, ~w{male female other}}],
-            },
-            relationships: %{
-              location: [:resource_id, :required],
-              employee: :resource_id,
-            },
-          )
+          {:error, :not_found} ->
+            {:error, :not_found}
         end
       end
-    `),
-  );
+
+      defp parse_update_conn(conn) do
+        parse(
+          conn.assigns[:doc],
+          id: [:id, :required],
+          attributes: %{
+            name: [:string, :required],
+            age: [{:integer, min: 18, max: 200}, :required],
+            weight: :float,
+            birth_date: :date,
+            score: :float,
+            gender: [:string, :required, {:contain, ~w{male female other}}],
+          },
+          relationships: %{
+            location: [:resource_id, :required],
+            employee: :resource_id,
+          },
+        )
+      end
+    end
+  `);
 });
