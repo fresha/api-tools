@@ -1,7 +1,7 @@
 import { Nullable } from '@fresha/api-tools-core';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createTSProjectTestContext } from '@fresha/openapi-codegen-test-utils';
-import { OpenAPIFactory, OpenAPIModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 import { Context } from './context';
 import { Generator } from './Generator';
@@ -42,14 +42,4 @@ export const createGenerator = (nestApp = 'app', rootDir = '/'): Generator => {
   });
 
   return generator;
-};
-
-type TestingContext = {
-  openapi: OpenAPIModel;
-  generator: Generator;
-};
-
-export const makeTestingContext = (phoenixApp = 'api_tools_web'): TestingContext => {
-  const generator = createGenerator(phoenixApp);
-  return { generator, openapi: generator.context.openapi };
 };
