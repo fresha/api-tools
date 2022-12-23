@@ -1,12 +1,9 @@
-import path from 'path';
-
 import {
-  createContext,
+  createTSProjectContext,
   getAPIName,
   getRootUrlOrThrow,
   Params,
 } from '@fresha/openapi-codegen-utils';
-import { Project } from 'ts-morph';
 
 import { Generator } from './parts';
 
@@ -19,11 +16,7 @@ export const command = 'client-fresha';
 export const description = 'generates code for Fresha clients';
 
 export const handler = (args: ArgumentsCamelCase<Params>): void => {
-  const context = createContext(args);
-
-  const project = new Project({
-    tsConfigFilePath: path.join(args.output, 'tsconfig.json'),
-  });
+  const context = createTSProjectContext(args);
 
   let apiRootUrl: string;
   try {
@@ -40,7 +33,6 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
 
   const generator = new Generator({
     ...context,
-    project,
     apiName: getAPIName(context.openapi),
     apiRootUrl,
   });
