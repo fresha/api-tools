@@ -1,4 +1,4 @@
-import { poorMansElixirFormat } from '@fresha/code-morph-ex';
+import { poorMansElixirFormat } from '@fresha/code-morph-test-utils';
 
 import { makeContext } from '../testHelpers';
 
