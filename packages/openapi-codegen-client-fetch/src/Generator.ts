@@ -13,11 +13,11 @@ import {
   getOperationRequestBodySchema,
   getOperationDefaultResponseSchema,
   Generator as GeneratorBase,
+  TSProjectContext as Context,
   getMediaType,
   getOperations,
 } from '@fresha/openapi-codegen-utils';
 
-import type { Context } from './types';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 import type { CodeBlockWriter, SourceFile } from 'ts-morph';
 

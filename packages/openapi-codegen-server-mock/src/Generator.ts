@@ -2,6 +2,7 @@ import path from 'path';
 
 import {
   Generator as GeneratorBase,
+  TSProjectContext as Context,
   addFunction,
   addImportDeclaration,
   addObjectLiteralObjectProperty,
@@ -9,8 +10,6 @@ import {
   pathUrlToUrlExp,
 } from '@fresha/openapi-codegen-utils';
 import { CodeBlockWriter, ObjectLiteralExpression, SourceFile, SyntaxKind } from 'ts-morph';
-
-import type { Context } from './types';
 
 export class Generator extends GeneratorBase<Context> {
   protected readonly sourceFile: SourceFile;
