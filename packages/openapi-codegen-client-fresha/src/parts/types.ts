@@ -1,6 +1,6 @@
-import type { TSProjectContext as BasicContext } from '@fresha/openapi-codegen-utils';
+import type { TSProjectContext } from '@fresha/openapi-codegen-utils';
 
-export interface Context extends BasicContext {
+export interface Context extends TSProjectContext {
   readonly apiName: string;
   readonly apiRootUrl: string;
 }
