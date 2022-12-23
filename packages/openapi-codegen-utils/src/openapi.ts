@@ -3,12 +3,7 @@ import assert from 'assert';
 import { camelCase } from './string';
 
 import type { Nullable } from '@fresha/api-tools-core';
-import type {
-  OpenAPIModel,
-  OperationModel,
-  PathsModel,
-  SchemaModel,
-} from '@fresha/openapi-model/build/3.0.3';
+import type { OpenAPIModel, OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 export const significantNameParts = (pathUrl: string): string[] =>
   pathUrl.split('/').filter(x => x && !(x.startsWith('{') && x.endsWith('}')));
@@ -35,22 +30,11 @@ export const getOperationEntryKey = (operation: OperationModel): string | undefi
   return result;
 };
 
-// eslint-disable-next-line consistent-return
-const findOperationPathUrl = (operation: OperationModel): string => {
-  const paths = operation.parent.parent as PathsModel;
-  for (const [pathItemUrl, pathItem] of paths) {
-    if (pathItem === operation.parent) {
-      return pathItemUrl;
-    }
-  }
-  assert.fail(`Cannot find operation`);
-};
-
 export const getOperationEntryKeyOrThrow = (operation: OperationModel): string => {
   const entryKey = getOperationEntryKey(operation);
   assert(
     typeof entryKey === 'string' && entryKey,
-    `Missing x-entry-key in "${findOperationPathUrl(operation)}" path item`,
+    `Missing x-entry-key in "${operation.parent.pathUrl}" path item`,
   );
   return entryKey;
 };
@@ -65,9 +49,7 @@ export const getOperationIdOrThrow = (operation: OperationModel): string => {
   const operationId = getOperationId(operation);
   assert(
     typeof operationId === 'string' && operationId,
-    `Cannot evaluate operation name - both operationId and x-codegen-operation are missing in "${findOperationPathUrl(
-      operation,
-    )}" path item`,
+    `Cannot evaluate operation name - both operationId and x-codegen-operation are missing in "${operation.parent.pathUrl}" path item`,
   );
   return operationId;
 };
@@ -81,7 +63,7 @@ export const getOperationCacheOptions = (
   const cache = operation.getExtension('cache');
   assert(
     cache === undefined || typeof cache === 'boolean' || typeof cache === 'number',
-    `x-cache in "${findOperationPathUrl(operation)}" has wrong type ${typeof cache}`,
+    `x-cache in "${operation.parent.pathUrl}" has wrong type ${typeof cache}`,
   );
   return cache;
 };
@@ -91,12 +73,15 @@ export const getOperationCacheOptions = (
  */
 export const getOperationCacheOptionsOrThrow = (operation: OperationModel): boolean | number => {
   const result = getOperationCacheOptions(operation);
-  assert(result, `Expected "${findOperationPathUrl(operation)}" to have cache options`);
+  assert(result, `Expected "${operation.parent.pathUrl}" to have cache options`);
   return result;
 };
 
+export const MEDIA_TYPE_JSON = 'application/json';
+export const MEDIA_TYPE_JSON_API = 'application/vnd.api+json';
+
 export const getMediaType = (useJsonApi: boolean) =>
-  useJsonApi ? 'application/vnd.api+json' : 'application/json';
+  useJsonApi ? MEDIA_TYPE_JSON_API : MEDIA_TYPE_JSON;
 
 export const getOperationRequestBodySchema = (
   operation: OperationModel,
@@ -113,9 +98,7 @@ export const getOperationRequestBodySchemaOrThrow = (
   const schema = getOperationRequestBodySchema(operation, useJsonApi);
   assert(
     schema,
-    `Expected to find non-null request body schema in "${findOperationPathUrl(
-      operation,
-    )}" operation`,
+    `Expected to find non-null request body schema in "${operation.parent.pathUrl}" operation`,
   );
   return schema;
 };
@@ -135,9 +118,7 @@ export const getOperationDefaultResponseSchemaOrThrow = (
   const result = getOperationDefaultResponseSchema(operation, useJsonApi);
   assert(
     result,
-    `Expected to find non-null default response schema in "${findOperationPathUrl(
-      operation,
-    )}" operation`,
+    `Expected to find non-null default response schema in "${operation.parent.pathUrl}" operation`,
   );
   return result;
 };
