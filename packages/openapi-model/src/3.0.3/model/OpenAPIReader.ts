@@ -1343,6 +1343,7 @@ export class OpenAPIReader {
       }
     }
     if (json.security) {
+      result.setOwnSecurityRequirements(true);
       for (const securityRequirementObject of json.security) {
         this.parseSecurityRequirement(securityRequirementObject, result);
       }

@@ -671,9 +671,13 @@ export interface OperationModel
   clearSecurityRequirements(): void;
 
   /**
-   * Makes this operation use global security requirements.
+   * Starts / stops overriding global security requirements.
+   *
+   * @param doUse if false, sets own requirements to null. Otherwise, if this operation
+   * already has own requirements, does nothing. If not, sets own requirements to an
+   * empty array.
    */
-  resetSecurityRequirements(): void;
+  setOwnSecurityRequirements(doUse: boolean): void;
 
   getServer(url: ParametrisedURLString): ServerModel | undefined;
   getServerOrThrow(url: ParametrisedURLString): ServerModel;
