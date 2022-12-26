@@ -21,6 +21,7 @@ test('setResourceLinkSchema', () => {
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas'], {
     EmployeeId: {
+      title: 'EmployeeId',
       type: 'object',
       required: ['type', 'id'],
       properties: {
@@ -29,6 +30,7 @@ test('setResourceLinkSchema', () => {
       },
     },
     GenericResourceId: {
+      title: 'GenericResourceId',
       type: 'object',
       required: ['type', 'id'],
       properties: {
@@ -52,6 +54,7 @@ test('setResourceSchema', () => {
   setResourceSchema(openapi.components.setSchema('Employee', 'object'), 'employees');
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'Employee'], {
+    title: 'Employee',
     type: 'object',
     required: ['type', 'id', 'attributes'],
     properties: {
@@ -79,6 +82,7 @@ test('addResourceAttribute', () => {
   addResourceAttribute(schema, 'createdAt', 'date-time');
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'Organization'], {
+    title: 'Organization',
     type: 'object',
     required: ['type', 'id', 'attributes'],
     properties: {
@@ -108,6 +112,7 @@ test('addResourceAttributes', () => {
   });
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'Organization'], {
+    title: 'Organization',
     type: 'object',
     required: ['type', 'id', 'attributes'],
     properties: {
@@ -240,6 +245,7 @@ test('setDataDocumentSchema', () => {
   setDataDocumentSchema(schema, 'employees');
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'DataDocument'], {
+    title: 'DataDocument',
     type: 'object',
     required: ['data'],
     properties: {

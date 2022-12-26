@@ -65,6 +65,7 @@ test('shared schemas + references', () => {
 
   expect(openapiObject.components?.schemas).toStrictEqual({
     Error: {
+      title: 'Error',
       type: 'object',
       required: ['code'],
       properties: {
@@ -72,6 +73,7 @@ test('shared schemas + references', () => {
       },
     },
     ErrorList: {
+      title: 'ErrorList',
       type: 'array',
       items: { $ref: '#/components/schemas/Error' },
     },
@@ -152,6 +154,7 @@ test('serialises operation with shared schemas', () => {
 
   expect(openapiObject.components?.schemas).toStrictEqual({
     Error: {
+      title: 'Error',
       type: 'object',
       required: ['code'],
       properties: {
@@ -159,6 +162,7 @@ test('serialises operation with shared schemas', () => {
       },
     },
     ErrorList: {
+      title: 'ErrorList',
       type: 'array',
       items: { $ref: '#/components/schemas/Error' },
     },
