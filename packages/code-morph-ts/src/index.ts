@@ -127,7 +127,7 @@ export const addImportDeclarations = (
 export const addConstant = (
   sourceFile: SourceFile,
   name: string,
-  initializer: string,
+  initializer: string | WriterFunction,
   isExported?: boolean,
 ): VariableStatement => {
   return sourceFile.addVariableStatement({

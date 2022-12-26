@@ -224,8 +224,12 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     }
   }
 
-  resetSecurityRequirements(): void {
-    this.security = null;
+  setOwnSecurityRequirements(doUse: boolean): void {
+    if (!doUse) {
+      this.security = null;
+    } else if (!this.security) {
+      this.security = [];
+    }
   }
 
   getServer(url: ParametrisedURLString): ServerModel | undefined {
