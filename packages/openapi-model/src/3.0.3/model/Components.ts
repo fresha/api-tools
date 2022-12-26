@@ -93,6 +93,7 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
   setSchema(name: string, type?: SchemaCreateType): SchemaModel {
     assert(!this.schemas.has(name));
     const result = SchemaFactory.create(this, type ?? null);
+    result.title = name;
     this.schemas.set(name, result);
     return result;
   }

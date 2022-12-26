@@ -122,6 +122,7 @@ paths:
 components:
   schemas:
     Pet:
+      title: Pet
       allOf:
         - $ref: '#/components/schemas/NewPet'
         - type: object
@@ -133,6 +134,7 @@ components:
               format: int64
 
     NewPet:
+      title: NewPet
       type: object
       required:
         - name
@@ -143,6 +145,7 @@ components:
           type: string
 
     Error:
+      title: Error
       type: object
       required:
         - code
