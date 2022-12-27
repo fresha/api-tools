@@ -75,6 +75,13 @@ describe('SchemaFactory', () => {
 });
 
 describe('Schema', () => {
+  test('isNull', () => {
+    const openapi = new OpenAPI('isNull', '0.1.0');
+  });
+
+  test('isComposite', () => {
+  });
+
   test('getProperty + getPropertyOrThrow', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 

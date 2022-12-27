@@ -187,6 +187,14 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.deprecated = false;
   }
 
+  isNull(): boolean {
+    return !!(this.type === null && this.enum?.length === 1 && this.enum[0] === null);
+  }
+
+  isComposite(): boolean {
+    return !!(this.allOf.length || this.oneOf.length || this.anyOf.length);
+  }
+
   *getProperties(): IterableIterator<SchemaPropertyObject> {
     for (const [name, schema] of this.properties) {
       yield { name, schema, required: this.isPropertyRequired(name) };

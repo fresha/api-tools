@@ -165,6 +165,19 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   example: Nullable<JSONValue>;
   deprecated: boolean;
 
+  /**
+   * Returns true if this schema represents only the null value; returns false otherwise.
+   * Technically this is the schema without explicitly given type, and with the single
+   * enum value of null.
+   */
+  isNull(): boolean;
+
+  /**
+   * Returns true if this schema has at least one subschema in allOf, oneOf or anyOf lists;
+   * return false otherwise.
+   */
+  isComposite(): boolean;
+
   getProperties(): IterableIterator<SchemaPropertyObject>;
   getProperty(name: string): SchemaModel | undefined;
   getPropertyOrThrow(name: string): SchemaModel;
