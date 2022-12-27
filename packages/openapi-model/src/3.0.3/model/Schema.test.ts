@@ -77,9 +77,51 @@ describe('SchemaFactory', () => {
 describe('Schema', () => {
   test('isNull', () => {
     const openapi = new OpenAPI('isNull', '0.1.0');
+
+    const nullTypedButNoEnum = openapi.components.setSchema('OnlyNullType');
+    expect(nullTypedButNoEnum.isNull()).toBeFalsy();
+
+    const typedWithEnum = openapi.components.setSchema('OnlyNullEnum', 'boolean');
+    typedWithEnum.enum = [null];
+    expect(typedWithEnum.isNull()).toBeFalsy();
+
+    const nullSchema = openapi.components.setSchema('Null');
+    nullSchema.enum = [null];
+    expect(nullSchema.isNull()).toBeTruthy();
   });
 
   test('isComposite', () => {
+    const openapi = new OpenAPI('isComposite', '0.1.0');
+
+    const objectSchema = openapi.components.setSchema('ObjectSchema', 'object');
+    objectSchema.setProperties({
+      one: 'string',
+      two: 'boolean',
+    });
+
+    expect(objectSchema.isComposite()).toBeFalsy();
+
+    const arraySchema = openapi.components.setSchema('ArraySchema', 'array');
+    arraySchema.items = SchemaFactory.create(arraySchema, 'object');
+
+    expect(arraySchema.isComposite()).toBeFalsy();
+
+    const schemaWithAllOf = openapi.components.setSchema('WithAllOf', null);
+    schemaWithAllOf.addAllOf('boolean');
+    schemaWithAllOf.addAllOf('object');
+
+    expect(schemaWithAllOf.isComposite()).toBeTruthy();
+
+    const schemaWithOneOf = openapi.components.setSchema('WithOneOf', null);
+    schemaWithOneOf.addOneOf('boolean');
+    schemaWithOneOf.addOneOf('date-time');
+
+    expect(schemaWithAllOf.isComposite()).toBeTruthy();
+
+    const schemaWithAnyOf = openapi.components.setSchema('WithAnyOf', null);
+    schemaWithAnyOf.addAnyOf('boolean');
+
+    expect(schemaWithAnyOf.isComposite()).toBeTruthy();
   });
 
   test('getProperty + getPropertyOrThrow', () => {
