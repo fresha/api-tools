@@ -197,6 +197,10 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   deleteOneOfAt(index: number): void;
   clearOneOf(): void;
 
+  addAnyOf(options: SchemaCreateOptions): SchemaModel;
+  deleteAnyOfAt(index: number): void;
+  clearAnyOf(): void;
+
   arrayOf(parent: SchemaModelParent): SchemaModel;
 }
 
