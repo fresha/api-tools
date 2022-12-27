@@ -382,6 +382,20 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.oneOf.splice(0, this.oneOf.length);
   }
 
+  addAnyOf(typeOrSchema: SchemaCreateOptions): SchemaModel {
+    const schema = Schema.internalCreate(this, typeOrSchema);
+    this.anyOf.push(schema);
+    return schema;
+  }
+
+  deleteAnyOfAt(index: number): void {
+    this.anyOf.splice(index, 1);
+  }
+
+  clearAnyOf(): void {
+    this.anyOf.splice(0, this.anyOf.length);
+  }
+
   arrayOf(parent: SchemaModelParent): SchemaModel {
     return Schema.createArray(parent, this);
   }
