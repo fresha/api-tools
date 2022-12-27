@@ -75,21 +75,6 @@ describe('SchemaFactory', () => {
 });
 
 describe('Schema', () => {
-  test('isNull', () => {
-    const openapi = new OpenAPI('isNull', '0.1.0');
-
-    const nullTypedButNoEnum = openapi.components.setSchema('OnlyNullType');
-    expect(nullTypedButNoEnum.isNull()).toBeFalsy();
-
-    const typedWithEnum = openapi.components.setSchema('OnlyNullEnum', 'boolean');
-    typedWithEnum.enum = [null];
-    expect(typedWithEnum.isNull()).toBeFalsy();
-
-    const nullSchema = openapi.components.setSchema('Null');
-    nullSchema.enum = [null];
-    expect(nullSchema.isNull()).toBeTruthy();
-  });
-
   test('isComposite', () => {
     const openapi = new OpenAPI('isComposite', '0.1.0');
 
@@ -122,6 +107,84 @@ describe('Schema', () => {
     schemaWithAnyOf.addAnyOf('boolean');
 
     expect(schemaWithAnyOf.isComposite()).toBeTruthy();
+  });
+
+  test('isNull', () => {
+    const openapi = new OpenAPI('isNull', '0.1.0');
+
+    const nullTypedButNoEnum = openapi.components.setSchema('OnlyNullType');
+    expect(nullTypedButNoEnum.isNull()).toBeFalsy();
+
+    const typedWithEnum = openapi.components.setSchema('OnlyNullEnum', 'boolean');
+    typedWithEnum.enum = [null];
+    expect(typedWithEnum.isNull()).toBeFalsy();
+
+    const nullSchema = openapi.components.setSchema('Null');
+    nullSchema.enum = [null];
+    expect(nullSchema.isNull()).toBeTruthy();
+  });
+
+  describe('isNullish', () => {
+    test('true for nullable schemas', () => {
+      const openapi = new OpenAPI('example', '0.1.0');
+
+      const nullableSchema = openapi.components.setSchema('NullableNumber', 'number');
+      nullableSchema.nullable = true;
+      expect(nullableSchema.isNullish()).toBeTruthy();
+
+      const nonNullableSchema = openapi.components.setSchema('Number', 'number');
+      expect(nonNullableSchema.isNullish()).toBeFalsy();
+    });
+
+    test('true for null schemas', () => {
+      const openapi = new OpenAPI('example', '0.1.0');
+
+      const nullSchema = openapi.components.setSchema('Null');
+      nullSchema.enum = [null];
+
+      expect(nullSchema.isNullish()).toBeTruthy();
+    });
+
+    test('true if at least one subschema is nullish', () => {
+      const openapi = new OpenAPI('example', '0.1.0');
+
+      const nullishSchema = openapi.components.setSchema('NullishSchema');
+      const alt1 = SchemaFactory.create(nullishSchema, 'object');
+      const alt2 = SchemaFactory.create(nullishSchema, null);
+      nullishSchema.oneOf = [alt1, alt2];
+
+      const alt3 = SchemaFactory.create(alt2, 'array');
+      const alt4 = SchemaFactory.create(alt2, null);
+      alt2.anyOf = [alt3, alt4];
+
+      const alt5 = SchemaFactory.create(alt4, 'string');
+      const alt6 = SchemaFactory.create(alt4, null);
+      alt6.enum = [null];
+      alt4.allOf = [alt5, alt6];
+
+      expect(nullishSchema.isNullish()).toBeTruthy();
+    });
+
+    test('false if no subschema is nullish', () => {
+      const openapi = new OpenAPI('example', '0.1.0');
+
+      debugger;
+
+      const nullishSchema = openapi.components.setSchema('NullishSchema');
+      const alt1 = SchemaFactory.create(nullishSchema, 'object');
+      const alt2 = SchemaFactory.create(nullishSchema, null);
+      nullishSchema.oneOf = [alt1, alt2];
+
+      const alt3 = SchemaFactory.create(alt2, 'array');
+      const alt4 = SchemaFactory.create(alt2, null);
+      alt2.anyOf = [alt3, alt4];
+
+      const alt5 = SchemaFactory.create(alt4, 'string');
+      const alt6 = SchemaFactory.create(alt4, 'boolean');
+      alt4.allOf = [alt5, alt6];
+
+      expect(nullishSchema.isNullish()).toBeFalsy();
+    });
   });
 
   test('getProperty + getPropertyOrThrow', () => {

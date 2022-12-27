@@ -187,12 +187,22 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.deprecated = false;
   }
 
+  isComposite(): boolean {
+    return !!(this.allOf.length || this.oneOf.length || this.anyOf.length);
+  }
+
   isNull(): boolean {
     return !!(this.type === null && this.enum?.length === 1 && this.enum[0] === null);
   }
 
-  isComposite(): boolean {
-    return !!(this.allOf.length || this.oneOf.length || this.anyOf.length);
+  isNullish(): boolean {
+    return !!(
+      this.nullable ||
+      this.isNull() ||
+      this.allOf.some(s => s.isNullish()) ||
+      this.oneOf.some(s => s.isNullish()) ||
+      this.anyOf.some(s => s.isNullish())
+    );
   }
 
   *getProperties(): IterableIterator<SchemaPropertyObject> {

@@ -166,6 +166,12 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   deprecated: boolean;
 
   /**
+   * Returns true if this schema has at least one subschema in allOf, oneOf or anyOf lists;
+   * return false otherwise.
+   */
+  isComposite(): boolean;
+
+  /**
    * Returns true if this schema represents only the null value; returns false otherwise.
    * Technically this is the schema without explicitly given type, and with the single
    * enum value of null.
@@ -173,10 +179,10 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   isNull(): boolean;
 
   /**
-   * Returns true if this schema has at least one subschema in allOf, oneOf or anyOf lists;
-   * return false otherwise.
+   * Returns true if this schemas or one of its subschemas (allOf, oneOf or anyOf) are either
+   * null schemas or nullable (i.e. have nullable attribute set to true).
    */
-  isComposite(): boolean;
+  isNullish(): boolean;
 
   getProperties(): IterableIterator<SchemaPropertyObject>;
   getProperty(name: string): SchemaModel | undefined;
