@@ -184,6 +184,11 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
    */
   isNullish(): boolean;
 
+  // /**
+  //  * Returns type of this schema, deduced from own type and types of allOf subschemas.
+  //  */
+  // getTypeDeep(): SchemaType;
+
   getProperties(): IterableIterator<SchemaPropertyObject>;
   getProperty(name: string): SchemaModel | undefined;
   getPropertyOrThrow(name: string): SchemaModel;
@@ -191,6 +196,31 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   setProperties(props: Record<string, SchemaCreateOptions>): SchemaModel;
   deleteProperty(name: string): void;
   clearProperties(): void;
+
+  /**
+   * Iterates over properties of this schema. Includes nested properties
+   * from allOf clause. Goes 1 level deep.
+   */
+  getPropertiesDeep(): IterableIterator<SchemaPropertyObject>;
+
+  /**
+   * Returns a schema for a property with the given name. This function looks into
+   * schema's own properties, and then in own properties of subschemas from the allOf
+   * clauses (if any).
+   *
+   * @param name property name
+   * @returns property schema, or undefined if there is no property with given name
+   */
+  getPropertyDeep(name: string): SchemaModel | undefined;
+
+  /**
+   * Same as {@link getPropertyDeep}, but throws an exception if there is not property
+   * with given name.
+   *
+   * @param name property name
+   * @returns property schema
+   */
+  getPropertyDeepOrThrow(name: string): SchemaModel;
 
   isPropertyRequired(name: string): boolean;
   setPropertyRequired(name: string, value: boolean): void;

@@ -217,7 +217,43 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   getPropertyOrThrow(name: string): SchemaModel {
     const result = this.getProperty(name);
-    assert(result);
+    assert(result, `Expected to find property ${name}, but got none`);
+    return result;
+  }
+
+  *getPropertiesDeep(): IterableIterator<SchemaPropertyObject> {
+    // here we should iterate over any kind of schemas
+    for (const prop of this.getProperties()) {
+      yield prop;
+    }
+    for (const subschema of this.allOf) {
+      for (const subprop of subschema.getProperties()) {
+        yield subprop;
+      }
+    }
+  }
+
+  getPropertyDeep(name: string): SchemaModel | undefined {
+    if (this.type === 'object') {
+      const prop = this.getProperty(name);
+      if (prop) {
+        return prop;
+      }
+    }
+    for (const subschema of this.allOf) {
+      if (subschema.type === 'object') {
+        const prop = subschema.getProperty(name);
+        if (prop) {
+          return prop;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  getPropertyDeepOrThrow(name: string): SchemaModel {
+    const result = this.getPropertyDeep(name);
+    assert(result, `Expected to find (deep) property ${name}, but got none`);
     return result;
   }
 

@@ -12,6 +12,7 @@ import {
   getOperationCacheOptionsOrThrow,
   getOperationCacheOptions,
   getOperations,
+  getSchemaProperties,
 } from './openapi';
 
 test('getAPIName', () => {
@@ -187,4 +188,25 @@ test('getOperationCacheOptionsOrThrow', () => {
 test('pathUrlToUrlExp', () => {
   expect(pathUrlToUrlExp('/employees')).toBe('employees');
   expect(pathUrlToUrlExp('/employees/{id}/pets/{status}')).toBe('employees/:id/pets/:status');
+});
+
+test('getSchemaProperties', () => {
+  const openapi = OpenAPIFactory.create();
+
+  const schema = openapi.components.setSchema('AllOf');
+  schema.setProperties({
+    s1: 'boolean',
+    s2: 'integer',
+  });
+  schema.addAllOf('object').setProperties({
+    p1: 'string',
+    p2: 'boolean',
+  });
+  schema.addAllOf('object').setProperties({
+    r1: 'string',
+    r2: 'boolean',
+  });
+
+  const keys = Array.from(getSchemaProperties(schema), ([name]) => name);
+  expect(keys).toStrictEqual(['s1', 's2', 'p1', 'p2', 'r1', 'r2']);
 });

@@ -41,9 +41,7 @@ export class Registry implements RegistryModel {
   }
 
   parseResource(schema: SchemaModel): ResourceModel {
-    assert(schema.type === 'object', 'Resource schemas must have type "object"');
-
-    const typeAttr = schema.getPropertyOrThrow('type');
+    const typeAttr = schema.getPropertyDeepOrThrow('type');
     assert(typeAttr.enum?.length === 1, `Resource schemas must have a single enum value`);
 
     const resourceType = typeAttr.enum[0];

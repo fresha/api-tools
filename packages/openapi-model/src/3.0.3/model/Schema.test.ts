@@ -199,6 +199,24 @@ describe('Schema', () => {
     expect(() => schema.getPropertyOrThrow('_')).toThrow();
   });
 
+  test('getPropertyDeep + getPropertyDeepOrThrow', () => {
+    const openapi = new OpenAPI('example', '0.1.0');
+    const schema = openapi.components.setSchema('TestSchema', 'object');
+
+    const ownString = schema.setProperty('own', 'string');
+
+    const allOf1 = schema.addAllOf('object');
+    allOf1.setProperty('own', 'string'); // same name as own property
+
+    const allOf2 = schema.addAllOf('object');
+    const idString = allOf2.setProperty('id', 'string');
+
+    expect(schema.getPropertyDeep('own')).toBe(ownString);
+    expect(schema.getPropertyDeep('id')).toBe(idString);
+
+    expect(() => schema.getPropertyDeepOrThrow('none')).toThrow();
+  });
+
   describe('setProperty', () => {
     const makeSchema = (): SchemaModel => {
       const openapi = new OpenAPI('example', '0.1.0');

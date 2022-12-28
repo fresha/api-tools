@@ -29,7 +29,7 @@ export class Resource implements ResourceModel {
       this.schema = null;
     } else {
       this.schema = schema;
-      const resourceType = this.schema.getPropertyOrThrow('type').enum?.at(0);
+      const resourceType = this.schema.getPropertyDeepOrThrow('type').enum?.at(0);
       assert(resourceType && typeof resourceType === 'string');
       this.type = resourceType;
     }
@@ -38,12 +38,12 @@ export class Resource implements ResourceModel {
     this.relationships = new Map<string, RelationshipModel>();
 
     if (this.schema) {
-      const attributesSchema = this.schema.getPropertyOrThrow('attributes');
+      const attributesSchema = this.schema.getPropertyDeepOrThrow('attributes');
       for (const [attrName, attrSchema] of attributesSchema.properties) {
         const attribute = new Attribute(this, attrName, attrSchema);
         this.attributes.set(attrName, attribute);
       }
-      const relationshipsSchema = this.schema.getProperty('relationships');
+      const relationshipsSchema = this.schema.getPropertyDeep('relationships');
       if (relationshipsSchema) {
         for (const [relName, relSchema] of relationshipsSchema.properties) {
           const relationship = new Relationship(this, relName, relSchema);

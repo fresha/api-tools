@@ -1,6 +1,7 @@
 import {
   addResourceRelationship,
   MEDIA_TYPE_JSON_API,
+  RelationshipCardinality,
   setDataDocumentSchema,
 } from '@fresha/openapi-codegen-utils';
 import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
@@ -103,7 +104,7 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
   setDataDocumentSchema(requestBodySchema, 'profile-settings');
   const attributesSchema = requestBodySchema
     .getPropertyOrThrow('data')
-    .getPropertyOrThrow('attributes');
+    .getPropertyDeepOrThrow('attributes');
   attributesSchema.setProperties({
     name: { type: 'string', required: true },
     age: { type: 'integer', required: true, minimum: 18, maximum: 200 },
@@ -114,8 +115,14 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
   });
 
   const resourceSchema = requestBodySchema.getPropertyOrThrow('data');
-  addResourceRelationship(resourceSchema, 'location', { type: 'locations', required: true });
-  addResourceRelationship(resourceSchema, 'employee', { type: 'employees', required: false });
+  addResourceRelationship(resourceSchema, 'location', 'locations');
+  addResourceRelationship(
+    resourceSchema,
+    'employee',
+    'employees',
+    RelationshipCardinality.One,
+    false,
+  );
 
   const controller = new Controller(context, '/profile', 'AwesomeWeb.ProfileController');
   controller.collectData(pathItem);
