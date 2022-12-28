@@ -221,7 +221,7 @@ export class Action {
           this.sourceFile.writeLine('id: [:id, :required],');
           this.sourceFile.writeLine('attributes: %{');
           this.sourceFile.writeIndented(() => {
-            const attributesSchema = resourceSchema.getPropertyOrThrow('attributes');
+            const attributesSchema = resourceSchema.getPropertyDeepOrThrow('attributes');
             for (const [attrName, attrSchema] of attributesSchema.properties) {
               switch (attrSchema.type) {
                 case 'boolean': {
@@ -248,7 +248,7 @@ export class Action {
           this.sourceFile.writeLine('},');
           this.sourceFile.writeLine('relationships: %{');
           this.sourceFile.writeIndented(() => {
-            const relationshipsSchema = resourceSchema.getPropertyOrThrow('relationships');
+            const relationshipsSchema = resourceSchema.getPropertyDeepOrThrow('relationships');
 
             for (const [relName] of relationshipsSchema.properties) {
               const elixirAtttName = snakeCase(relName);

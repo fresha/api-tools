@@ -139,11 +139,29 @@ export class ActionSignature {
   protected addRequestBodyParams(argsParamType: TypeLiteralNode, schema: SchemaModel): void {
     assert(schema.type === 'object');
 
-    for (const prop of schema.getProperties()) {
+    for (const prop of schema.getPropertiesDeep()) {
       switch (prop.schema.type) {
         case null:
-          addImportDeclaration(argsParamType.getSourceFile(), '@fresha/noname-core', 't:JSONValue');
-          addTypeLiteralProperty(argsParamType, prop.name, 'JSONValue');
+          if (prop.schema.allOf?.length) {
+            const allowedType = new Set<string | null>(
+              prop.schema.allOf.map(subschema => subschema.type),
+            );
+            assert(
+              allowedType.size === 1 && allowedType.has('object'),
+              `For composite schemas, expected to have identical schema type. ${prop.name}`,
+            );
+            const propType = addTypeLiteralProperty(argsParamType, prop.name, '{}');
+            for (const subschema of prop.schema.allOf) {
+              this.addRequestBodyParams(propType.asKindOrThrow(SyntaxKind.TypeLiteral), subschema);
+            }
+          } else {
+            addImportDeclaration(
+              argsParamType.getSourceFile(),
+              '@fresha/noname-core',
+              't:JSONValue',
+            );
+            addTypeLiteralProperty(argsParamType, prop.name, 'JSONValue');
+          }
           break;
         case 'boolean':
           addTypeLiteralProperty(

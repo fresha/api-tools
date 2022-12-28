@@ -1,4 +1,9 @@
-import { OpenAPIFactory, OpenAPIWriter } from '@fresha/openapi-model/build/3.0.3';
+import {
+  OpenAPIFactory,
+  OpenAPIModel,
+  OpenAPIWriter,
+  SchemaModel,
+} from '@fresha/openapi-model/build/3.0.3';
 
 import {
   setResourceIdSchema,
@@ -9,19 +14,38 @@ import {
   addResourceAttributes,
   addResourceRelationship,
   setDataDocumentSchema,
+  RelationshipCardinality,
+  createDataDocumentSchema,
+  createNullSchema,
+  addResourceRelationships,
 } from './jsonapi';
 
-const writer = new OpenAPIWriter();
+let openapi: OpenAPIModel;
+let writer: OpenAPIWriter;
 
-test('setResourceLinkSchema', () => {
-  const openapi = OpenAPIFactory.create();
+beforeEach(() => {
+  openapi = OpenAPIFactory.create();
+  writer = new OpenAPIWriter();
+});
 
-  setResourceIdSchema(openapi.components.setSchema('EmployeeId', 'object'), 'employees');
-  setResourceIdSchema(openapi.components.setSchema('GenericResourceId', 'object'));
+test('createNullSchema', () => {
+  const nullSchema = createNullSchema(openapi.components);
+  expect(openapi.components.getSchema('Null')).toBe(nullSchema);
+  expect(nullSchema.isNull());
+
+  const parent = openapi.components.setSchema('Parent', 'object');
+  const inlineNullSchema = createNullSchema(parent);
+  expect(inlineNullSchema.title).toBe('Null');
+  expect(inlineNullSchema.isNull());
+});
+
+test('setResourceIdSchema', () => {
+  setResourceIdSchema(openapi.components.setSchema('EmployeeResourceID', 'object'), 'employees');
+  setResourceIdSchema(openapi.components.setSchema('GenericResourceID', 'object'));
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas'], {
-    EmployeeId: {
-      title: 'EmployeeId',
+    EmployeeResourceID: {
+      title: 'EmployeeResourceID',
       type: 'object',
       required: ['type', 'id'],
       properties: {
@@ -29,8 +53,8 @@ test('setResourceLinkSchema', () => {
         id: { type: 'string', minLength: 1 },
       },
     },
-    GenericResourceId: {
-      title: 'GenericResourceId',
+    GenericResourceID: {
+      title: 'GenericResourceID',
       type: 'object',
       required: ['type', 'id'],
       properties: {
@@ -42,68 +66,84 @@ test('setResourceLinkSchema', () => {
 });
 
 test('createResourceIdSchema', () => {
-  const openapi = OpenAPIFactory.create();
   const schema = createResourceIdSchema(openapi.components, 'locations');
   openapi.components.setSchemaModel('LocationId', schema);
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'LocationId']);
 });
 
 test('setResourceSchema', () => {
-  const openapi = OpenAPIFactory.create();
-
-  setResourceSchema(openapi.components.setSchema('Employee', 'object'), 'employees');
+  setResourceSchema(openapi.components.setSchema('Employee'), 'employees');
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'Employee'], {
-    title: 'Employee',
-    type: 'object',
-    required: ['type', 'id', 'attributes'],
-    properties: {
-      type: { type: 'string', enum: ['employees'], minLength: 1 },
-      id: { type: 'string', minLength: 1 },
-      attributes: { type: 'object' },
-      relationships: { type: 'object' },
-    },
+    title: 'EmployeeResource',
+    allOf: [
+      {
+        title: 'EmployeeResourceID',
+        type: 'object',
+        required: ['type', 'id'],
+        properties: {
+          type: { type: 'string', enum: ['employees'], minLength: 1 },
+          id: { type: 'string', minLength: 1 },
+        },
+      },
+      {
+        type: 'object',
+        required: ['attributes'],
+        properties: {
+          attributes: { type: 'object' },
+          relationships: { type: 'object' },
+        },
+      },
+    ],
   });
 });
 
 test('createResourceSchema', () => {
-  const openapi = OpenAPIFactory.create();
   const schema = createResourceSchema(openapi.components, 'employees');
   openapi.components.setSchemaModel('Employee', schema);
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'Employee']);
 });
 
 test('addResourceAttribute', () => {
-  const openapi = OpenAPIFactory.create();
-  const schema = openapi.components.setSchema('Organization', 'object');
+  const schema = openapi.components.setSchema('Organization');
   setResourceSchema(schema, 'organizations');
 
   addResourceAttribute(schema, 'name', { type: 'string', required: true });
   addResourceAttribute(schema, 'createdAt', 'date-time');
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'Organization'], {
-    title: 'Organization',
-    type: 'object',
-    required: ['type', 'id', 'attributes'],
-    properties: {
-      type: { type: 'string', enum: ['organizations'], minLength: 1 },
-      id: { type: 'string', minLength: 1 },
-      attributes: {
+    title: 'OrganizationResource',
+    allOf: [
+      {
+        title: 'OrganizationResourceID',
         type: 'object',
-        required: ['name'],
+        required: ['type', 'id'],
         properties: {
-          name: { type: 'string' },
-          createdAt: { type: 'string', format: 'date-time' },
+          type: { type: 'string', enum: ['organizations'], minLength: 1 },
+          id: { type: 'string', minLength: 1 },
         },
       },
-      relationships: { type: 'object' },
-    },
+      {
+        type: 'object',
+        required: ['attributes'],
+        properties: {
+          attributes: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: { type: 'string' },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+          relationships: { type: 'object' },
+        },
+      },
+    ],
   });
 });
 
 test('addResourceAttributes', () => {
-  const openapi = OpenAPIFactory.create();
-  const schema = openapi.components.setSchema('Organization', 'object');
+  const schema = openapi.components.setSchema('Organization');
   setResourceSchema(schema, 'organizations');
 
   addResourceAttributes(schema, {
@@ -112,134 +152,154 @@ test('addResourceAttributes', () => {
   });
 
   expect(writer.write(openapi)).toHaveProperty(['components', 'schemas', 'Organization'], {
-    title: 'Organization',
-    type: 'object',
-    required: ['type', 'id', 'attributes'],
-    properties: {
-      type: { type: 'string', enum: ['organizations'], minLength: 1 },
-      id: { type: 'string', minLength: 1 },
-      attributes: {
+    title: 'OrganizationResource',
+    allOf: [
+      {
+        title: 'OrganizationResourceID',
         type: 'object',
-        required: ['name'],
+        required: ['type', 'id'],
         properties: {
-          name: { type: 'string' },
-          createdAt: { type: 'string', format: 'date-time' },
+          type: { type: 'string', enum: ['organizations'], minLength: 1 },
+          id: { type: 'string', minLength: 1 },
         },
       },
-      relationships: { type: 'object' },
-    },
+      {
+        type: 'object',
+        required: ['attributes'],
+        properties: {
+          attributes: {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: { type: 'string' },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+          relationships: { type: 'object' },
+        },
+      },
+    ],
   });
 });
 
-test('addResourceRelationship', () => {
-  const openapi = OpenAPIFactory.create();
-  const schema = openapi.components.setSchema('Organization', 'object');
-  setResourceSchema(schema, 'organizations');
+describe('addResourceRelationship', () => {
+  let schema: SchemaModel;
 
-  addResourceRelationship(schema, 'single-optional-shortcut', 'schema1');
-  addResourceRelationship(schema, 'single-optional', { type: 'schema2' });
-  addResourceRelationship(schema, 'single-required', { type: 'schema3', required: true });
-  addResourceRelationship(schema, 'multiple-optional', { type: 'schema4', multiple: true });
-  addResourceRelationship(schema, 'multiple-required', {
-    type: 'schema5',
-    multiple: true,
-    required: true,
+  beforeEach(() => {
+    schema = openapi.components.setSchema('Organization');
+    setResourceSchema(schema, 'organizations');
   });
 
-  expect(writer.write(openapi)).toHaveProperty(
-    ['components', 'schemas', 'Organization', 'properties', 'relationships'],
-    {
+  test('optionality', () => {
+    addResourceRelationship(schema, 'address1', 'addresses', RelationshipCardinality.One);
+    addResourceRelationship(schema, 'address2', 'addresses', RelationshipCardinality.One, false);
+
+    expect(writer.write(openapi)).toHaveProperty(
+      [
+        'components',
+        'schemas',
+        'Organization',
+        'allOf',
+        '1',
+        'properties',
+        'relationships',
+        'required',
+      ],
+      ['address1'],
+    );
+  });
+
+  test('cardinality', () => {
+    addResourceRelationship(schema, 'address', 'addresses', RelationshipCardinality.One);
+    addResourceRelationship(schema, 'head', 'people', RelationshipCardinality.ZeroOrOne);
+    addResourceRelationship(schema, 'members', 'people', RelationshipCardinality.Many);
+
+    const data = writer.write(openapi);
+
+    const commonPathPrefix = [
+      'components',
+      'schemas',
+      'Organization',
+      'allOf',
+      '1',
+      'properties',
+      'relationships',
+      'properties',
+    ];
+
+    expect(data).toHaveProperty(commonPathPrefix.concat('address', 'properties', 'data'), {
       type: 'object',
-      required: ['single-required', 'multiple-required'],
+      title: 'AddressResourceID',
+      required: ['type', 'id'],
       properties: {
-        'single-optional-shortcut': {
+        type: { type: 'string', minLength: 1, enum: ['addresses'] },
+        id: { type: 'string', minLength: 1 },
+      },
+    });
+
+    expect(data).toHaveProperty(commonPathPrefix.concat('head', 'properties', 'data'), {
+      allOf: [
+        {
+          title: 'PersonResourceID',
           type: 'object',
-          required: ['data'],
+          required: ['type', 'id'],
           properties: {
-            data: {
-              type: 'object',
-              required: ['type', 'id'],
-              properties: {
-                type: { type: 'string', minLength: 1, enum: ['schema1'] },
-                id: { type: 'string', minLength: 1 },
-              },
-              nullable: true,
-            },
+            type: { type: 'string', minLength: 1, enum: ['people'] },
+            id: { type: 'string', minLength: 1 },
           },
         },
-        'single-optional': {
-          type: 'object',
-          required: ['data'],
-          properties: {
-            data: {
-              type: 'object',
-              required: ['type', 'id'],
-              properties: {
-                type: { type: 'string', minLength: 1, enum: ['schema2'] },
-                id: { type: 'string', minLength: 1 },
-              },
-              // nullable: true,
-            },
-          },
+        {
+          enum: [null],
         },
-        'single-required': {
-          type: 'object',
-          required: ['data'],
-          properties: {
-            data: {
-              type: 'object',
-              required: ['type', 'id'],
-              properties: {
-                type: { type: 'string', minLength: 1, enum: ['schema3'] },
-                id: { type: 'string', minLength: 1 },
-              },
-              // nullable: false,
-            },
-          },
-        },
-        'multiple-optional': {
-          type: 'object',
-          required: ['data'],
-          properties: {
-            data: {
-              type: 'array',
-              items: {
-                type: 'object',
-                required: ['type', 'id'],
-                properties: {
-                  type: { type: 'string', minLength: 1, enum: ['schema4'] },
-                  id: { type: 'string', minLength: 1 },
-                },
-                // nullable: true,
-              },
-            },
-          },
-        },
-        'multiple-required': {
-          type: 'object',
-          required: ['data'],
-          properties: {
-            data: {
-              type: 'array',
-              items: {
-                type: 'object',
-                required: ['type', 'id'],
-                properties: {
-                  type: { type: 'string', minLength: 1, enum: ['schema5'] },
-                  id: { type: 'string', minLength: 1 },
-                },
-                // nullable: false,
-              },
-            },
-          },
+      ],
+    });
+
+    expect(data).toHaveProperty(commonPathPrefix.concat('members', 'properties', 'data'), {
+      type: 'array',
+      items: {
+        type: 'object',
+        title: 'PersonResourceID',
+        required: ['type', 'id'],
+        properties: {
+          type: { type: 'string', minLength: 1, enum: ['people'] },
+          id: { type: 'string', minLength: 1 },
         },
       },
+    });
+  });
+});
+
+test('addResourceRelationships', () => {
+  const openapi1 = OpenAPIFactory.create();
+  const schema1 = openapi1.components.setSchema('EmployeeResource');
+  setResourceSchema(schema1, 'employees');
+  addResourceRelationship(schema1, 'zeroOrOne', 'people', RelationshipCardinality.ZeroOrOne, false);
+  addResourceRelationship(schema1, 'one', 'people', RelationshipCardinality.One);
+  addResourceRelationship(schema1, 'many', 'colleagues', RelationshipCardinality.Many, false);
+  const json1 = writer.write(openapi1);
+
+  const openapi2 = OpenAPIFactory.create();
+  const schema2 = openapi2.components.setSchema('EmployeeResource');
+  setResourceSchema(schema2, 'employees');
+  addResourceRelationships(schema2, {
+    zeroOrOne: {
+      resourceType: 'people',
+      cardinality: RelationshipCardinality.ZeroOrOne,
+      required: false,
     },
-  );
+    one: { resourceType: 'people', cardinality: RelationshipCardinality.One, required: true },
+    many: {
+      resourceType: 'colleagues',
+      cardinality: RelationshipCardinality.Many,
+      required: false,
+    },
+  });
+  const json2 = writer.write(openapi2);
+
+  expect(json1).toStrictEqual(json2);
 });
 
 test('setDataDocumentSchema', () => {
-  const openapi = OpenAPIFactory.create();
   const schema = openapi.components.setSchema('DataDocument', 'object');
 
   setDataDocumentSchema(schema, 'employees');
@@ -257,26 +317,54 @@ test('setDataDocumentSchema', () => {
         },
       },
       data: {
-        type: 'object',
-        required: ['type', 'id', 'attributes'],
-        properties: {
-          type: {
-            type: 'string',
-            minLength: 1,
-            enum: ['employees'],
-          },
-          id: {
-            type: 'string',
-            minLength: 1,
-          },
-          attributes: {
+        title: 'EmployeeResource',
+        allOf: [
+          {
+            title: 'EmployeeResourceID',
             type: 'object',
+            required: ['type', 'id'],
+            properties: {
+              type: {
+                type: 'string',
+                minLength: 1,
+                enum: ['employees'],
+              },
+              id: {
+                type: 'string',
+                minLength: 1,
+              },
+            },
           },
-          relationships: {
+          {
             type: 'object',
+            required: ['attributes'],
+            properties: {
+              attributes: {
+                type: 'object',
+              },
+              relationships: {
+                type: 'object',
+              },
+            },
           },
-        },
+        ],
       },
     },
   });
+});
+
+test('createDataDocumentSchema', () => {
+  const openapi1 = OpenAPIFactory.create();
+  const schema1 = openapi1.components.setSchema('DataDocument', 'object');
+  setDataDocumentSchema(schema1, 'employees');
+  const json1 = writer.write(openapi1);
+
+  const openapi2 = OpenAPIFactory.create();
+  const schema2 = createDataDocumentSchema(openapi2.components, 'employees');
+  schema2.title = 'DataDocument';
+  openapi2.components.setSchemaModel('DataDocument', schema2);
+  setDataDocumentSchema(schema2, 'employees');
+  const json2 = writer.write(openapi2);
+
+  expect(json1).toStrictEqual(json2);
 });

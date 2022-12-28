@@ -187,6 +187,21 @@ export const getOperationDefaultResponseSchemaOrThrow = (
   return result;
 };
 
+export const getOperationResponseSchemas = (
+  operation: OperationModel,
+  useJsonApi: boolean,
+): SchemaModel[] => {
+  const mediaType = getMediaType(useJsonApi);
+  const result: SchemaModel[] = [];
+  for (const response of operation.responses.codes.values()) {
+    const schema = response.getContent(mediaType)?.schema;
+    if (schema) {
+      result.push(schema);
+    }
+  }
+  return result;
+};
+
 /**
  * Converts OpenAPI-style URI template (e.g. /employees/{id}/tasks) to Express-style path
  * (e.g. /employees/:id/tasks), which is called URL expression. Transformations include:
@@ -198,4 +213,59 @@ export const pathUrlToUrlExp = (pathItemUrl: string): string => {
   return pathItemUrl
     .replace(/^\//, '')
     .replace(/\{[a-zA-Z0-9_-]+\}/g, (param: string): string => `:${camelCase(param.slice(1, -1))}`);
+};
+
+/**
+ * Given an instance of a SchemaModel and a name of a property, returns subschemas
+ * defining this properties. Own properties, as well as all clauses (allOf, anyOf and
+ * oneOf) are included into the search.
+ *
+ * @param schema schema instance
+ * @param name property name
+ * @returns list of subschemas for given property, defined either directly in the
+ *  scheme, or in any composite clauses thereof.
+ */
+export const getSchemaMultiProperty = (schema: SchemaModel, name: string): SchemaModel[] => {
+  const result: SchemaModel[] = [];
+  for (const subschema of [
+    schema,
+    ...(schema.allOf ?? []),
+    ...(schema.oneOf ?? []),
+    ...(schema.anyOf ?? []),
+  ]) {
+    if (subschema.type === 'object') {
+      const propertySchema = subschema.getProperty(name);
+      if (propertySchema) {
+        result.push(propertySchema);
+      }
+    }
+  }
+  return result;
+};
+
+/**
+ * Iterates over schema's properties. Firstly, iterates over own properties, then
+ * over properties of subschemas from allOf clause.
+ *
+ * @param schema schema
+ * @return iterator over schema properties
+ */
+export const getSchemaProperties = function* getSchemaProperties(
+  schema: SchemaModel,
+): IterableIterator<[string, SchemaModel]> {
+  const visited = new Set<string>();
+  for (const [name, subschema] of schema.properties) {
+    visited.add(name);
+    yield [name, subschema];
+  }
+  if (schema.allOf?.length) {
+    for (const subschema of schema.allOf) {
+      for (const [subname, subsubschema] of subschema.properties) {
+        if (!visited.has(subname)) {
+          visited.add(subname);
+          yield [subname, subsubschema];
+        }
+      }
+    }
+  }
 };

@@ -20,7 +20,7 @@ const makeResource = (
 
   const resourceName = titleCase(resourceType);
 
-  const resourceSchema = generator.context.openapi.components.setSchema(resourceName, 'object');
+  const resourceSchema = generator.context.openapi.components.setSchema(resourceName);
   setResourceSchema(resourceSchema, resourceType);
 
   const resource = new Resource(
@@ -98,7 +98,7 @@ test('happy path', () => {
 
   const resourceType = 'users';
   const resourceName = titleCase(resourceType);
-  const resourceSchema = generator.context.openapi.components.setSchema(resourceName, 'object');
+  const resourceSchema = generator.context.openapi.components.setSchema(resourceName);
 
   // need to initialize resource schema before calling registry.parseResource
   setResourceSchema(resourceSchema, resourceType);
