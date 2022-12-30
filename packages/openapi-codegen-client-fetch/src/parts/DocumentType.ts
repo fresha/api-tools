@@ -158,29 +158,26 @@ export class DocumentType extends NamedType {
       includedType.generateCode(generatedTypes);
     }
 
-    addImportDeclaration(
-      this.context.sourceFile,
-      '@fresha/api-tools-core',
-      't:JSONAPIDataDocument',
-    );
-    const typeAlias = addTypeAlias(this.context.sourceFile, this.name, 'JSONAPIDataDocument', true);
+    const typeBaseName = this.isRequestBody ? 'JSONAPIClientDocument' : 'JSONAPIDataDocument';
+    addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', `t:${typeBaseName}`);
+    const typeAlias = addTypeAlias(this.context.sourceFile, this.name, typeBaseName, true);
+
+    const typeAliasArgs = [];
     if (this.primaryResourceTypes.length) {
-      let typeName = this.primaryResourceTypes.map(t => t.name).join(' | ');
-      if (this.primaryDataIsArray) {
-        typeName = `(${typeName})[]`;
-      }
-      typeAlias
-        .getNodeProperty('type')
-        .asKindOrThrow(SyntaxKind.TypeReference)
-        .addTypeArgument(`${typeName}`);
+      const typeName = this.primaryResourceTypes.map(t => t.name).join(' | ');
+      typeAliasArgs.push(this.primaryDataIsArray ? `(${typeName})[]` : `${typeName}`);
     }
     if (this.includedResourceTypes.length) {
+      if (!this.primaryResourceTypes.length) {
+        typeAliasArgs.push(this.isRequestBody ? 'JSONAPIClientResource' : 'JSONAPIServerResource');
+      }
       const names = this.includedResourceTypes.map(t => t.name).join(' | ');
-      typeAlias
-        .getNodeProperty('type')
-        .asKindOrThrow(SyntaxKind.TypeReference)
-        .addTypeArgument(`${names}`);
+      typeAliasArgs.push(`${names}`);
     }
+    typeAlias
+      .getNodeProperty('type')
+      .asKindOrThrow(SyntaxKind.TypeReference)
+      .addTypeArguments(typeAliasArgs);
 
     generatedTypes.delete(this.name);
   }

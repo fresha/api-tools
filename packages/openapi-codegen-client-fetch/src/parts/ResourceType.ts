@@ -207,6 +207,10 @@ export class ResourceType extends NamedType {
       }
     }
     if (this.relationships.size) {
+      if (!this.attributesSchema) {
+        typeAliasType.addTypeArgument('{}');
+      }
+
       const typeLiteral = typeAliasType.addTypeArgument('{}').asKindOrThrow(SyntaxKind.TypeLiteral);
       for (const [name, info] of this.relationships) {
         const relName = `JSONAPIResourceRelationship${info.cardinality.toString()}`;

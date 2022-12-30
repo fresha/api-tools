@@ -80,7 +80,8 @@ export class UtilsFile {
         readonly original?: unknown;
 
         constructor(message: string, original?: unknown) {
-          super(message, { cause: original });
+          super(message);
+          this.original = original;
         }
       }
 
