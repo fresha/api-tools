@@ -18,7 +18,7 @@ test('default properties', () => {
   expect(operation.responses.codes.size).toBe(0);
   expect(operation.callbacks.size).toBe(0);
   expect(operation.deprecated).toBeFalsy();
-  expect(operation.security).toHaveLength(0);
+  expect(operation.security).toBeNull();
   expect(operation.servers).toHaveLength(0);
 });
 
@@ -162,8 +162,8 @@ test('security requirement collection', () => {
 
   operation.deleteSecurityRequirementAt(1);
   expect(operation.security).toHaveLength(2);
-  expect(operation.security[0]).toBe(s1);
-  expect(operation.security[1]).toBe(s3);
+  expect(operation.security?.[0]).toBe(s1);
+  expect(operation.security?.[1]).toBe(s3);
 
   operation.clearSecurityRequirements();
   expect(operation.security).toHaveLength(0);
