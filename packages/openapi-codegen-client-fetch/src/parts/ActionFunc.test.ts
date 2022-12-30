@@ -76,7 +76,7 @@ test('simple test', () => {
 
       const response = await makeCall(url, request);
 
-      return response as ReadEmployeeListResponse;
+      return response as unknown as ReadEmployeeListResponse;
     }
   `);
 });

@@ -187,7 +187,7 @@ export class ActionFunc {
       writer.newLine();
 
       if (this.responseType) {
-        writer.writeLine(`return response as ${this.responseType.name};`);
+        writer.writeLine(`return response as unknown as ${this.responseType.name};`);
       } else {
         writer.writeLine(`return`);
       }
