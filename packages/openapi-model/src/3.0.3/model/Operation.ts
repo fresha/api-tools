@@ -38,7 +38,7 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
   readonly responses: Responses;
   readonly callbacks: Map<string, CallbackModel>;
   deprecated: boolean;
-  readonly security: SecurityRequirementModel[];
+  security: Nullable<SecurityRequirementModel[]>;
   readonly servers: ServerModel[];
 
   constructor(parent: OperationModelParent) {
@@ -53,7 +53,7 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.responses = new Responses(this);
     this.callbacks = new Map<string, CallbackModel>();
     this.deprecated = false;
-    this.security = [];
+    this.security = null;
     this.servers = [];
   }
 
@@ -199,18 +199,33 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.callbacks.clear();
   }
 
+  getSecurityRequirements(): readonly SecurityRequirementModel[] {
+    return this.security ?? this.root.security;
+  }
+
   addSecurityRequirement(): SecurityRequirementModel {
     const result = new SecurityRequirement(this);
+    if (!this.security) {
+      this.security = [];
+    }
     this.security.push(result);
     return result;
   }
 
   deleteSecurityRequirementAt(index: number): void {
-    this.security.splice(index, 1);
+    if (this.security) {
+      this.security.splice(index, 1);
+    }
   }
 
   clearSecurityRequirements(): void {
-    this.security.splice(0, this.security.length);
+    if (this.security) {
+      this.security.splice(0, this.security.length);
+    }
+  }
+
+  resetSecurityRequirements(): void {
+    this.security = null;
   }
 
   getServer(url: ParametrisedURLString): ServerModel | undefined {

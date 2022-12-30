@@ -912,7 +912,7 @@ export class OpenAPIWriter {
     if (operation.deprecated) {
       result.deprecated = operation.deprecated;
     }
-    if (operation.security.length) {
+    if (operation.security) {
       result.security = this.writeSecurityRequirementArray(operation.security);
     }
     if (operation.servers?.length) {

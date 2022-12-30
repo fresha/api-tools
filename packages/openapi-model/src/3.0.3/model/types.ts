@@ -602,7 +602,12 @@ export interface OperationModel
   readonly responses: ResponsesModel;
   readonly callbacks: ReadonlyMap<string, CallbackModel>;
   deprecated: boolean;
-  readonly security: ReadonlyArray<SecurityRequirementModel>;
+
+  /**
+   * List of own security requirements.
+   */
+  readonly security: Nullable<ReadonlyArray<SecurityRequirementModel>>;
+
   readonly servers: ReadonlyArray<ServerModel>;
 
   /**
@@ -642,9 +647,33 @@ export interface OperationModel
   deleteCallback(key: string): void;
   clearCallbacks(): void;
 
+  /**
+   * Return effective security requirements for this operation. It uses own requirements,
+   * if defined; otherwise uses global requirements defined in {@link OpenAPIModel}.
+   */
+  getSecurityRequirements(): ReadonlyArray<SecurityRequirementModel>;
+
+  /**
+   * Adds own security requirement.
+   */
   addSecurityRequirement(): SecurityRequirementModel;
+
+  /**
+   * Removes own security requirement at specified index.
+   *
+   * @param index zero-based index
+   */
   deleteSecurityRequirementAt(index: number): void;
+
+  /**
+   * Removes all own security requirements. Does NOT set own requirements to null.
+   */
   clearSecurityRequirements(): void;
+
+  /**
+   * Makes this operation use global security requirements.
+   */
+  resetSecurityRequirements(): void;
 
   getServer(url: ParametrisedURLString): ServerModel | undefined;
   getServerOrThrow(url: ParametrisedURLString): ServerModel;
