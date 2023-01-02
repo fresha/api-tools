@@ -1,4 +1,6 @@
 import type {
+  JSONAPIClientDocument,
+  JSONAPIClientResource,
   JSONAPIDataDocument,
   JSONAPIResourceID,
   JSONAPIResourceRelationship,
@@ -101,6 +103,36 @@ test('specific server resource definition', () => {
 
   const anyResource: JSONAPIServerResource = shelter;
   expect(anyResource).toBeTruthy();
+});
+
+test('client documents', () => {
+  type PersonCreateType = 'people-create';
+  type PersonCreate = JSONAPIClientResource<PersonCreateType, { name: string }>;
+
+  type PersonCreateRequest = JSONAPIClientDocument<PersonCreate>;
+
+  const req: PersonCreateRequest = {
+    jsonapi: { version: '1.0' },
+    data: {
+      type: 'people-create',
+      attributes: {
+        name: 'John Dow',
+      },
+    },
+  };
+  expect(req).toBeTruthy();
+
+  type PersonID = JSONAPIResourceID<PersonCreateType>;
+
+  type PersonCreateByIDRequest = JSONAPIClientDocument<PersonID[]>;
+  const req2: PersonCreateByIDRequest = {
+    jsonapi: { version: '1.0' },
+    data: [
+      { type: 'people-create', id: '89' },
+      { type: 'people-create', id: '12' },
+    ],
+  };
+  expect(req2).toBeTruthy();
 });
 
 test('data documents', () => {
