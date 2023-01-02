@@ -391,6 +391,39 @@ interface JSONAPIDocumentBase {
   meta?: JSONAPIMeta;
 }
 
+export type JSONAPIClientDocumentPrimaryData =
+  | JSONAPIClientResource
+  | JSONAPIClientResource[]
+  | JSONAPIResourceID
+  | JSONAPIResourceID[];
+
+/**
+ * Client (request) document.
+ *
+ * @typeParam TPrimaryData determines the type of document's primary data. This
+ *  must be either resource ID type or a resource type
+ * @typeParam TIncludedData determines the type(-s) of resources included in
+ *  the document. This must be a resource or a union of resource types.
+ *
+ * @example
+ * type Company = JSONAPIResource<'companies', ...>;
+ * type Department = JSONAPIResource<'departments', ...>;
+ * type Person = JSONAPIResource<'people', ...>;
+ *
+ * // this document has a single company resource as its primary data,
+ * // and a list of either department of person resources included
+ * type CompanyDocument = JSONAPIDataDocument<Company, Department | Person>;
+ *
+ * @see https://jsonapi.org/format/#document-top-level
+ */
+export interface JSONAPIClientDocument<
+  TPrimaryData extends JSONAPIClientDocumentPrimaryData = JSONAPIClientResource,
+  TIncludedData extends JSONAPIClientResource = JSONAPIClientResource,
+> extends JSONAPIDocumentBase {
+  data: TPrimaryData;
+  included?: TIncludedData[];
+}
+
 export type JSONAPIPrimaryDocumentData =
   | JSONAPIServerResource
   | JSONAPIServerResource[]
@@ -399,7 +432,7 @@ export type JSONAPIPrimaryDocumentData =
   | null;
 
 /**
- * Document that contains data.
+ * Server (response) document that contains data.
  *
  * @typeParam TPrimaryData determines the type of document's primary data. This
  *  must be either resource ID type or a resource type
@@ -447,7 +480,7 @@ export interface JSONAPIError {
 }
 
 /**
- * Document that contains error objects.
+ * Server (response) document that contains error objects.
  *
  * @see https://jsonapi.org/format/#document-top-level
  */
