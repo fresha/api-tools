@@ -774,6 +774,13 @@ export interface PathsModel
    * in this paths collection, throws an exception.
    */
   getItemUrlOrThrow(pathItem: PathItemModel): ParametrisedURLString;
+
+  sort(
+    sorter: (
+      entry1: [ParametrisedURLString, PathItemModel],
+      entry2: [ParametrisedURLString, PathItemModel],
+    ) => number,
+  ): void;
 }
 
 export type SecuritySchemaModelParent = ComponentsModel;
@@ -977,6 +984,9 @@ export interface ComponentsModel
   setSchema(name: string, type?: SchemaType): SchemaModel;
   deleteSchema(name: string): void;
   clearSchemas(): void;
+  sortSchemas(
+    sorter: (entry1: [string, SchemaModel], entry2: [string, SchemaModel]) => number,
+  ): void;
 
   getResponse(name: string): ResponseModel | undefined;
   getResponseOrThrow(name: string): ResponseModel;
