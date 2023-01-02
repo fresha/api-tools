@@ -106,6 +106,16 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.schemas.clear();
   }
 
+  sortSchemas(
+    sorter: (entry1: [string, SchemaModel], entry2: [string, SchemaModel]) => number,
+  ): void {
+    const entries = Array.from(this.schemas.entries()).sort(sorter);
+    this.schemas.clear();
+    for (const [key, value] of entries) {
+      this.schemas.set(key, value);
+    }
+  }
+
   getResponse(name: string): ResponseModel | undefined {
     return this.responses.get(name);
   }

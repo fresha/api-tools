@@ -90,4 +90,13 @@ export class Paths extends BasicNode<PathsModelParent> implements PathsModel {
   get [Symbol.toStringTag](): string {
     return this.items[Symbol.toStringTag];
   }
+
+  sort(sorter: (entry1: [string, PathItemModel], entry2: [string, PathItemModel]) => number): void {
+    const entries = Array.from(this.items).sort(sorter);
+
+    this.items.clear();
+    for (const [key, value] of entries) {
+      this.items.set(key, value);
+    }
+  }
 }
