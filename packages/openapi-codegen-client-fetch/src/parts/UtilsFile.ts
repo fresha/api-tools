@@ -78,7 +78,7 @@ export class UtilsFile {
         }
       }
 
-      export const makeCall = async (url: URL, request: RequestInit): Promise<JSONValue> => {
+      export const callApi = async (url: URL, request: RequestInit): Promise<Response> => {
         let result: Response;
 
         try {
@@ -90,6 +90,12 @@ export class UtilsFile {
         if (!result.ok) {
           throw new APIError('Request failed', result);
         }
+
+        return result;
+      };
+
+      export const callJsonApi = async (url: URL, request: RequestInit): Promise<JSONValue> => {
+        const result = await callApi(url, request);
 
         let json: unknown;
         try {

@@ -192,7 +192,7 @@ export class ResourceType extends NamedType {
     if (this.resourceType) {
       typeAliasType.addTypeArgument(`'${this.resourceType}'`);
     }
-    if (this.attributesSchema) {
+    if (this.attributesSchema?.properties.size) {
       const typeLiteral = typeAliasType.addTypeArgument('{}').asKindOrThrow(SyntaxKind.TypeLiteral);
       for (const [name, schema] of this.attributesSchema.properties) {
         const typeName = schemaToType(schema);
@@ -207,7 +207,7 @@ export class ResourceType extends NamedType {
       }
     }
     if (this.relationships.size) {
-      if (!this.attributesSchema) {
+      if (!this.attributesSchema?.properties.size) {
         typeAliasType.addTypeArgument('{}');
       }
 
