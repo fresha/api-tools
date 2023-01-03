@@ -1,7 +1,4 @@
-import path from 'path';
-
-import { Context } from '../context';
-
+import type { Context } from '../context';
 import type { SourceFile } from 'ts-morph';
 
 export class IndexFile {
@@ -10,11 +7,7 @@ export class IndexFile {
 
   constructor(context: Context) {
     this.context = context;
-    this.sourceFile = this.context.project.createSourceFile(
-      path.join(this.context.outputPath, 'src', 'index.ts'),
-      '',
-      { overwrite: true },
-    );
+    this.sourceFile = this.context.createSourceFile('src/index.ts');
   }
 
   // eslint-disable-next-line class-methods-use-this
