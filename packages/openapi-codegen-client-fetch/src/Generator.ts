@@ -1,5 +1,3 @@
-import path from 'path';
-
 import { Generator as GeneratorBase, getOperations } from '@fresha/openapi-codegen-utils';
 import { SourceFile, ts } from 'ts-morph';
 
@@ -18,11 +16,7 @@ export class Generator extends GeneratorBase<Context> {
   constructor(context: Context) {
     super(context);
     this.context = context;
-    this.sourceFile = this.context.project.createSourceFile(
-      path.join(this.context.outputPath, 'src', 'actions.ts'),
-      '',
-      { overwrite: true },
-    );
+    this.sourceFile = this.context.createSourceFile('src/actions.ts');
     this.actionFuncs = new Map<string, ActionFunc>();
     this.namedTypes = new Map<string, NamedType>();
     this.indexFile = new IndexFile(this.context);
