@@ -85,7 +85,7 @@ describe('primary data', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
-      export type Employee = JSONAPIServerResource<'employees', {}>;
+      export type Employee = JSONAPIServerResource<'employees'>;
 
       export type SimpleResponseDocument = JSONAPIDataDocument<Employee>;
     `);
@@ -111,7 +111,7 @@ describe('primary data', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
-      export type Unknown1 = JSONAPIServerResource<'employees', {}>;
+      export type Unknown1 = JSONAPIServerResource<'employees'>;
 
       export type SimpleResponseDocument = JSONAPIDataDocument<Unknown1>;
     `);
@@ -139,9 +139,9 @@ describe('primary data', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
-      export type EmployeeResource = JSONAPIServerResource<'employees', {}>;
+      export type EmployeeResource = JSONAPIServerResource<'employees'>;
 
-      export type OrganizationResource = JSONAPIServerResource<'organizations', {}>;
+      export type OrganizationResource = JSONAPIServerResource<'organizations'>;
 
       export type ResponseDocumentWithUnionTypes = JSONAPIDataDocument<EmployeeResource | OrganizationResource>;
     `);
@@ -169,7 +169,7 @@ describe('primary data', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
-      export type Employee = JSONAPIServerResource<'employees', {}>;
+      export type Employee = JSONAPIServerResource<'employees'>;
 
       export type SimpleResponseDocument = JSONAPIDataDocument<Employee[]>;
     `);
@@ -218,7 +218,7 @@ describe('included', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
-      export type Employee = JSONAPIServerResource<'employees', {}>;
+      export type Employee = JSONAPIServerResource<'employees'>;
 
       export type DocumentWithIncludedResources = JSONAPIDataDocument<
         Employee,
@@ -261,9 +261,9 @@ describe('included', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
-      export type Employee = JSONAPIServerResource<'employees', {}>;
+      export type Employee = JSONAPIServerResource<'employees'>;
 
-      export type Organization = JSONAPIServerResource<'organizations', {}>;
+      export type Organization = JSONAPIServerResource<'organizations'>;
 
       export type DocumentWithIncludedResources = JSONAPIDataDocument<
         Employee,

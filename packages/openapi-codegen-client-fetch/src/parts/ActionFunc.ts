@@ -6,6 +6,7 @@ import {
   getOperationRequestBodySchema,
   getOperationParameters,
   getOperationResponseSchemas,
+  getCodegenOptions,
 } from '@fresha/openapi-codegen-utils';
 
 import { DocumentType } from './DocumentType';
@@ -32,6 +33,7 @@ export class ActionFunc {
   protected readonly headerToSet: Map<HeaderName, VariableName>;
   protected requestType: Nullable<NamedType>;
   protected responseType: Nullable<NamedType>;
+  protected parsesResponse: boolean;
   // FIXME handle other authorization schemes
   protected usesAuthCookie: boolean;
 
@@ -43,6 +45,7 @@ export class ActionFunc {
     this.headerToSet = new Map<HeaderName, VariableName>();
     this.requestType = null;
     this.responseType = null;
+    this.parsesResponse = true;
     this.usesAuthCookie = false;
   }
 
@@ -113,6 +116,11 @@ export class ActionFunc {
       this.responseType.collectData(namedTypes);
       namedTypes.set(responseTypeName, this.responseType);
     }
+
+    const opts = getCodegenOptions(this.context.operation, 'client-fetch');
+    if (opts != null) {
+      this.parsesResponse = opts.return !== 'response';
+    }
   }
 
   protected collectAuthData(): void {
@@ -123,7 +131,13 @@ export class ActionFunc {
     this.context.logger.info(`Generating code for action ${this.name}`);
 
     addImportDeclarations(this.context.sourceFile, {
-      './utils': ['COMMON_HEADERS', 'authorizeRequest', 'makeUrl', 'makeCall', 'toString'],
+      './utils': [
+        'COMMON_HEADERS',
+        'authorizeRequest',
+        'makeUrl',
+        this.parsesResponse ? 'callJsonApi' : 'callApi',
+        'toString',
+      ],
     });
 
     if (this.requestType) {
@@ -133,11 +147,18 @@ export class ActionFunc {
       this.responseType.generateCode(generatedTypes);
     }
 
+    let resultType = 'void';
+    if (!this.parsesResponse) {
+      resultType = 'Response';
+    } else if (this.responseType) {
+      resultType = this.responseType?.name;
+    }
+
     const actionFunc = addFunction(
       this.context.sourceFile,
       this.name,
       this.generateParameters(),
-      `Promise<${this.responseType ? this.responseType?.name : 'void'}>`,
+      `Promise<${resultType}>`,
       true,
     );
     actionFunc.setIsAsync(true);
@@ -183,13 +204,19 @@ export class ActionFunc {
         writer.newLine();
       }
 
-      writer.writeLine(`const response = await makeCall(url, request);`);
-      writer.newLine();
+      if (this.parsesResponse) {
+        writer.writeLine(`const response = await callJsonApi(url, request);`);
+        writer.newLine();
 
-      if (this.responseType) {
-        writer.writeLine(`return response as unknown as ${this.responseType.name};`);
+        if (this.responseType) {
+          writer.writeLine(`return response as unknown as ${this.responseType.name};`);
+        } else {
+          writer.writeLine(`return`);
+        }
       } else {
-        writer.writeLine(`return`);
+        writer.writeLine(`const response = await callApi(url, request);`);
+        writer.newLine();
+        writer.writeLine(`return response;`);
       }
     });
   }

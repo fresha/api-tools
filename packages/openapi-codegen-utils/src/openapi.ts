@@ -1,8 +1,10 @@
 import assert from 'assert';
 
+import { isJSONObject, JSONObject, Nullable } from '@fresha/api-tools-core';
+
+import { assert as operationAssert } from './assert';
 import { camelCase } from './string';
 
-import type { Nullable } from '@fresha/api-tools-core';
 import type {
   OpenAPIModel,
   OperationModel,
@@ -26,6 +28,27 @@ export const getRootUrl = (openapi: OpenAPIModel): string | undefined => {
 export const getRootUrlOrThrow = (openapi: OpenAPIModel): string => {
   const result = getRootUrl(openapi);
   assert(result, `x-root-url extension is not specified in paths, using default API_URL`);
+  return result;
+};
+
+export const getCodegenOptions = (
+  operation: OperationModel,
+  codegenName: string,
+): JSONObject | undefined => {
+  const ext = operation.getExtension('fresha-codegen');
+  if (ext === undefined) {
+    return undefined;
+  }
+  operationAssert(isJSONObject(ext), 'x-fresha-codegen must be a JSON object', operation);
+  const result = ext[codegenName];
+  if (result === undefined) {
+    return undefined;
+  }
+  operationAssert(
+    isJSONObject(result),
+    'x-fresha-codegen for specific generator must be a JSON object',
+    operation,
+  );
   return result;
 };
 
