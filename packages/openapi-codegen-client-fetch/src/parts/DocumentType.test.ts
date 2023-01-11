@@ -175,7 +175,31 @@ describe('primary data', () => {
     `);
   });
 
-  test('multiple resources of different types', () => {});
+  test('skip resources that were generated before', () => {
+    const employee = responseSchema.root.components.setSchema('Employee', 'object');
+    employee.setProperties({
+      type: { type: 'string', required: true, enum: ['employees'] },
+      id: { type: 'string', required: true },
+      attributes: { type: 'object', required: true },
+    });
+
+    responseSchema.setProperty('data', 'array').items = employee;
+
+    // pretend that this resource is used in multiple documents, and rendered before
+    generatedTypes.add('Employee');
+
+    const documentType = createDocumentType(operation, 'SimpleResponseDocument');
+
+    documentType.collectData(namedTypes);
+    documentType.generateCode(generatedTypes);
+
+    expect(documentType.context.project.getSourceFile('src/index.ts'))
+      .toHaveFormattedTypeScriptText(`
+      import type { JSONAPIDataDocument } from '@fresha/api-tools-core';
+
+      export type SimpleResponseDocument = JSONAPIDataDocument<Employee[]>;
+    `);
+  });
 });
 
 describe('included', () => {

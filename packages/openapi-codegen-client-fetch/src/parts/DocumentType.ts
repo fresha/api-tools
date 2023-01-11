@@ -79,11 +79,12 @@ export class DocumentType extends NamedType {
         primaryDataSchema,
         this.isRequestBody,
       );
-      this.primaryResourceTypes.push(existingNamedType);
       namedTypes.set(primaryDataSchemaName, existingNamedType);
 
       existingNamedType.collectData(namedTypes);
     }
+
+    this.primaryResourceTypes.push(existingNamedType);
   }
 
   private determineIncludedDataTypes(
