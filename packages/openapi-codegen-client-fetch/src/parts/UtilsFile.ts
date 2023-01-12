@@ -21,15 +21,22 @@ export class UtilsFile {
 
       import type { JSONValue } from '@fresha/api-tools-core';
 
+      export type FetchFunc = (url: string, init: RequestInit) => Promise<Response>;
+
       let rootUrl = '';
+      let fetcher: FetchFunc = global.fetch;
 
       export type InitParams = {
         rootUrl: string;
+        fetcher?: FetchFunc;
       };
 
       export const init = (params: InitParams): void => {
         assert(params.rootUrl, 'Expected rootUrl to be a non-empty string');
         rootUrl = params.rootUrl;
+        if (params.fetcher) {
+          fetcher = params.fetcher;
+        }
       };
 
       export const makeUrl = (url: string): URL => {
@@ -79,10 +86,12 @@ export class UtilsFile {
       }
 
       export const callApi = async (url: URL, request: RequestInit): Promise<Response> => {
+        assert(fetcher, 'Fetch function is not set');
+
         let result: Response;
 
         try {
-          result = await fetch(url.toString(), request);
+          result = await fetcher(url.toString(), request);
         } catch (err) {
           throw new APIError(\`Error calling \${url.toString()}\`, err);
         }
