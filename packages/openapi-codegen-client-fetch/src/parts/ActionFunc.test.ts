@@ -19,6 +19,8 @@ test('simple test', () => {
   const openapi = OpenAPIFactory.create();
   buildEmployeeSchemasForTesting(openapi);
 
+  openapi.components.setSecuritySchema('the_auth', 'apiKey');
+
   const operation = openapi.setPathItem('/employees').setOperation('get');
   operation.operationId = 'readEmployeeList';
   operation
@@ -26,6 +28,7 @@ test('simple test', () => {
     .setContent(MEDIA_TYPE_JSON_API)
     .setSchema('object')
     .setProperty('data', 'array').items = openapi.components.getSchemaOrThrow('EmployeeResource');
+  operation.addSecurityRequirement().addScopes('the_auth');
 
   const namedTypes = new Map<string, NamedType>();
   const generatedTypes = new Set<string>();
@@ -37,10 +40,10 @@ test('simple test', () => {
   expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
     import {
       COMMON_HEADERS,
-      authorizeRequest,
       makeUrl,
       callJsonApi,
       toString,
+      authorizeRequest,
     } from './utils';
     import type {
       JSONAPIServerResource,
@@ -73,6 +76,8 @@ test('simple test', () => {
       const request = {
         headers: COMMON_HEADERS,
       };
+
+      authorizeRequest(request);
 
       const response = await callJsonApi(url, request);
 
@@ -110,7 +115,6 @@ test('action returns raw response', () => {
   expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
     import {
       COMMON_HEADERS,
-      authorizeRequest,
       makeUrl,
       callApi,
       toString,

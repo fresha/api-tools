@@ -133,12 +133,15 @@ export class ActionFunc {
     addImportDeclarations(this.context.sourceFile, {
       './utils': [
         'COMMON_HEADERS',
-        'authorizeRequest',
         'makeUrl',
         this.parsesResponse ? 'callJsonApi' : 'callApi',
         'toString',
       ],
     });
+
+    if (this.usesAuthCookie) {
+      addImportDeclaration(this.context.sourceFile, './utils', 'authorizeRequest');
+    }
 
     if (this.requestType) {
       this.requestType.generateCode(generatedTypes);
@@ -205,12 +208,13 @@ export class ActionFunc {
       }
 
       if (this.parsesResponse) {
-        writer.writeLine(`const response = await callJsonApi(url, request);`);
-        writer.newLine();
-
         if (this.responseType) {
+          writer.writeLine(`const response = await callJsonApi(url, request);`);
+          writer.newLine();
           writer.writeLine(`return response as unknown as ${this.responseType.name};`);
         } else {
+          writer.writeLine(`await callJsonApi(url, request);`);
+          writer.newLine();
           writer.writeLine(`return`);
         }
       } else {
