@@ -1,3 +1,3 @@
 export * from './types';
-export { createRegistry } from './Registry';
+export { createJSONAPISchemaRegistry } from './SchemaRegistry';
 export { parseOpenApi } from './parseOpenApi';

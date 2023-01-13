@@ -1,18 +1,26 @@
-import type { DocumentId, ErrorDocumentModel, RegistryModel } from './types';
+import type { DocumentId, JSONAPIErrorDocumentSchema, JSONAPISchemaRegistry } from './types';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
-export class ErrorDocument implements ErrorDocumentModel {
-  readonly registry: RegistryModel;
-  readonly id: DocumentId;
-  readonly schema: SchemaModel;
+export class ErrorDocument implements JSONAPIErrorDocumentSchema {
+  readonly #registry: JSONAPISchemaRegistry;
+  readonly #id: DocumentId;
+  readonly #schema: SchemaModel;
 
-  constructor(registry: RegistryModel, id: DocumentId, schema: SchemaModel) {
-    this.registry = registry;
-    this.id = id;
-    this.schema = schema;
+  constructor(registry: JSONAPISchemaRegistry, id: DocumentId, schema: SchemaModel) {
+    this.#registry = registry;
+    this.#id = id;
+    this.#schema = schema;
   }
 
-  jsonSchema(): SchemaModel {
-    return this.schema;
+  get registry(): JSONAPISchemaRegistry {
+    return this.#registry;
+  }
+
+  get id(): string {
+    return this.#id;
+  }
+
+  get schema(): SchemaModel {
+    return this.#schema;
   }
 }

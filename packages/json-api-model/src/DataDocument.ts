@@ -1,41 +1,66 @@
-import type { DocumentId, DataDocumentModel, ResourceModel, RegistryModel } from './types';
+import type {
+  DocumentId,
+  JSONAPIDataDocumentSchema,
+  JSONAPIResourceSchema,
+  JSONAPISchemaRegistry,
+} from './types';
 import type { JSONObject, Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
-export class DataDocument implements DataDocumentModel {
-  readonly registry: RegistryModel;
-  readonly schema: SchemaModel;
-  readonly id: DocumentId;
+export class DataDocument implements JSONAPIDataDocumentSchema {
+  readonly #registry: JSONAPISchemaRegistry;
+  readonly #id: DocumentId;
+  readonly #schema: SchemaModel;
 
-  data: ResourceModel | ResourceModel[];
-  included: ResourceModel[];
-  meta: Nullable<JSONObject>;
+  readonly #data: JSONAPIResourceSchema[];
+  readonly #included: JSONAPIResourceSchema[];
+  readonly #meta: Nullable<JSONObject>;
 
-  constructor(registry: RegistryModel, id: DocumentId, schema: SchemaModel) {
-    this.registry = registry;
-    this.id = id;
-    this.schema = schema;
+  constructor(registry: JSONAPISchemaRegistry, id: DocumentId, schema: SchemaModel) {
+    this.#registry = registry;
+    this.#id = id;
+    this.#schema = schema;
 
-    this.data = [];
-    this.included = [];
-    this.meta = null;
+    this.#data = [];
+    this.#included = [];
+    this.#meta = null;
 
     this.parseResources();
   }
 
+  get registry(): JSONAPISchemaRegistry {
+    return this.#registry;
+  }
+
+  get id(): string {
+    return this.#id;
+  }
+
+  get data(): JSONAPIResourceSchema[] {
+    return this.#data;
+  }
+
+  get included(): JSONAPIResourceSchema[] {
+    return this.#included;
+  }
+
+  get meta(): Nullable<JSONObject> {
+    return this.#meta;
+  }
+
   protected parseResources(): void {
-    const data = this.schema.getPropertyOrThrow('data');
+    const data = this.#schema.getPropertyOrThrow('data');
     if (data.type === 'object') {
-      this.registry.parseResource(data);
+      this.#registry.addResourceSchema(data);
     } else if (data.type === 'array') {
       const items = data.getPropertyOrThrow('items');
       if (items.type === 'object') {
-        this.registry.parseResource(items);
+        this.#registry.addResourceSchema(items);
       }
     }
   }
 
-  jsonSchema(): SchemaModel {
-    return this.schema;
+  get schema(): SchemaModel {
+    return this.#schema;
   }
 }

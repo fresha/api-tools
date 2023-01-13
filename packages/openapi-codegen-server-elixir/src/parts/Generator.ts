@@ -57,14 +57,16 @@ export class Generator extends GeneratorBase<Context> {
     parseOpenApi(this.context.openapi, this.context.registry);
 
     this.context.logger.info(
-      `Found ${this.context.registry.documents.size} documents and ${this.context.registry.resources.size} resources`,
+      `Found ${this.context.registry.getDocumentIds().length} documents and ${
+        this.context.registry.getResourceTypes().length
+      } resources`,
     );
 
-    for (const [resourceType, resource] of this.context.registry.resources) {
+    for (const resourceType of this.context.registry.getResourceTypes()) {
       const resourceGen = new Resource(
         this.context,
         this.context.project.getResourceModuleName(resourceType),
-        resource,
+        this.context.registry.getResourceSchemaOrThrow(resourceType),
       );
       this.resources.set(resourceType, resourceGen);
     }

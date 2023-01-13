@@ -1,5 +1,5 @@
 import { Project } from '@fresha/code-morph-ex';
-import { createRegistry } from '@fresha/json-api-model';
+import { createJSONAPISchemaRegistry } from '@fresha/json-api-model';
 import {
   builder as basicBuilder,
   Params as BasicParams,
@@ -41,7 +41,7 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     ...context,
     testObjectFactoryModuleName: args.testFactoryModule!,
     project,
-    registry: createRegistry(),
+    registry: createJSONAPISchemaRegistry(),
   });
 
   generator.run();

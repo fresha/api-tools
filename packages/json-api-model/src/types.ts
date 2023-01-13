@@ -1,5 +1,9 @@
 import type { JSONObject, Nullable } from '@fresha/api-tools-core';
-import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import type {
+  SchemaCreateOptions,
+  SchemaModel,
+  OpenAPIModel,
+} from '@fresha/openapi-model/build/3.0.3';
 
 /**
  * @see https://jsonapi.org/format/#introduction
@@ -7,109 +11,153 @@ import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 export type JSONAPIMediaType = 'application/vnd.api+json';
 
 /**
- * @see https://jsonapi.org/format/#document-resource-object-identification
- */
-export type ResourceType = string;
-
-/**
  * Identifies document schemas within a repository.
  */
 export type DocumentId = string;
 
+export type JSONAPIDocumentSchemaType = 'client' | 'data' | 'error';
+
 /**
  * @see https://jsonapi.org/format/#document-top-level
  */
-export interface DataDocumentModel {
-  readonly data: ResourceModel | ReadonlyArray<ResourceModel>;
-  readonly included: ReadonlyArray<ResourceModel>;
+export interface JSONAPIDataDocumentSchema {
+  readonly id: string;
+  readonly data: JSONAPIResourceSchema | ReadonlyArray<JSONAPIResourceSchema>;
+  readonly included: ReadonlyArray<JSONAPIResourceSchema>;
   readonly meta: Nullable<JSONObject>;
 
   /**
    * Returns JSON Schema model for this document.
    */
-  jsonSchema(): SchemaModel;
+  readonly schema: SchemaModel;
 }
 
 /**
  * @see https://jsonapi.org/format/#document-top-level
  */
-export interface ErrorDocumentModel {
+export interface JSONAPIErrorDocumentSchema {
   /**
    * Returns JSON Schema model for this document.
    */
-  jsonSchema(): SchemaModel;
+  readonly schema: SchemaModel;
 }
 
 /**
  * @see https://jsonapi.org/format/#document-structure
  */
-export type DocumentModel = DataDocumentModel | ErrorDocumentModel;
+export type DocumentModel = JSONAPIDataDocumentSchema | JSONAPIErrorDocumentSchema;
 
 /**
  * @see https://jsonapi.org/format/#document-resource-object-attributes
  */
-export interface AttributeModel {
-  readonly resource: ResourceModel;
+export interface JSONAPIAttributeSchema {
+  readonly resource: JSONAPIResourceSchema;
   readonly name: string;
 
   /**
    * Returns JSON Schema model for this attribute.
    */
-  jsonSchema(): SchemaModel;
+  readonly schema: SchemaModel;
 }
 
 /**
  * @see https://jsonapi.org/format/#document-resource-object-relationships
  */
-export interface RelationshipModel {
+export interface JSONAPIRelationshipSchema {
+  readonly resource: JSONAPIResourceSchema;
   readonly name: string;
-  readonly otherResourceType: string;
-  readonly otherResource: Nullable<ResourceModel>;
+  readonly resourceType: string;
+  readonly otherResource: JSONAPIResourceSchema;
+  readonly cardinality: RelationshipCardinality;
 
   /**
    * Returns JSON Schema model for this relationship.
    */
-  jsonSchema(): SchemaModel;
+  readonly schema: SchemaModel;
 }
+
+export type RelationshipCardinality = 'zero-or-one' | 'one' | 'many';
 
 /**
  * @see https://jsonapi.org/format/#document-resource-objects
  */
-export interface ResourceModel {
-  readonly type: ResourceType;
-  readonly attributes: ReadonlyMap<string, AttributeModel>;
-  readonly relationships: ReadonlyMap<string, RelationshipModel>;
+export interface JSONAPIResourceSchema {
+  readonly registry: JSONAPISchemaRegistry;
+  readonly type: string;
 
+  attributeSchemas(): IterableIterator<JSONAPIAttributeSchema>;
+
+  hasAttributes(): boolean;
   getAttributeNames(): string[];
-  getAttribute(name: string): AttributeModel | undefined;
-  getAttributeOrThrow(name: string): AttributeModel;
+  getAttribute(name: string): JSONAPIAttributeSchema | undefined;
+  getAttributeOrThrow(name: string): JSONAPIAttributeSchema;
+  addAttribute(name: string, options: SchemaCreateOptions): JSONAPIAttributeSchema;
+  addAttributes(attrs: Record<string, SchemaCreateOptions>): JSONAPIResourceSchema;
+  deleteAttribute(name: string): void;
+  clearAttributes(): void;
 
+  relationshipSchemas(): IterableIterator<JSONAPIRelationshipSchema>;
+
+  hasRelationships(): boolean;
   getRelationshipNames(): string[];
-  getRelationship(name: string): RelationshipModel | undefined;
-  getRelationshipOrThrow(name: string): RelationshipModel;
+  getRelationship(name: string): JSONAPIRelationshipSchema | undefined;
+  getRelationshipOrThrow(name: string): JSONAPIRelationshipSchema;
+  addRelationship(
+    name: string,
+    resourceType: string,
+    cardinality: RelationshipCardinality,
+  ): JSONAPIRelationshipSchema;
+  deleteRelationship(name: string): void;
+  clearRelationships(): void;
 
   /**
    * Returns JSON Schema describing shape of this resource's data.
+   * Note that this field may be null, which means we know only resource type,
+   * but neither its attributes nor relationships.
    */
-  jsonSchema(): Nullable<SchemaModel>;
+  readonly schema: Nullable<SchemaModel>;
+
+  /**
+   * Returns JSON Schema object representing this resource's identifier
+   */
+  readonly idSchema: SchemaModel;
+
+  /**
+   * Returns a JSON schema object representing a relationship to this resource,
+   * with given cardinality.
+   *
+   * @param cardinality relationship cardinality
+   */
+  relationshipSchema(cardinality: RelationshipCardinality): SchemaModel;
 }
 
 /**
- * Manages JSON:API resources.
+ * Manages JSON:API resource schemas.
  */
-export interface RegistryModel {
-  readonly resources: ReadonlyMap<ResourceType, ResourceModel>;
+export interface JSONAPISchemaRegistry {
+  readonly openapi: OpenAPIModel;
 
-  getResource(resourceType: ResourceType): ResourceModel | undefined;
-  getResourceOrThrow(resourceType: ResourceType): ResourceModel;
+  resourceSchemas(): IterableIterator<JSONAPIResourceSchema>;
 
-  createResource(type: string): ResourceModel;
-  parseResource(schema: SchemaModel): ResourceModel;
+  hasResources(): boolean;
+  getResourceTypes(): string[];
+  getResourceSchema(resourceType: string): JSONAPIResourceSchema | undefined;
+  getResourceSchemaOrThrow(resourceType: string): JSONAPIResourceSchema;
+  addResourceSchema(schema: SchemaModel): JSONAPIResourceSchema;
+  addResourceSchema(resourceType: string, title?: string): JSONAPIResourceSchema;
+  deleteResourceSchema(resourceType: string): void;
+  clearResourceSchemas(): void;
 
-  readonly documents: ReadonlyMap<DocumentId, DocumentModel>;
+  documentSchemas(): IterableIterator<DocumentModel>;
 
-  getDocument(documentId: DocumentId): DocumentModel | undefined;
-  getDocumentOrThrow(documentId: DocumentId): DocumentModel;
-
-  parseDocument(schema: SchemaModel, documentId: DocumentId): DocumentModel;
+  hasDocuments(): boolean;
+  getDocumentIds(): string[];
+  getDocumentSchema(documentId: DocumentId): DocumentModel | undefined;
+  getDocumentSchemaOrThrow(documentId: DocumentId): DocumentModel;
+  addDocumentSchema(
+    documentId: DocumentId,
+    schemaOrType: JSONAPIDocumentSchemaType | SchemaModel,
+  ): DocumentModel;
+  deleteDocumentSchema(documentId: DocumentId): void;
+  clearDocumentSchemas(): void;
 }
