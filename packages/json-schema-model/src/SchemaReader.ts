@@ -1,17 +1,22 @@
 import { AllOfSchema } from './AllOfSchema';
 import { AnyOfSchema } from './AnyOfSchema';
+
+import type { SchemaParent } from './SchemaBase';
+
 import { ArraySchema } from './ArraySchema';
+
+import type { JSONSchema, JSONSchemaOrReference, SchemaFormat } from './types';
+
 import { BooleanSchema } from './BooleanSchema';
+
+import type { JSONArray, JSONObject, JSONValue, Nullable } from '@fresha/api-tools-core';
+
 import { NotSchema } from './NotSchema';
 import { NumberSchema } from './NumberSchema';
 import { ObjectSchema } from './ObjectSchema';
 import { OneOfSchema } from './OneOfSchema';
 import { Reference } from './Reference';
 import { StringSchema } from './StringSchema';
-
-import type { SchemaParent } from './SchemaBase';
-import type { JSONSchema, JSONSchemaOrReference, SchemaFormat } from './types';
-import type { JSONArray, JSONObject, JSONValue, Nullable } from '@fresha/api-tools-core';
 
 type MutableExtensionFields = Map<string, JSONValue>;
 

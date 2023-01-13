@@ -4,7 +4,6 @@ import { BidiMap } from '../../BidiMap';
 
 import { BasicNode } from './BasicNode';
 import { Operation } from './Operation';
-import { Server } from './Server';
 
 import type {
   PathItemModel,
@@ -14,6 +13,9 @@ import type {
   ParameterModel,
   ServerModel,
 } from './types';
+
+import { Server } from './Server';
+
 import type { Nullable, ParametrisedURLString } from '@fresha/api-tools-core';
 
 /**

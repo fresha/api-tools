@@ -8,11 +8,11 @@ import {
 } from '@fresha/openapi-codegen-utils';
 import { ClassDeclaration, Scope } from 'ts-morph';
 
-import { ActionParam } from './ActionParam';
-
 import type { Context } from './context';
 import type { Controller } from './Controller';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+
+import { ActionParam } from './ActionParam';
 
 /**
  * Generates code for a single NestJS controller action.

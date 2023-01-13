@@ -4,8 +4,6 @@ import { SchemaType } from '../types';
 
 import { BasicNode } from './BasicNode';
 import { Encoding } from './Encoding';
-import { Example } from './Example';
-import { SchemaFactory } from './Schema';
 
 import type {
   EncodingModel,
@@ -14,7 +12,12 @@ import type {
   MediaTypeModelParent,
   SchemaModel,
 } from './types';
+
+import { Example } from './Example';
+
 import type { Nullable, JSONValue } from '@fresha/api-tools-core';
+
+import { SchemaFactory } from './Schema';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#media-type-object

@@ -4,9 +4,11 @@ import { Generator as GeneratorBase } from '@fresha/openapi-codegen-utils';
 
 import { ActionsSignatures } from './ActionsSignatures';
 import { APIConfig } from './APIConfig';
-import { TestFile } from './TestFile';
 
 import type { Context } from '../context';
+
+import { TestFile } from './TestFile';
+
 import type { SourceFile } from 'ts-morph';
 
 /**

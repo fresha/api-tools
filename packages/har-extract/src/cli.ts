@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-import { isJSONAPIDataDocument, JSONAPIDocument } from '@fresha/api-tools-core';
+import { isJSONAPIDataDocument, JSONAPIDocument, JSONAPIResourceID } from '@fresha/api-tools-core';
 import yargs from 'yargs';
 
 import type {
@@ -28,7 +28,7 @@ const processDocument = (text: string): JSONAPIDocumentStructure => {
   if (isJSONAPIDataDocument(json)) {
     if (json.data) {
       for (const entry of Array.isArray(json.data) ? json.data : [json.data]) {
-        dataTypes.add(entry.type);
+        dataTypes.add((entry as JSONAPIResourceID).type);
       }
     }
     if (json.included) {

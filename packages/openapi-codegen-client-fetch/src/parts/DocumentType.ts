@@ -3,12 +3,12 @@ import { addImportDeclaration, addTypeAlias } from '@fresha/code-morph-ts';
 import { assert } from '@fresha/openapi-codegen-utils';
 import { SyntaxKind } from 'ts-morph';
 
+import type { ActionContext } from '../context';
+import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+
 import { NamedType } from './NamedType';
 import { ResourceType } from './ResourceType';
 import { determineSchemaName, schemaToType } from './utils';
-
-import type { ActionContext } from '../context';
-import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 export class DocumentType extends NamedType {
   protected isRequestBody: boolean;

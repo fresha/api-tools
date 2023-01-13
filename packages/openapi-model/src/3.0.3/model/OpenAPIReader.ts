@@ -5,75 +5,7 @@ import { Nullable, JSONObject, ObjectOrRef, isJSONRef } from '@fresha/api-tools-
 import yaml from 'yaml';
 
 import { Callback } from './Callback';
-import { Discriminator } from './Discriminator';
-import { Encoding } from './Encoding';
-import { Example } from './Example';
-import { ExternalDocumentation } from './ExternalDocumentation';
-import { Header } from './Header';
-import { Link } from './Link';
-import { MediaType } from './MediaType';
-import {
-  OAuthAuthorisationCodeFlow,
-  OAuthClientCredentialsFlow,
-  OAuthImplicitFlow,
-  OAuthPasswordFlow,
-} from './OAuthFlow';
-import { OpenAPI } from './OpenAPI';
-import { Operation } from './Operation';
-import { QueryParameter, PathParameter, HeaderParameter, CookieParameter } from './Parameter';
-import { defaultExplode } from './Parameter/utils';
-import { PathItem } from './PathItem';
-import { RequestBody } from './RequestBody';
-import { Response } from './Response';
-import { Schema, SchemaFactory } from './Schema';
-import {
-  APIKeySecurityScheme,
-  HTTPSecurityScheme,
-  OAuth2SecurityScheme,
-  OpenIdConnectSecurityScheme,
-} from './SecurityScheme';
-import { Tag } from './Tag';
-import { XML } from './XML';
 
-import type {
-  APIKeySecuritySchemeObject,
-  CallbackObject,
-  ComponentsObject,
-  ContactObject,
-  CookieParameterObject,
-  CookieParameterSerializationStyle,
-  DiscriminatorObject,
-  EncodingObject,
-  ExampleObject,
-  ExternalDocumentationObject,
-  HeaderObject,
-  HeaderParameterObject,
-  HeaderParameterSerializationStyle,
-  HTTPSecuritySchemeObject,
-  InfoObject,
-  LicenseObject,
-  LinkObject,
-  MediaTypeObject,
-  OAuth2SecuritySchemeObject,
-  OpenAPIObject,
-  OpenIdConnectSecuritySchemeObject,
-  OperationObject,
-  ParameterObject,
-  PathItemObject,
-  PathParameterObject,
-  QueryParameterObject,
-  RequestBodyObject,
-  ResponseObject,
-  SchemaFormat,
-  SchemaObject,
-  SchemaType,
-  SecurityRequirementObject,
-  SecuritySchemeObject,
-  ServerObject,
-  ServerVariableObject,
-  TagObject,
-  XMLObject,
-} from '../types';
 import type {
   PathItemOperationKey,
   QueryParameterSerializationStyle,
@@ -133,6 +65,77 @@ import type {
   SecuritySchemaModelParent,
   EncodingSerializationStyle,
 } from './types';
+
+import { Discriminator } from './Discriminator';
+
+import type {
+  APIKeySecuritySchemeObject,
+  CallbackObject,
+  ComponentsObject,
+  ContactObject,
+  CookieParameterObject,
+  CookieParameterSerializationStyle,
+  DiscriminatorObject,
+  EncodingObject,
+  ExampleObject,
+  ExternalDocumentationObject,
+  HeaderObject,
+  HeaderParameterObject,
+  HeaderParameterSerializationStyle,
+  HTTPSecuritySchemeObject,
+  InfoObject,
+  LicenseObject,
+  LinkObject,
+  MediaTypeObject,
+  OAuth2SecuritySchemeObject,
+  OpenAPIObject,
+  OpenIdConnectSecuritySchemeObject,
+  OperationObject,
+  ParameterObject,
+  PathItemObject,
+  PathParameterObject,
+  QueryParameterObject,
+  RequestBodyObject,
+  ResponseObject,
+  SchemaFormat,
+  SchemaObject,
+  SchemaType,
+  SecurityRequirementObject,
+  SecuritySchemeObject,
+  ServerObject,
+  ServerVariableObject,
+  TagObject,
+  XMLObject,
+} from '../types';
+
+import { Encoding } from './Encoding';
+import { Example } from './Example';
+import { ExternalDocumentation } from './ExternalDocumentation';
+import { Header } from './Header';
+import { Link } from './Link';
+import { MediaType } from './MediaType';
+import {
+  OAuthAuthorisationCodeFlow,
+  OAuthClientCredentialsFlow,
+  OAuthImplicitFlow,
+  OAuthPasswordFlow,
+} from './OAuthFlow';
+import { OpenAPI } from './OpenAPI';
+import { Operation } from './Operation';
+import { QueryParameter, PathParameter, HeaderParameter, CookieParameter } from './Parameter';
+import { defaultExplode } from './Parameter/utils';
+import { PathItem } from './PathItem';
+import { RequestBody } from './RequestBody';
+import { Response } from './Response';
+import { Schema, SchemaFactory } from './Schema';
+import {
+  APIKeySecurityScheme,
+  HTTPSecurityScheme,
+  OAuth2SecurityScheme,
+  OpenIdConnectSecurityScheme,
+} from './SecurityScheme';
+import { Tag } from './Tag';
+import { XML } from './XML';
 
 const operationMethods: PathItemOperationKey[] = [
   'get',
