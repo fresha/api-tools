@@ -1,6 +1,6 @@
-import type { Context } from '../context';
 import type { Action } from './Action';
 import type { Controller } from './Controller';
+import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
 
 export class ControllerTestSuite {

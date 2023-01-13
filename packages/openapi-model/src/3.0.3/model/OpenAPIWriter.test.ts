@@ -6,9 +6,10 @@ import yaml from 'yaml';
 import { ExternalDocumentation } from './ExternalDocumentation';
 import { OpenAPI, OpenAPIFactory } from './OpenAPI';
 import { OpenAPIReader } from './OpenAPIReader';
-import { OpenAPIWriter } from './OpenAPIWriter';
 
 import type { OpenAPIObject } from '../types';
+
+import { OpenAPIWriter } from './OpenAPIWriter';
 
 test('minimalistic schema', () => {
   const openapi = new OpenAPI('Barebones', '1.2.3');

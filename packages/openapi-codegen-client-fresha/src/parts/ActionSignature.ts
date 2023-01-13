@@ -10,8 +10,8 @@ import {
 import { getOperationRequestBodySchema } from '@fresha/openapi-codegen-utils';
 import { CodeBlockWriter, SyntaxKind, TypeLiteralNode } from 'ts-morph';
 
-import type { Context } from '../context';
 import type { OperationTemplate } from './operations';
+import type { Context } from '../context';
 import type { OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 // returns true if action needs args argument (everything except resource ID)

@@ -8,11 +8,13 @@ import {
   getOperations,
 } from '@fresha/openapi-codegen-utils';
 
-import { ActionSignature } from './ActionSignature';
-import { findOperationTemplate } from './operations';
-
 import type { Context } from '../context';
+
+import { ActionSignature } from './ActionSignature';
+
 import type { SourceFile } from 'ts-morph';
+
+import { findOperationTemplate } from './operations';
 
 /**
  * Generates the type alias, containing signatures of all API actions.

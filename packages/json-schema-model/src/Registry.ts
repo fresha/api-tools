@@ -3,12 +3,6 @@ import { ITreeParent } from '@fresha/api-tools-core/build/TreeNode';
 import { AllOfSchema } from './AllOfSchema';
 import { AnyOfSchema } from './AnyOfSchema';
 import { ArraySchema } from './ArraySchema';
-import { BooleanSchema } from './BooleanSchema';
-import { NotSchema } from './NotSchema';
-import { NumberSchema } from './NumberSchema';
-import { ObjectSchema } from './ObjectSchema';
-import { OneOfSchema } from './OneOfSchema';
-import { StringSchema } from './StringSchema';
 
 import type {
   AddBooleanSchemaOptions,
@@ -28,6 +22,13 @@ import type {
   JSONSchemaOrReference,
   JSONSchemaType,
 } from './types';
+
+import { BooleanSchema } from './BooleanSchema';
+import { NotSchema } from './NotSchema';
+import { NumberSchema } from './NumberSchema';
+import { ObjectSchema } from './ObjectSchema';
+import { OneOfSchema } from './OneOfSchema';
+import { StringSchema } from './StringSchema';
 
 class Registry implements ISchemaRegistry, ITreeParent<ISchemaRegistry> {
   readonly schemas: Map<string, JSONSchema>;

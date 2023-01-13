@@ -1,5 +1,5 @@
-import type { Context } from '../context';
 import type { View } from './View';
+import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
 
 export class ViewTestSuite {

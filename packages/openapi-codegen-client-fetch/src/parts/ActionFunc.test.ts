@@ -6,9 +6,9 @@ import '@fresha/openapi-codegen-test-utils/build/matchers';
 
 import { createActionTestContext } from '../testHelpers';
 
-import { ActionFunc } from './ActionFunc';
-
 import type { NamedType } from './NamedType';
+
+import { ActionFunc } from './ActionFunc';
 
 const createAction = (operation: OperationModel, filePath = 'src/index.ts'): ActionFunc => {
   const context = createActionTestContext(operation, filePath);

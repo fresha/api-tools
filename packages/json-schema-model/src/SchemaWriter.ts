@@ -1,15 +1,18 @@
 import { AllOfSchema } from './AllOfSchema';
 import { AnyOfSchema } from './AnyOfSchema';
 import { ArraySchema } from './ArraySchema';
+
+import type { ExtensionFields, JSONSchema, JSONSchemaOrReference } from './types';
+
 import { BooleanSchema } from './BooleanSchema';
+
+import type { JSONObject } from '@fresha/api-tools-core';
+
 import { NotSchema } from './NotSchema';
 import { NumberSchema } from './NumberSchema';
 import { ObjectSchema } from './ObjectSchema';
 import { OneOfSchema } from './OneOfSchema';
 import { StringSchema } from './StringSchema';
-
-import type { ExtensionFields, JSONSchema, JSONSchemaOrReference } from './types';
-import type { JSONObject } from '@fresha/api-tools-core';
 
 export class SchemaWriter {
   write(schema: JSONSchemaOrReference): JSONObject {
