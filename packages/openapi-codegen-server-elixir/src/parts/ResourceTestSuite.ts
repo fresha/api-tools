@@ -5,21 +5,21 @@ import { JSONValue, snakeCase } from '@fresha/api-tools-core';
 
 import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
-import type { ResourceModel } from '@fresha/json-api-model';
+import type { JSONAPIResourceSchema } from '@fresha/json-api-model';
 
 export class ResourceTestSuite {
   protected readonly context: Context;
   readonly moduleName: string;
   protected readonly resourceModuleName: string;
   protected readonly resourceModuleAlias: string;
-  protected readonly resource: ResourceModel;
+  protected readonly resource: JSONAPIResourceSchema;
   protected readonly sourceFile: SourceFile;
 
   constructor(
     context: Context,
     moduleName: string,
     resourceModuleName: string,
-    resource: ResourceModel,
+    resource: JSONAPIResourceSchema,
   ) {
     this.context = context;
     this.moduleName = moduleName;
@@ -38,12 +38,12 @@ export class ResourceTestSuite {
 
     this.sourceFile.writeDefmodule(this.moduleName, () => {
       this.sourceFile.writeUse('ExUnit.Case', 'async: false');
-      if (this.resource.jsonSchema()) {
+      if (this.resource.schema) {
         this.sourceFile.writeImport(this.context.testObjectFactoryModuleName);
       }
       this.sourceFile.writeAlias(this.resourceModuleName);
 
-      if (this.resource.jsonSchema()) {
+      if (this.resource.schema) {
         this.generateTestBuildFunction();
       }
       this.generateTestLinkFunction();
@@ -53,7 +53,7 @@ export class ResourceTestSuite {
   protected generateTestData(): Map<string, JSONValue> {
     faker.seed(132489235);
 
-    const resourceSchema = this.resource.jsonSchema();
+    const resourceSchema = this.resource.schema;
     assert(resourceSchema);
 
     const result = new Map<string, JSONValue>();
@@ -143,7 +143,7 @@ export class ResourceTestSuite {
   }
 
   protected generateTestBuildFunction(): void {
-    const resourceSchema = this.resource.jsonSchema();
+    const resourceSchema = this.resource.schema;
     assert(resourceSchema);
 
     this.sourceFile.newLine();
@@ -157,14 +157,14 @@ export class ResourceTestSuite {
         this.sourceFile.writeLine(`:${snakeCase(this.resource.type)},`);
         this.sourceFile.writeLine(`id: ${String(values.get('id'))},`);
 
-        for (const attrName of this.resource.attributes.keys()) {
+        for (const attrName of this.resource.getAttributeNames()) {
           const attrValue = values.get(attrName);
           const elixirAttrName = snakeCase(attrName);
           this.sourceFile.writeLine(`${elixirAttrName}: ${String(attrValue)},`);
         }
-        for (const [relName, relObj] of this.resource.relationships) {
-          const relValue = String(!!relObj.jsonSchema());
-          const elixirRelName = snakeCase(`${relName}Id`);
+        for (const relObj of this.resource.relationshipSchemas()) {
+          const relValue = String(!!relObj.schema);
+          const elixirRelName = snakeCase(`${relObj.name}Id`);
           this.sourceFile.writeLine(`${elixirRelName}: ${String(relValue)},`);
         }
       });
@@ -179,10 +179,10 @@ export class ResourceTestSuite {
         this.sourceFile.writeLine(`type: "${this.resource.type}",`);
         this.sourceFile.writeLine(`id: ${String(values.get('id'))},`);
 
-        if (this.resource.attributes.size) {
+        if (this.resource.hasAttributes()) {
           this.sourceFile.writeLine('attributes: %{');
           this.sourceFile.writeIndented(() => {
-            for (const attrName of this.resource.attributes.keys()) {
+            for (const attrName of this.resource.getAttributeNames()) {
               const elixirAttrName = snakeCase(attrName);
               this.sourceFile.writeLine(`${elixirAttrName}: ${String(values.get(attrName))},`);
             }
@@ -192,13 +192,13 @@ export class ResourceTestSuite {
           this.sourceFile.writeLine('attributes: %{},');
         }
 
-        if (this.resource.relationships.size) {
+        if (this.resource.hasRelationships()) {
           this.sourceFile.writeLine('relationships: %{');
           this.sourceFile.writeIndented(() => {
-            for (const [relName, { otherResourceType }] of this.resource.relationships) {
-              const elixirAttrName = snakeCase(relName);
+            for (const relObj of this.resource.relationshipSchemas()) {
+              const elixirAttrName = snakeCase(relObj.name);
               this.sourceFile.writeLine(
-                `${elixirAttrName}: %Jabbax.Document.ResourceId{id: config.${elixirAttrName}.id, type: "${otherResourceType}"},`,
+                `${elixirAttrName}: %Jabbax.Document.ResourceId{id: config.${elixirAttrName}.id, type: "${relObj.resourceType}"},`,
               );
             }
           });

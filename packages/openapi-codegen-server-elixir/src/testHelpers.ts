@@ -1,5 +1,5 @@
 import { Project } from '@fresha/code-morph-ex';
-import { createRegistry } from '@fresha/json-api-model';
+import { createJSONAPISchemaRegistry } from '@fresha/json-api-model';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { createTestContext as createBaseTestContext } from '@fresha/openapi-codegen-test-utils';
 import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
@@ -23,7 +23,7 @@ export const createTestContext = (phoenixApp: string, rootDir = '/'): Context =>
     testObjectFactoryModuleName: `${project.getAppModuleName()}.Factory`,
     openapi,
     project,
-    registry: createRegistry(),
+    registry: createJSONAPISchemaRegistry(),
   };
 };
 

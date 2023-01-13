@@ -26,7 +26,7 @@ const makeResource = (
   const resource = new Resource(
     generator.context,
     generator.context.project.getResourceModuleName(resourceType),
-    generator.context.registry.parseResource(resourceSchema),
+    generator.context.registry.addResourceSchema(resourceSchema),
   );
 
   return { resource, resourceSchema };
@@ -38,7 +38,7 @@ test('for schema-less resources, only link/1 is generated', () => {
   const resource = new Resource(
     generator.context,
     generator.context.project.getResourceModuleName(resourceType),
-    generator.context.registry.createResource(resourceType),
+    generator.context.registry.addResourceSchema(resourceType),
   );
 
   resource.collectData();
@@ -113,7 +113,7 @@ test('happy path', () => {
   const resource = new Resource(
     generator.context,
     generator.context.project.getResourceModuleName(resourceType),
-    generator.context.registry.parseResource(resourceSchema),
+    generator.context.registry.addResourceSchema(resourceSchema),
   );
 
   resource.collectData();

@@ -1,6 +1,6 @@
 import { titleCase } from '@fresha/api-tools-core';
 
-import type { RegistryModel } from './types';
+import type { JSONAPISchemaRegistry } from './types';
 import type { OpenAPIModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 export const jsonApiResourceSchemas = function* jsonApiResourceSchemas(
@@ -26,25 +26,27 @@ export const jsonApiResourceSchemas = function* jsonApiResourceSchemas(
   }
 };
 
-export const parseOpenApi = (openapi: OpenAPIModel, registry: RegistryModel) => {
+export const parseOpenApi = (openapi: OpenAPIModel, registry: JSONAPISchemaRegistry): void => {
   for (const [operationId, schema] of jsonApiResourceSchemas(openapi)) {
     try {
-      registry.parseDocument(schema, titleCase(`${operationId}Response`));
+      registry.addDocumentSchema(titleCase(`${operationId}Response`), schema);
     } catch (err) {
       // ignore, this is possibly because schemas are not JSON:API documents
     }
   }
 
   const missingResources = new Set<string>();
-  for (const [, resource] of registry.resources) {
-    for (const [, relationship] of resource.relationships) {
-      if (!registry.resources.has(relationship.otherResourceType)) {
-        missingResources.add(relationship.otherResourceType);
+  for (const resType of registry.getResourceTypes()) {
+    const resource = registry.getResourceSchemaOrThrow(resType);
+    for (const relName of resource.getRelationshipNames()) {
+      const relationship = resource.getRelationshipOrThrow(relName);
+      if (!registry.getResourceSchema(relationship.resourceType)) {
+        missingResources.add(relationship.resourceType);
       }
     }
   }
 
   for (const resourceType of missingResources) {
-    registry.createResource(resourceType);
+    registry.addResourceSchema(resourceType);
   }
 };

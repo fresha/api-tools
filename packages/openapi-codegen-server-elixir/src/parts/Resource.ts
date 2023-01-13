@@ -2,15 +2,15 @@ import { snakeCase } from '@fresha/api-tools-core';
 
 import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
-import type { ResourceModel } from '@fresha/json-api-model';
+import type { JSONAPIResourceSchema } from '@fresha/json-api-model';
 
 export class Resource {
   readonly context: Context;
   readonly moduleName: string;
   readonly sourceFile: SourceFile;
-  readonly resource: ResourceModel;
+  readonly resource: JSONAPIResourceSchema;
 
-  constructor(context: Context, moduleName: string, resource: ResourceModel) {
+  constructor(context: Context, moduleName: string, resource: JSONAPIResourceSchema) {
     this.context = context;
     this.moduleName = moduleName;
     this.sourceFile = this.context.project.createResourceFile(moduleName);
@@ -34,9 +34,9 @@ export class Resource {
   }
 
   protected maybeWriteBuildFunction(): void {
-    if (this.resource.jsonSchema()) {
-      for (const { otherResourceType } of this.resource.relationships.values()) {
-        this.sourceFile.writeAlias(this.context.project.getResourceModuleName(otherResourceType));
+    if (this.resource.schema) {
+      for (const { resourceType } of this.resource.relationshipSchemas()) {
+        this.sourceFile.writeAlias(this.context.project.getResourceModuleName(resourceType));
       }
       this.sourceFile.writeFunction({
         name: 'build',
@@ -46,17 +46,17 @@ export class Resource {
             this.sourceFile.writePropertyAssignment('type', '@resource_type');
             this.sourceFile.writePropertyAssignment('id', 'config.id');
             this.sourceFile.writePropertyStruct('attributes', () => {
-              for (const propName of this.resource.attributes.keys()) {
+              for (const propName of this.resource.getAttributeNames()) {
                 const elixirPropName = snakeCase(propName);
                 this.sourceFile.writeLine(`${elixirPropName}: config.${elixirPropName},`);
               }
             });
 
-            if (this.resource.relationships.size) {
+            if (this.resource.hasRelationships()) {
               this.sourceFile.writeLine('relationships:');
               this.sourceFile.writeIndented(() => {
                 this.sourceFile.writeLine('%{}');
-                for (const relName of this.resource.relationships.keys()) {
+                for (const relName of this.resource.getRelationshipNames()) {
                   const elixirRelName = snakeCase(relName);
                   this.sourceFile.writeLine(
                     `|> link_relationship(:${elixirRelName}, config.${elixirRelName})`,
@@ -71,7 +71,7 @@ export class Resource {
   }
 
   protected maybeWriteLinkRelationshipsFunctions(): void {
-    if (this.resource.relationships.size) {
+    if (this.resource.hasRelationships()) {
       this.sourceFile.writeFunction({
         isPrivate: true,
         name: 'link_relationship',
@@ -83,9 +83,9 @@ export class Resource {
         },
       });
 
-      for (const [relName, { otherResourceType }] of this.resource.relationships) {
-        const elixirRelName = snakeCase(relName);
-        const moduleAlias = this.context.project.getResourceModuleAlias(otherResourceType);
+      for (const relObj of this.resource.relationshipSchemas()) {
+        const elixirRelName = snakeCase(relObj.name);
+        const moduleAlias = this.context.project.getResourceModuleAlias(relObj.resourceType);
 
         this.sourceFile.writeFunction({
           isPrivate: true,
