@@ -1,4 +1,4 @@
-import { OpenAPIFactory, SchemaFactory, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 import { parseRelationshipSchema } from './RelationshipSchema';
 
@@ -42,8 +42,7 @@ describe('parseRelationshipSchema', () => {
 
   test('many', () => {
     dataSchema.type = 'array';
-    dataSchema.items = SchemaFactory.create(dataSchema, 'object');
-    dataSchema.items.setProperties({
+    dataSchema.setItems('object').setProperties({
       type: { type: 'string', enum: ['payments'] },
       id: 'string',
     });
@@ -55,8 +54,7 @@ describe('parseRelationshipSchema', () => {
   });
 
   test('invalid many', () => {
-    dataSchema.items = SchemaFactory.create(dataSchema, 'object');
-    dataSchema.items.setProperties({
+    dataSchema.setItems('object').setProperties({
       type: { type: 'string', enum: ['payments'] },
       id: 'string',
     });

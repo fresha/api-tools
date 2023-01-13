@@ -511,7 +511,7 @@ export class OpenAPIReader {
       model.not = this.parseSchema(json.not, model);
     }
     if (json.items) {
-      model.items = this.parseSchema(json.items, model);
+      model.setItems(this.parseSchema(json.items, model));
     }
     if (json.properties) {
       for (const [key, value] of Object.entries(json.properties)) {

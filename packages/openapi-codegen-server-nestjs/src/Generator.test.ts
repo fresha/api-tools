@@ -16,7 +16,7 @@ const buildBasicJSONAPI = (openapi: OpenAPIModel): void => {
   });
 
   const resourceIdListSchema = openapi.components.setSchema('JSONAPIResourceIdList', 'array');
-  resourceIdListSchema.items = resourceIdSchema;
+  resourceIdListSchema.setItems(resourceIdSchema);
 
   const relationshipSchema = openapi.components.setSchema('JSONAPIRelationship', 'object');
   const relationshipDataSchema = relationshipSchema.setProperty('data', {
@@ -37,7 +37,7 @@ const buildBasicJSONAPI = (openapi: OpenAPIModel): void => {
   resourceSchema.getPropertyOrThrow('relationships').additionalProperties = relationshipSchema;
 
   const resourceListSchema = openapi.components.setSchema('JSONAPIResourceList', 'array');
-  resourceListSchema.items = resourceSchema;
+  resourceListSchema.setItems(resourceSchema);
 
   const dataDocumentSchema = openapi.components.setSchema('JSONAPIDataDocument', 'object');
   dataDocumentSchema.setProperty('jsonapi', versionSchema);

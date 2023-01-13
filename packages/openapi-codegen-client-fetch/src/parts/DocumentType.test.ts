@@ -5,7 +5,7 @@ import {
   MEDIA_TYPE_JSON_API,
   setResourceSchema,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OperationModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OperationModel } from '@fresha/openapi-model/build/3.0.3';
 
 import { createActionTestContext } from '../testHelpers';
 
@@ -155,7 +155,7 @@ describe('primary data', () => {
       attributes: { type: 'object', required: true },
     });
 
-    responseSchema.setProperty('data', 'array').items = employee;
+    responseSchema.setProperty('data', 'array').setItems(employee);
 
     const documentType = createDocumentType(operation, 'SimpleResponseDocument');
 
@@ -183,7 +183,7 @@ describe('primary data', () => {
       attributes: { type: 'object', required: true },
     });
 
-    responseSchema.setProperty('data', 'array').items = employee;
+    responseSchema.setProperty('data', 'array').setItems(employee);
 
     // pretend that this resource is used in multiple documents, and rendered before
     generatedTypes.add('Employee');
@@ -228,7 +228,7 @@ describe('included', () => {
     });
 
     responseSchema.setProperty('data', employee);
-    responseSchema.setProperty('included', 'array').items = employee;
+    responseSchema.setProperty('included', 'array').setItems(employee);
 
     const documentType = createDocumentType(operation, 'DocumentWithIncludedResources');
 
@@ -269,9 +269,9 @@ describe('included', () => {
     responseSchema.setProperty('data', employee);
 
     const includedSchema = responseSchema.setProperty('included', 'array');
-    includedSchema.items = SchemaFactory.create(includedSchema, null);
-    includedSchema.items.addOneOf(organization);
-    includedSchema.items.addOneOf(employee);
+    const includedItemSchema = includedSchema.setItems(null);
+    includedItemSchema.addOneOf(organization);
+    includedItemSchema.addOneOf(employee);
 
     const documentType = createDocumentType(operation, 'DocumentWithIncludedResources');
 

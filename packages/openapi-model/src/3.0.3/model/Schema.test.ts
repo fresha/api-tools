@@ -87,7 +87,7 @@ describe('Schema', () => {
     expect(objectSchema.isComposite()).toBeFalsy();
 
     const arraySchema = openapi.components.setSchema('ArraySchema', 'array');
-    arraySchema.items = SchemaFactory.create(arraySchema, 'object');
+    arraySchema.setItems('object');
 
     expect(arraySchema.isComposite()).toBeFalsy();
 

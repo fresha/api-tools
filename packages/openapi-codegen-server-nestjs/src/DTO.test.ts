@@ -1,5 +1,3 @@
-import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
-
 import '@fresha/openapi-codegen-test-utils/build/matchers';
 
 import { DTO } from './DTO';
@@ -248,8 +246,7 @@ describe('serialization', () => {
   test('array', () => {
     const schema = context.openapi.components.setSchema('Error', 'object');
 
-    const intArrayProp = schema.setProperty('intArray', 'array');
-    intArrayProp.items = SchemaFactory.create(intArrayProp, 'integer');
+    schema.setProperty('intArray', 'array').setItems('integer');
 
     new DTO(context, 'AnotherResponse', schema).generateCode();
 
