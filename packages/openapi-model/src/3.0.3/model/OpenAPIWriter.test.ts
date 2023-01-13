@@ -58,8 +58,7 @@ test('shared schemas + references', () => {
   const errorSchema = openapi.components.setSchema('Error', 'object');
   errorSchema.setProperty('code', { type: 'integer', required: true });
 
-  const errorListSchema = openapi.components.setSchema('ErrorList', 'array');
-  errorListSchema.items = errorSchema;
+  openapi.components.setSchema('ErrorList', 'array').setItems(errorSchema);
 
   const writer = new OpenAPIWriter();
   const openapiObject = writer.write(openapi);
@@ -123,7 +122,7 @@ test('serialises operation with shared schemas', () => {
   errorSchema.setProperty('code', { type: 'integer', required: true });
 
   const errorListSchema = openapi.components.setSchema('ErrorList', 'array');
-  errorListSchema.items = errorSchema;
+  errorListSchema.setItems(errorSchema);
 
   const employeesPathItem = openapi.setPathItem('/employees');
 

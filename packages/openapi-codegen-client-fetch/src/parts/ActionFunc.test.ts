@@ -27,7 +27,8 @@ test('simple test', () => {
     .setResponse(200, 'returns a list of employees')
     .setContent(MEDIA_TYPE_JSON_API)
     .setSchema('object')
-    .setProperty('data', 'array').items = openapi.components.getSchemaOrThrow('EmployeeResource');
+    .setProperty('data', 'array')
+    .setItems(openapi.components.getSchemaOrThrow('EmployeeResource'));
   operation.addSecurityRequirement().addScopes('the_auth');
 
   const namedTypes = new Map<string, NamedType>();
@@ -98,7 +99,8 @@ test('action returns raw response', () => {
     .setResponse(200, 'returns a list of employees')
     .setContent(MEDIA_TYPE_JSON_API)
     .setSchema('object')
-    .setProperty('data', 'array').items = schema;
+    .setProperty('data', 'array')
+    .setItems(schema);
   operation.setExtension('fresha-codegen', {
     'client-fetch': {
       return: 'response',

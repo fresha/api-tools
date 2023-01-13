@@ -197,7 +197,7 @@ export const addResourceRelationship = (
   switch (cardinality) {
     case RelationshipCardinality.Many: {
       const dataSchema = relationshipSchema.setProperty('data', 'array');
-      dataSchema.items = createResourceIdSchema(dataSchema, resourceType);
+      dataSchema.setItems(createResourceIdSchema(dataSchema, resourceType));
       break;
     }
     case RelationshipCardinality.One: {
@@ -269,19 +269,19 @@ export const setDataDocumentSchema = (
     .setProperty('version', { type: 'string', required: true, enum: ['1.0'] });
 
   if (multiplePrimaryResources) {
-    const dataSchema = documentSchema.setProperty('data', 'array');
-    dataSchema.items = SchemaFactory.create(dataSchema, null);
-    setResourceSchema(dataSchema.items, primaryResourceType);
+    setResourceSchema(
+      documentSchema.setProperty('data', 'array').setItems(null),
+      primaryResourceType,
+    );
   } else {
     const dataSchema = createResourceSchema(documentSchema, primaryResourceType);
     documentSchema.setProperty('data', { type: dataSchema, required: true });
   }
 
   if (includedResourceTypes?.length) {
-    const includedSchema = documentSchema.setProperty('included', 'array');
-    includedSchema.items = SchemaFactory.create(includedSchema, null);
+    const includedItemSchema = documentSchema.setProperty('included', 'array').setItems(null);
     for (const includedType of includedResourceTypes) {
-      const includedAltSchema = includedSchema.items.addAnyOf('object');
+      const includedAltSchema = includedItemSchema.addAnyOf('object');
       setResourceIdSchema(includedAltSchema, includedType);
     }
   }
