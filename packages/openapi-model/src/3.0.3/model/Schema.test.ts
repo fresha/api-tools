@@ -2,9 +2,17 @@ import { OpenAPI } from './OpenAPI';
 import { SchemaFactory } from './Schema';
 import { SchemaModel } from './types';
 
+let openapi: OpenAPI;
+
+beforeEach(() => {
+  openapi = new OpenAPI('example', '0.1.0');
+});
+
 describe('SchemaFactory', () => {
-  test('create()', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
+  test('create() w/ string type', () => {
+    const nullTypeSchema = SchemaFactory.create(openapi.components, null);
+    expect(nullTypeSchema.parent).toBe(openapi.components);
+    expect(nullTypeSchema.type).toBe(null);
 
     const booleanSchema = SchemaFactory.create(openapi.components, 'boolean');
     expect(booleanSchema.parent).toBe(openapi.components);
@@ -31,9 +39,39 @@ describe('SchemaFactory', () => {
     expect(decimalSchema).toHaveProperty('format', 'decimal');
   });
 
-  test('createArray()', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
+  test('create() w/ object options', () => {
+    const booleanSchema = SchemaFactory.create(openapi.components, {
+      type: 'boolean',
+      nullable: true,
+      enum: [false],
+    });
+    expect(booleanSchema).toHaveProperty('parent', openapi.components);
+    expect(booleanSchema).toHaveProperty('type', 'boolean');
+    expect(booleanSchema).toHaveProperty('nullable', true);
+    expect(booleanSchema).toHaveProperty('enum', [false]);
 
+    const int32Schema = SchemaFactory.create(openapi.components, {
+      type: 'int32',
+      minimum: 12,
+      maximum: 34,
+    });
+    expect(int32Schema).toHaveProperty('type', 'integer');
+    expect(int32Schema).toHaveProperty('format', 'int32');
+    expect(int32Schema).toHaveProperty('minimum', 12);
+    expect(int32Schema).toHaveProperty('maximum', 34);
+
+    const stringSchema = SchemaFactory.create(openapi.components, {
+      type: 'string',
+      minLength: 1,
+      maxLength: 12,
+    });
+    expect(stringSchema).toHaveProperty('type', 'string');
+    expect(stringSchema).toHaveProperty('format', null);
+    expect(stringSchema).toHaveProperty('minLength', 1);
+    expect(stringSchema).toHaveProperty('maxLength', 12);
+  });
+
+  test('createArray()', () => {
     const stringArraySchema = SchemaFactory.createArray(openapi.components, 'string');
     expect(stringArraySchema.parent).toBe(openapi.components);
     expect(stringArraySchema.minItems).toBeNull();
@@ -55,8 +93,6 @@ describe('SchemaFactory', () => {
   });
 
   test('createObject()', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const emptyObjectSchema = SchemaFactory.createObject(openapi.components, {});
     expect(emptyObjectSchema.parent).toBe(openapi.components);
     expect(emptyObjectSchema.properties).toHaveProperty('size', 0);
@@ -76,8 +112,6 @@ describe('SchemaFactory', () => {
 
 describe('Schema', () => {
   test('isComposite', () => {
-    const openapi = new OpenAPI('isComposite', '0.1.0');
-
     const objectSchema = openapi.components.setSchema('ObjectSchema', 'object');
     objectSchema.setProperties({
       one: 'string',
@@ -110,8 +144,6 @@ describe('Schema', () => {
   });
 
   test('isNull', () => {
-    const openapi = new OpenAPI('isNull', '0.1.0');
-
     const nullTypedButNoEnum = openapi.components.setSchema('OnlyNullType');
     expect(nullTypedButNoEnum.isNull()).toBeFalsy();
 
@@ -126,8 +158,6 @@ describe('Schema', () => {
 
   describe('isNullish', () => {
     test('true for nullable schemas', () => {
-      const openapi = new OpenAPI('example', '0.1.0');
-
       const nullableSchema = openapi.components.setSchema('NullableNumber', 'number');
       nullableSchema.nullable = true;
       expect(nullableSchema.isNullish()).toBeTruthy();
@@ -137,8 +167,6 @@ describe('Schema', () => {
     });
 
     test('true for null schemas', () => {
-      const openapi = new OpenAPI('example', '0.1.0');
-
       const nullSchema = openapi.components.setSchema('Null');
       nullSchema.enum = [null];
 
@@ -146,8 +174,6 @@ describe('Schema', () => {
     });
 
     test('true if at least one subschema is nullish', () => {
-      const openapi = new OpenAPI('example', '0.1.0');
-
       const nullishSchema = openapi.components.setSchema('NullishSchema');
       const alt1 = SchemaFactory.create(nullishSchema, 'object');
       const alt2 = SchemaFactory.create(nullishSchema, null);
@@ -166,10 +192,6 @@ describe('Schema', () => {
     });
 
     test('false if no subschema is nullish', () => {
-      const openapi = new OpenAPI('example', '0.1.0');
-
-      debugger;
-
       const nullishSchema = openapi.components.setSchema('NullishSchema');
       const alt1 = SchemaFactory.create(nullishSchema, 'object');
       const alt2 = SchemaFactory.create(nullishSchema, null);
@@ -188,8 +210,6 @@ describe('Schema', () => {
   });
 
   test('getProperty + getPropertyOrThrow', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.create(openapi.components, 'object');
     schema.setProperties({ a: 'string', b: 'date' });
 
@@ -200,7 +220,6 @@ describe('Schema', () => {
   });
 
   test('getPropertyDeep + getPropertyDeepOrThrow', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
     const schema = openapi.components.setSchema('TestSchema', 'object');
 
     const ownString = schema.setProperty('own', 'string');
@@ -218,15 +237,10 @@ describe('Schema', () => {
   });
 
   describe('setProperty', () => {
-    const makeSchema = (): SchemaModel => {
-      const openapi = new OpenAPI('example', '0.1.0');
-      return SchemaFactory.create(openapi.components, 'object');
-    };
-
-    let schema = makeSchema();
+    let schema: SchemaModel;
 
     beforeEach(() => {
-      schema = makeSchema();
+      schema = SchemaFactory.create(openapi.components, 'object');
     });
 
     test('empty state', () => {
@@ -531,8 +545,6 @@ describe('Schema', () => {
   });
 
   test('setProperties', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.create(openapi.components, 'object');
     schema.setProperties({
       x: 'string',
@@ -544,8 +556,6 @@ describe('Schema', () => {
   });
 
   test('deleteProperty', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.create(openapi.components, 'object');
     schema.setProperties({
       x: 'string',
@@ -562,8 +572,6 @@ describe('Schema', () => {
   });
 
   test('clearProperties()', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.create(openapi.components, 'object');
     schema.setProperties({
       x: 'string',
@@ -577,8 +585,6 @@ describe('Schema', () => {
   });
 
   test('setPropertyRequired', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.createObject(openapi.components, {
       a: 'string',
       b: 'binary',
@@ -591,8 +597,6 @@ describe('Schema', () => {
   });
 
   test('setItems', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.create(openapi.components, 'array');
     expect(schema.items).toBeNull();
 
@@ -603,8 +607,6 @@ describe('Schema', () => {
   });
 
   test('addAllOf', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.create(openapi.components, null);
     expect(schema.allOf).toStrictEqual([]);
 
@@ -622,7 +624,6 @@ describe('Schema', () => {
   });
 
   test('deleteAllOfAt', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
     const schema = SchemaFactory.create(openapi.components, null);
     schema.addAllOf('integer');
     schema.addAllOf('double');
@@ -638,7 +639,6 @@ describe('Schema', () => {
   });
 
   test('clearAllOf', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
     const schema = SchemaFactory.create(openapi.components, null);
     schema.addAllOf('integer');
     schema.addAllOf('double');
@@ -651,8 +651,6 @@ describe('Schema', () => {
   });
 
   test('addOneOf', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
-
     const schema = SchemaFactory.create(openapi.components, null);
     expect(schema.allOf).toStrictEqual([]);
 
@@ -670,7 +668,6 @@ describe('Schema', () => {
   });
 
   test('deleteOneOfAt', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
     const schema = SchemaFactory.create(openapi.components, null);
     schema.addOneOf('integer');
     schema.addOneOf('double');
@@ -686,7 +683,6 @@ describe('Schema', () => {
   });
 
   test('clearOneOf', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
     const schema = SchemaFactory.create(openapi.components, null);
     schema.addOneOf('integer');
     schema.addOneOf('double');
@@ -699,7 +695,6 @@ describe('Schema', () => {
   });
 
   test('arrayOf', () => {
-    const openapi = new OpenAPI('example', '0.1.0');
     const itemSchema = SchemaFactory.create(openapi.components, 'integer');
 
     const arraySchema = itemSchema.arrayOf(openapi.components);

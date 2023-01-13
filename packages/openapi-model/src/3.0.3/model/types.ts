@@ -99,13 +99,19 @@ export type SchemaCreateObject = (
       maxLength?: number;
     }
 ) & {
-  required?: boolean;
   nullable?: boolean;
   readOnly?: boolean;
   writeOnly?: boolean;
 };
 
-export type SchemaCreateOptions = SchemaCreateType | SchemaModel | SchemaCreateObject;
+export type SchemaCreateTypeOrObject = SchemaCreateType | SchemaCreateObject;
+
+export type SchemaCreateOptions = SchemaCreateTypeOrObject | SchemaModel;
+
+export type SchemaPropertyCreateOptions =
+  | SchemaCreateType
+  | (SchemaCreateObject & { required?: boolean })
+  | SchemaModel;
 
 export type SchemaModelParent =
   | ComponentsModel
@@ -192,8 +198,8 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   getProperties(): IterableIterator<SchemaPropertyObject>;
   getProperty(name: string): SchemaModel | undefined;
   getPropertyOrThrow(name: string): SchemaModel;
-  setProperty(name: string, options: SchemaCreateOptions): SchemaModel;
-  setProperties(props: Record<string, SchemaCreateOptions>): SchemaModel;
+  setProperty(name: string, options: SchemaPropertyCreateOptions): SchemaModel;
+  setProperties(props: Record<string, SchemaPropertyCreateOptions>): SchemaModel;
   deleteProperty(name: string): void;
   clearProperties(): void;
 
@@ -260,9 +266,12 @@ export type SchemaCreateArrayOptions = SchemaCreateType | SchemaModel | SchemaCr
  * This class provides convenience methods for creating SchemaObject-s.
  */
 export interface SchemaModelFactory {
-  create(parent: SchemaModelParent, params: Exclude<SchemaCreateType, SchemaModel>): SchemaModel;
+  create(parent: SchemaModelParent, params: SchemaCreateTypeOrObject): SchemaModel;
   createArray(parent: SchemaModelParent, options: SchemaCreateArrayOptions): SchemaModel;
-  createObject(parent: SchemaModelParent, props: Record<string, SchemaCreateOptions>): SchemaModel;
+  createObject(
+    parent: SchemaModelParent,
+    props: Record<string, SchemaPropertyCreateOptions>,
+  ): SchemaModel;
 }
 
 export type ContactModelParent = InfoModel;
@@ -989,7 +998,7 @@ export interface ComponentsModel
   getSchema(name: string): SchemaModel | undefined;
   getSchemaOrThrow(name: string): SchemaModel;
   setSchemaModel(name: string, model: SchemaModel): void;
-  setSchema(name: string, type?: SchemaType): SchemaModel;
+  setSchema(name: string, options?: SchemaCreateOptions): SchemaModel;
   deleteSchema(name: string): void;
   clearSchemas(): void;
   sortSchemas(
