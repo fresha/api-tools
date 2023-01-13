@@ -590,6 +590,18 @@ describe('Schema', () => {
     expect(schema.required).toStrictEqual(new Set<string>(['a', 'c']));
   });
 
+  test('setItems', () => {
+    const openapi = new OpenAPI('example', '0.1.0');
+
+    const schema = SchemaFactory.create(openapi.components, 'array');
+    expect(schema.items).toBeNull();
+
+    const itemsSchema = schema.setItems('double');
+    expect(itemsSchema).toBe(schema.items);
+    expect(itemsSchema.type).toBe('number');
+    expect(itemsSchema.format).toBe('double');
+  });
+
   test('addAllOf', () => {
     const openapi = new OpenAPI('example', '0.1.0');
 

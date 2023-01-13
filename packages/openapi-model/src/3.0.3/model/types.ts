@@ -225,6 +225,14 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   isPropertyRequired(name: string): boolean;
   setPropertyRequired(name: string, value: boolean): void;
 
+  /**
+   * Initializes subschema for the `items` property of this schema.
+   *
+   * @param options creation options
+   * @return this.items
+   */
+  setItems(options: SchemaCreateOptions): SchemaModel;
+
   addAllOf(options: SchemaCreateOptions): SchemaModel;
   deleteAllOfAt(index: number): void;
   clearAllOf(): void;

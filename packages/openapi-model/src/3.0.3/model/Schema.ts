@@ -400,6 +400,12 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     }
   }
 
+  setItems(options: SchemaCreateOptions): SchemaModel {
+    assert(!this.items, `This schema's items have already been set`);
+    this.items = Schema.internalCreate(this, options);
+    return this.items;
+  }
+
   addAllOf(typeOrSchema: SchemaCreateOptions): SchemaModel {
     const schema = Schema.internalCreate(this, typeOrSchema);
     this.allOf.push(schema);
