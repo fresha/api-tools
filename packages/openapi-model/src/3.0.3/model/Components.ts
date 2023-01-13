@@ -14,7 +14,7 @@ import type {
   ParameterModel,
   RequestBodyModel,
   ResponseModel,
-  SchemaCreateType,
+  SchemaCreateTypeOrObject,
   SchemaModel,
   SecuritySchemaModel,
 } from './types';
@@ -93,9 +93,9 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.schemas.set(name, model);
   }
 
-  setSchema(name: string, type?: SchemaCreateType): SchemaModel {
+  setSchema(name: string, options: SchemaCreateTypeOrObject = null): SchemaModel {
     assert(!this.schemas.has(name));
-    const result = SchemaFactory.create(this, type ?? null);
+    const result = SchemaFactory.create(this, options);
     result.title = name;
     this.schemas.set(name, result);
     return result;

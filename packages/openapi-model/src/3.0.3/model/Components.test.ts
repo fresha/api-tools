@@ -2,14 +2,16 @@ import { Callback } from './Callback';
 import { Example } from './Example';
 import { Link } from './Link';
 import { OpenAPIFactory } from './OpenAPI';
+
+import type { ComponentsModel, OpenAPIModel, ParameterLocation, SecuritySchemeType } from './types';
+
 import { PathParameter, QueryParameter } from './Parameter';
 import { RequestBody } from './RequestBody';
 import { Response } from './Response';
 import { SchemaFactory } from './Schema';
-import { ParameterLocation, SecuritySchemeType } from './types';
 
-let openapi = OpenAPIFactory.create();
-let { components } = openapi;
+let openapi: OpenAPIModel;
+let components: ComponentsModel;
 
 beforeEach(() => {
   openapi = OpenAPIFactory.create();
@@ -51,6 +53,15 @@ describe('schemas', () => {
 
     const emptySchema = components.schemas.get('Empty');
     expect(emptySchema).toHaveProperty('parent', components);
+
+    const idStringSchema = components.setSchema('IDString', {
+      type: 'string',
+      nullable: false,
+      minLength: 1,
+    });
+    expect(idStringSchema).toHaveProperty('parent', components);
+    expect(idStringSchema).toHaveProperty('minLength', 1);
+    expect(idStringSchema).toHaveProperty('nullable', false);
   });
 
   test('deleteSchema', () => {

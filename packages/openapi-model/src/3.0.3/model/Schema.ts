@@ -9,10 +9,12 @@ import type {
   SchemaCreateArrayOptions,
   SchemaCreateOptions,
   SchemaCreateType,
+  SchemaCreateTypeOrObject,
   SchemaFormat,
   SchemaModel,
   SchemaModelFactory,
   SchemaModelParent,
+  SchemaPropertyCreateOptions,
   SchemaPropertyObject,
   SchemaType,
   XMLModel,
@@ -38,7 +40,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   maxProperties: Nullable<number>;
   minProperties: Nullable<number>;
   required: Set<string>;
-  readonly enum: Nullable<JSONValue[]>;
+  enum: Nullable<JSONValue[]>;
   type: Nullable<SchemaType>;
   readonly allOf: SchemaModel[];
   readonly oneOf: SchemaModel[];
@@ -59,9 +61,11 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   example: Nullable<JSONValue>;
   deprecated: boolean;
 
-  static create(parent: SchemaModelParent, params: SchemaCreateType = null): Schema {
+  static create(parent: SchemaModelParent, params: SchemaCreateTypeOrObject = null): Schema {
     const result = new Schema(parent);
-    switch (params) {
+
+    const resolvedType = params == null || typeof params === 'string' ? params : params.type;
+    switch (resolvedType) {
       case null:
         break;
       case 'boolean':
@@ -70,17 +74,17 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
       case 'integer':
       case 'number':
       case 'string':
-        result.type = params;
+        result.type = resolvedType;
         break;
       case 'int32':
       case 'int64':
         result.type = 'integer';
-        result.format = params;
+        result.format = resolvedType;
         break;
       case 'float':
       case 'double':
         result.type = 'number';
-        result.format = params;
+        result.format = resolvedType;
         break;
       case 'byte':
       case 'binary':
@@ -90,11 +94,105 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
       case 'email':
       case 'decimal':
         result.type = 'string';
-        result.format = params;
+        result.format = resolvedType;
         break;
       default:
-        assert.fail(`Unsupported schema create type ${String(params)}`);
+        assert.fail(`Unsupported schema create type ${String(resolvedType)}`);
     }
+
+    if (params && typeof params !== 'string') {
+      if (params.nullable != null) {
+        result.nullable = params.nullable;
+      }
+      if (params.readOnly != null) {
+        result.readOnly = params.readOnly;
+      }
+      if (params.writeOnly != null) {
+        result.writeOnly = params.writeOnly;
+      }
+
+      switch (params.type) {
+        case null:
+          break;
+        case 'boolean': {
+          if (params.enum?.includes(true)) {
+            if (!params.enum?.includes(false)) {
+              result.enum = [true];
+            }
+          } else if (params.enum?.includes(false)) {
+            result.enum = [false];
+          }
+          if (params.default != null) {
+            assert(result.enum == null || result.enum.includes(!!params.default));
+            result.default = !!params.default;
+          }
+          break;
+        }
+        case 'integer':
+        case 'int32':
+        case 'int64':
+        case 'number': {
+          if (params.enum?.length) {
+            result.enum = params.enum.slice();
+          }
+          if (params.default != null) {
+            assert(result.enum == null || result.enum.includes(params.default));
+            result.default = params.default;
+          }
+          if (params.minimum != null) {
+            result.minimum = params.minimum;
+          }
+          if (params.maximum != null) {
+            result.maximum = params.maximum;
+          }
+          if (params.exclusiveMinimum != null) {
+            result.exclusiveMinimum = params.exclusiveMinimum;
+          }
+          if (params.exclusiveMaximum != null) {
+            result.exclusiveMaximum = params.exclusiveMaximum;
+          }
+          break;
+        }
+        case 'date':
+        case 'date-time':
+        case 'email':
+        case 'decimal': {
+          if (params.enum?.length) {
+            result.enum = params.enum.slice();
+          }
+          if (params.default != null) {
+            assert(result.enum == null || result.enum.includes(params.default));
+            result.default = params.default;
+          }
+          break;
+        }
+        case 'string': {
+          if (params.enum?.length) {
+            result.enum = params.enum.slice();
+          }
+          if (params.default != null) {
+            assert(result.enum == null || result.enum.includes(params.default));
+            result.default = params.default;
+          }
+          if (params.pattern != null) {
+            result.pattern = params.pattern;
+          }
+          if (params.minLength != null) {
+            result.minLength = params.minLength;
+          }
+          if (params.maxLength != null) {
+            result.maxLength = params.maxLength;
+          }
+          break;
+        }
+        case 'object':
+        case 'array':
+          break;
+        default:
+          assert.fail(`Unsupported schema create type ${String(params.type)}`);
+      }
+    }
+
     return result;
   }
 
@@ -126,7 +224,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   static createObject(
     parent: SchemaModelParent,
-    props: Record<string, SchemaCreateOptions>,
+    props: Record<string, SchemaPropertyCreateOptions>,
   ): Schema {
     const result = Schema.create(parent, 'object');
     result.setProperties(props);
@@ -257,7 +355,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     return result;
   }
 
-  setProperty(name: string, params: SchemaCreateOptions): SchemaModel {
+  setProperty(name: string, params: SchemaPropertyCreateOptions): SchemaModel {
     const propertySchema = Schema.internalCreate(this, params);
     this.properties.set(name, propertySchema);
 
@@ -369,9 +467,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     return propertySchema;
   }
 
-  setProperties(
-    props: Record<string, SchemaCreateType | SchemaCreateOptions | SchemaModel>,
-  ): Schema {
+  setProperties(props: Record<string, SchemaPropertyCreateOptions>): Schema {
     for (const [propName, propDef] of Object.entries(props)) {
       this.setProperty(propName, propDef);
     }

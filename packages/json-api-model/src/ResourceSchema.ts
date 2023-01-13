@@ -15,9 +15,9 @@ import type {
 
 import { parseRelationshipSchema, Relationship } from './RelationshipSchema';
 
-import type { SchemaCreateOptions, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import type { SchemaModel, SchemaPropertyCreateOptions } from '@fresha/openapi-model/build/3.0.3';
 
-const isSchemaModel = (obj: SchemaCreateOptions): obj is SchemaModel => {
+const isSchemaModel = (obj: SchemaPropertyCreateOptions): obj is SchemaModel => {
   return (
     !!obj &&
     typeof obj === 'object' &&
@@ -156,7 +156,7 @@ export class ResourceSchema implements JSONAPIResourceSchema {
     this.#relationshipsSchema = null;
   }
 
-  addAttribute(name: string, options: SchemaCreateOptions): JSONAPIAttributeSchema {
+  addAttribute(name: string, options: SchemaPropertyCreateOptions): JSONAPIAttributeSchema {
     assert(!this.#attributes.has(name), `Attribute '${name}' already exists`);
 
     if (!this.#schema) {
@@ -174,7 +174,7 @@ export class ResourceSchema implements JSONAPIResourceSchema {
     return result;
   }
 
-  addAttributes(attrs: Record<string, SchemaCreateOptions>): JSONAPIResourceSchema {
+  addAttributes(attrs: Record<string, SchemaPropertyCreateOptions>): JSONAPIResourceSchema {
     for (const [name, options] of Object.entries(attrs)) {
       this.addAttribute(name, options);
     }

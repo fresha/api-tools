@@ -1,8 +1,8 @@
 import type { JSONObject, Nullable } from '@fresha/api-tools-core';
 import type {
-  SchemaCreateOptions,
   SchemaModel,
   OpenAPIModel,
+  SchemaPropertyCreateOptions,
 } from '@fresha/openapi-model/build/3.0.3';
 
 /**
@@ -91,8 +91,8 @@ export interface JSONAPIResourceSchema {
   getAttributeNames(): string[];
   getAttribute(name: string): JSONAPIAttributeSchema | undefined;
   getAttributeOrThrow(name: string): JSONAPIAttributeSchema;
-  addAttribute(name: string, options: SchemaCreateOptions): JSONAPIAttributeSchema;
-  addAttributes(attrs: Record<string, SchemaCreateOptions>): JSONAPIResourceSchema;
+  addAttribute(name: string, options: SchemaPropertyCreateOptions): JSONAPIAttributeSchema;
+  addAttributes(attrs: Record<string, SchemaPropertyCreateOptions>): JSONAPIResourceSchema;
   deleteAttribute(name: string): void;
   clearAttributes(): void;
 
