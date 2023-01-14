@@ -71,6 +71,69 @@ describe('SchemaFactory', () => {
     expect(stringSchema).toHaveProperty('maxLength', 12);
   });
 
+  test('create() w/ deep hierarchy', () => {
+    const employee = openapi.components.setSchema('Employee', {
+      type: 'object',
+      properties: {
+        attributes: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', required: true },
+            age: { type: 'int32', nullable: true },
+            gender: { type: 'string', enum: ['male', 'female', 'other'] },
+          },
+        },
+        relationships: {
+          type: 'object',
+          properties: {
+            mentor: {
+              type: 'object',
+              properties: {
+                data: {
+                  type: 'object',
+                  properties: {
+                    type: 'string',
+                    id: 'string',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    expect(employee).toHaveProperty('type', 'object');
+
+    const attributes = employee.getPropertyOrThrow('attributes');
+    expect(attributes).toHaveProperty('parent', employee);
+    expect(attributes).toHaveProperty('type', 'object');
+
+    const name = attributes.getPropertyOrThrow('name');
+    expect(name).toHaveProperty('parent', attributes);
+    expect(name).toHaveProperty('type', 'string');
+    expect(attributes.isPropertyRequired('name')).toBeTruthy();
+
+    const age = attributes.getPropertyOrThrow('age');
+    expect(age).toHaveProperty('parent', attributes);
+    expect(age).toHaveProperty('type', 'integer');
+    expect(age).toHaveProperty('nullable', true);
+    expect(attributes.isPropertyRequired('age')).toBeFalsy();
+
+    const gender = attributes.getPropertyOrThrow('gender');
+    expect(gender).toHaveProperty('type', 'string');
+    expect(gender).toHaveProperty('enum', ['male', 'female', 'other']);
+
+    const mentorId = employee
+      .getPropertyOrThrow('relationships')
+      .getPropertyOrThrow('mentor')
+      .getPropertyOrThrow('data');
+    expect(mentorId).toHaveProperty('type', 'object');
+
+    expect(mentorId.getPropertyOrThrow('type')).toHaveProperty('type', 'string');
+    expect(mentorId.getPropertyOrThrow('id')).toHaveProperty('type', 'string');
+  });
+
   test('createArray()', () => {
     const stringArraySchema = SchemaFactory.createArray(openapi.components, 'string');
     expect(stringArraySchema.parent).toBe(openapi.components);
@@ -107,6 +170,15 @@ describe('SchemaFactory', () => {
     expect(objectSchema.properties.get('name')?.type).toBe('string');
     expect(objectSchema.properties.get('age')?.type).toBe('integer');
     expect(objectSchema.required).toStrictEqual(new Set<string>(['age', 'active']));
+  });
+
+  test('createOrGet()', () => {
+    const schema1 = openapi.components.setSchema('Schema1', 'object');
+    expect(SchemaFactory.createOrGet(openapi.components, schema1)).toBe(schema1);
+
+    const schema2 = SchemaFactory.createOrGet(openapi.components, 'string');
+    expect(schema2).toHaveProperty('parent', openapi.components);
+    expect(schema2).toHaveProperty('type', 'string');
   });
 });
 

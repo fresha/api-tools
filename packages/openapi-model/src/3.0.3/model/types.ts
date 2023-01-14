@@ -62,14 +62,21 @@ export interface DiscriminatorModel
   readonly mapping: ReadonlyMap<string, string>;
 }
 
-/**
- * Convenience type, used during schema creation.
- */
-export type SchemaCreateType = null | SchemaType | SchemaFormat;
+// Internal type, extracted for convenience.
+type SchemaCreateType = null | SchemaType | SchemaFormat;
 
-export type SchemaCreateObject = (
+// Internal type, extracted for convenience.
+type SchemaCreateObject = (
   | {
-      type: null | 'object' | 'array' | SchemaModel;
+      type: null;
+    }
+  | {
+      type: 'object';
+      properties?: Record<string, CreateSchemaPropertyOptions>;
+    }
+  | {
+      type: 'array';
+      items?: CreateSchemaOptions;
     }
   | {
       type: 'boolean';
@@ -104,13 +111,26 @@ export type SchemaCreateObject = (
   writeOnly?: boolean;
 };
 
-export type SchemaCreateTypeOrObject = SchemaCreateType | SchemaCreateObject;
+/**
+ * This is the public type which should be accepted by all schema-creation methods.
+ */
+export type CreateSchemaOptions = SchemaCreateType | SchemaCreateObject;
 
-export type SchemaCreateOptions = SchemaCreateTypeOrObject | SchemaModel;
+/**
+ * This is the public type which should be accepted by all methods that can either
+ * create a new schema or use the schema provided.
+ */
+export type CreateOrSetSchemaOptions = CreateSchemaOptions | SchemaModel;
 
-export type SchemaPropertyCreateOptions =
+/**
+ * This is what allowed to be passed to SchemaModel.setProperty. It differs from
+ * CreateOrSetSchemaOptions in that its schema creation POJSO-s has extra attribute,
+ * 'required'. The attribute indicates whether a given property is required by its
+ * parent schema.
+ */
+export type CreateSchemaPropertyOptions =
   | SchemaCreateType
-  | (SchemaCreateObject & { required?: boolean })
+  | ((SchemaCreateObject | { type: SchemaModel }) & { required?: boolean })
   | SchemaModel;
 
 export type SchemaModelParent =
@@ -198,8 +218,8 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   getProperties(): IterableIterator<SchemaPropertyObject>;
   getProperty(name: string): SchemaModel | undefined;
   getPropertyOrThrow(name: string): SchemaModel;
-  setProperty(name: string, options: SchemaPropertyCreateOptions): SchemaModel;
-  setProperties(props: Record<string, SchemaPropertyCreateOptions>): SchemaModel;
+  setProperty(name: string, options: CreateSchemaPropertyOptions): SchemaModel;
+  setProperties(props: Record<string, CreateSchemaPropertyOptions>): SchemaModel;
   deleteProperty(name: string): void;
   clearProperties(): void;
 
@@ -237,17 +257,17 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
    * @param options creation options
    * @return this.items
    */
-  setItems(options: SchemaCreateOptions): SchemaModel;
+  setItems(options: CreateOrSetSchemaOptions): SchemaModel;
 
-  addAllOf(options: SchemaCreateOptions): SchemaModel;
+  addAllOf(options: CreateOrSetSchemaOptions): SchemaModel;
   deleteAllOfAt(index: number): void;
   clearAllOf(): void;
 
-  addOneOf(options: SchemaCreateOptions): SchemaModel;
+  addOneOf(options: CreateOrSetSchemaOptions): SchemaModel;
   deleteOneOfAt(index: number): void;
   clearOneOf(): void;
 
-  addAnyOf(options: SchemaCreateOptions): SchemaModel;
+  addAnyOf(options: CreateOrSetSchemaOptions): SchemaModel;
   deleteAnyOfAt(index: number): void;
   clearAnyOf(): void;
 
@@ -255,7 +275,7 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
 }
 
 export type SchemaCreateArrayObject = {
-  itemsOptions: SchemaCreateOptions;
+  itemsOptions: CreateOrSetSchemaOptions;
   minItems?: number;
   maxItems?: number;
 };
@@ -266,11 +286,12 @@ export type SchemaCreateArrayOptions = SchemaCreateType | SchemaModel | SchemaCr
  * This class provides convenience methods for creating SchemaObject-s.
  */
 export interface SchemaModelFactory {
-  create(parent: SchemaModelParent, params: SchemaCreateTypeOrObject): SchemaModel;
+  create(parent: SchemaModelParent, params: CreateSchemaOptions): SchemaModel;
+  createOrGet(parent: SchemaModelParent, params: CreateOrSetSchemaOptions): SchemaModel;
   createArray(parent: SchemaModelParent, options: SchemaCreateArrayOptions): SchemaModel;
   createObject(
     parent: SchemaModelParent,
-    props: Record<string, SchemaPropertyCreateOptions>,
+    props: Record<string, CreateSchemaPropertyOptions>,
   ): SchemaModel;
 }
 
@@ -513,7 +534,7 @@ export interface MediaTypeModel
   readonly examples: ReadonlyMap<string, ExampleModel>;
   readonly encoding: ReadonlyMap<string, EncodingModel>;
 
-  setSchema(type: SchemaCreateType): SchemaModel;
+  setSchema(type: CreateOrSetSchemaOptions): SchemaModel;
   deleteSchema(): void;
 
   getExample(key: string): ExampleModel | undefined;
@@ -998,7 +1019,7 @@ export interface ComponentsModel
   getSchema(name: string): SchemaModel | undefined;
   getSchemaOrThrow(name: string): SchemaModel;
   setSchemaModel(name: string, model: SchemaModel): void;
-  setSchema(name: string, options?: SchemaCreateOptions): SchemaModel;
+  setSchema(name: string, options?: CreateSchemaOptions): SchemaModel;
   deleteSchema(name: string): void;
   clearSchemas(): void;
   sortSchemas(

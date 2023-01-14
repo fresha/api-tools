@@ -83,9 +83,7 @@ test('build schema - petstore', () => {
 
   const petSchema = api.components.setSchema('Pet');
   petSchema.addAllOf(newPetSchema);
-
-  const idSchema = petSchema.addAllOf('object');
-  idSchema.setProperty('id', { type: 'int64', required: true });
+  petSchema.addAllOf({ type: 'object', properties: { id: { type: 'int64', required: true } } });
 
   //
   // pathItems
