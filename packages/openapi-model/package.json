@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-model",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "OpenAPI object model",
   "main": "build/index.js",
   "scripts": {
