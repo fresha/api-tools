@@ -1,6 +1,6 @@
 {
   "name": "@fresha/json-api-model",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "JSON:API object model",
   "main": "build/index.js",
   "types": "build/index.d.ts",
