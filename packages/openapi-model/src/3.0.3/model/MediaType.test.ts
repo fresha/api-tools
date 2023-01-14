@@ -28,6 +28,18 @@ test('schema property', () => {
   expect(mediaType.schema).toBeNull();
 });
 
+test('schema property w/ external model', () => {
+  const schema = mediaType.root.components.setSchema('Shared', {
+    type: 'object',
+    properties: { one: 'string', two: 'integer' },
+  });
+
+  mediaType.setSchema(schema);
+
+  expect(mediaType.schema).toBe(schema);
+  expect(schema.parent).toBe(mediaType.root.components);
+});
+
 test('examples collection', () => {
   mediaType.setExample('1');
   mediaType.setExample('2');

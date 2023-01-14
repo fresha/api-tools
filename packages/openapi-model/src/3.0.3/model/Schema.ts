@@ -7,19 +7,31 @@ import type {
   ExternalDocumentationModel,
   SchemaCreateArrayObject,
   SchemaCreateArrayOptions,
-  SchemaCreateOptions,
-  SchemaCreateType,
-  SchemaCreateTypeOrObject,
+  CreateOrSetSchemaOptions,
+  CreateSchemaOptions,
   SchemaFormat,
   SchemaModel,
   SchemaModelFactory,
   SchemaModelParent,
-  SchemaPropertyCreateOptions,
+  CreateSchemaPropertyOptions,
   SchemaPropertyObject,
   SchemaType,
   XMLModel,
 } from './types';
 import type { CommonMarkString, JSONValue, Nullable } from '@fresha/api-tools-core';
+
+export const isSchemaModel = (obj: unknown): obj is SchemaModel => {
+  return !!(
+    obj &&
+    typeof obj === 'object' &&
+    'isComposite' in obj &&
+    typeof obj.isComposite === 'function'
+  );
+};
+
+export const isSchemaModelType = (obj: unknown): obj is { type: SchemaModel } => {
+  return !!(obj && typeof obj === 'object' && 'type' in obj && isSchemaModel(obj.type));
+};
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#schema-object
@@ -61,7 +73,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   example: Nullable<JSONValue>;
   deprecated: boolean;
 
-  static create(parent: SchemaModelParent, params: SchemaCreateTypeOrObject = null): Schema {
+  static create(parent: SchemaModelParent, params: CreateSchemaOptions = null): Schema {
     const result = new Schema(parent);
 
     const resolvedType = params == null || typeof params === 'string' ? params : params.type;
@@ -185,15 +197,34 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
           }
           break;
         }
-        case 'object':
-        case 'array':
+        case 'object': {
+          if (params.properties) {
+            result.setProperties(params.properties);
+          }
           break;
+        }
+        case 'array': {
+          if (params.items) {
+            result.setItems(params.items);
+          }
+          break;
+        }
         default:
-          assert.fail(`Unsupported schema create type ${String(params.type)}`);
+          assert.fail(`Unsupported schema create type ${String(params)}`);
       }
     }
 
     return result;
+  }
+
+  static createOrGet(parent: SchemaModel, options: CreateOrSetSchemaOptions): Schema {
+    if (isSchemaModel(options)) {
+      return options as Schema;
+    }
+    if (isSchemaModelType(options)) {
+      return options.type as Schema;
+    }
+    return this.create(parent, options);
   }
 
   static createArray(parent: SchemaModelParent, options: SchemaCreateArrayOptions): Schema {
@@ -224,26 +255,11 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   static createObject(
     parent: SchemaModelParent,
-    props: Record<string, SchemaPropertyCreateOptions>,
+    props: Record<string, CreateSchemaPropertyOptions>,
   ): Schema {
     const result = Schema.create(parent, 'object');
     result.setProperties(props);
     return result;
-  }
-
-  private static internalCreate(
-    parent: SchemaModelParent,
-    params: SchemaCreateOptions,
-  ): SchemaModel {
-    let propertyType: SchemaCreateType | SchemaModel = null;
-    if (typeof params === 'string' || params instanceof Schema) {
-      propertyType = params;
-    } else if (params && typeof params === 'object') {
-      propertyType = params.type;
-    }
-    return propertyType instanceof Schema
-      ? propertyType
-      : Schema.create(parent, propertyType as SchemaCreateType);
   }
 
   constructor(parent: SchemaModelParent) {
@@ -355,119 +371,35 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     return result;
   }
 
-  setProperty(name: string, params: SchemaPropertyCreateOptions): SchemaModel {
-    const propertySchema = Schema.internalCreate(this, params);
-    this.properties.set(name, propertySchema);
+  setProperty(name: string, params: CreateSchemaPropertyOptions): SchemaModel {
+    let propertySchema: SchemaModel;
+    let propertyRequired: boolean | undefined;
 
-    if (
-      params != null &&
-      typeof params !== 'string' &&
-      !('root' in params && params.root != null)
-    ) {
-      if (params.required != null) {
-        this.setPropertyRequired(name, !!params.required);
+    if (params == null || typeof params === 'string') {
+      propertySchema = Schema.create(this, params);
+    } else if (isSchemaModel(params)) {
+      propertySchema = params;
+    } else {
+      if (params.type == null || typeof params.type === 'string') {
+        propertySchema = Schema.create(this, params);
+      } else if (isSchemaModelType(params)) {
+        propertySchema = params.type;
+      } else {
+        assert.fail(`Unsupported type ${String(params)} for property '${name}'`);
       }
-      if (params.nullable != null) {
-        propertySchema.nullable = !!params.nullable;
-      }
-      if (params.readOnly != null) {
-        propertySchema.readOnly = !!params.readOnly;
-      }
-      if (params.writeOnly != null) {
-        propertySchema.writeOnly = !!params.writeOnly;
-      }
+      propertyRequired = params.required;
     }
 
-    if (
-      params != null &&
-      typeof params === 'object' &&
-      (params.type == null || typeof params.type === 'string')
-    ) {
-      switch (params.type) {
-        case null:
-        case 'object':
-        case 'array':
-          break;
-        case 'boolean': {
-          if (params.enum?.includes(true)) {
-            if (!params.enum?.includes(false)) {
-              propertySchema.enum = [true];
-            }
-          } else if (params.enum?.includes(false)) {
-            propertySchema.enum = [false];
-          }
-          if (params.default != null) {
-            assert(propertySchema.enum == null || propertySchema.enum.includes(!!params.default));
-            propertySchema.default = !!params.default;
-          }
-          break;
-        }
-        case 'integer':
-        case 'int32':
-        case 'int64':
-        case 'number': {
-          if (params.enum?.length) {
-            propertySchema.enum = params.enum.slice();
-          }
-          if (params.default != null) {
-            assert(propertySchema.enum == null || propertySchema.enum.includes(params.default));
-            propertySchema.default = params.default;
-          }
-          if (params.minimum != null) {
-            propertySchema.minimum = params.minimum;
-          }
-          if (params.maximum != null) {
-            propertySchema.maximum = params.maximum;
-          }
-          if (params.exclusiveMinimum != null) {
-            propertySchema.exclusiveMinimum = params.exclusiveMinimum;
-          }
-          if (params.exclusiveMaximum != null) {
-            propertySchema.exclusiveMaximum = params.exclusiveMaximum;
-          }
-          break;
-        }
-        case 'date':
-        case 'date-time':
-        case 'email':
-        case 'decimal': {
-          if (params.enum?.length) {
-            propertySchema.enum = params.enum.slice();
-          }
-          if (params.default != null) {
-            assert(propertySchema.enum == null || propertySchema.enum.includes(params.default));
-            propertySchema.default = params.default;
-          }
-          break;
-        }
-        case 'string': {
-          if (params.enum?.length) {
-            propertySchema.enum = params.enum.slice();
-          }
-          if (params.default != null) {
-            assert(propertySchema.enum == null || propertySchema.enum.includes(params.default));
-            propertySchema.default = params.default;
-          }
-          if (params.pattern != null) {
-            propertySchema.pattern = params.pattern;
-          }
-          if (params.minLength != null) {
-            propertySchema.minLength = params.minLength;
-          }
-          if (params.maxLength != null) {
-            propertySchema.maxLength = params.maxLength;
-          }
-          break;
-        }
-        default:
-          assert.fail(`Unexpected property type "${String(params.type)}" of property "${name}"`);
-      }
+    this.properties.set(name, propertySchema);
+
+    if (propertyRequired != null) {
+      this.setPropertyRequired(name, propertyRequired);
     }
 
     return propertySchema;
   }
 
-  setProperties(props: Record<string, SchemaPropertyCreateOptions>): Schema {
+  setProperties(props: Record<string, CreateSchemaPropertyOptions>): Schema {
     for (const [propName, propDef] of Object.entries(props)) {
       this.setProperty(propName, propDef);
     }
@@ -496,14 +428,14 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     }
   }
 
-  setItems(options: SchemaCreateOptions): SchemaModel {
+  setItems(options: CreateOrSetSchemaOptions): SchemaModel {
     assert(!this.items, `This schema's items have already been set`);
-    this.items = Schema.internalCreate(this, options);
+    this.items = isSchemaModel(options) ? options : Schema.create(this, options);
     return this.items;
   }
 
-  addAllOf(typeOrSchema: SchemaCreateOptions): SchemaModel {
-    const schema = Schema.internalCreate(this, typeOrSchema);
+  addAllOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {
+    const schema = isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema);
     this.allOf.push(schema);
     return schema;
   }
@@ -516,8 +448,8 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.allOf.splice(0, this.allOf.length);
   }
 
-  addOneOf(typeOrSchema: SchemaCreateOptions): SchemaModel {
-    const schema = Schema.internalCreate(this, typeOrSchema);
+  addOneOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {
+    const schema = isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema);
     this.oneOf.push(schema);
     return schema;
   }
@@ -530,8 +462,8 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.oneOf.splice(0, this.oneOf.length);
   }
 
-  addAnyOf(typeOrSchema: SchemaCreateOptions): SchemaModel {
-    const schema = Schema.internalCreate(this, typeOrSchema);
+  addAnyOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {
+    const schema = isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema);
     this.anyOf.push(schema);
     return schema;
   }

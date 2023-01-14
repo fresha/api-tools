@@ -81,7 +81,7 @@ export interface IObjectSchema extends ISchemaBase {
   clearProperties(): void;
 }
 
-export type ObjectSchemaCreateOptions = Partial<{
+export type ObjectCreateOrSetSchemaOptions = Partial<{
   required: boolean;
 }>;
 
@@ -90,7 +90,7 @@ export interface IArraySchema extends ISchemaBase {
   readonly itemSchema: JSONSchemaOrReference;
 }
 
-export type ArraySchemaCreateOptions = Partial<{
+export type ArrayCreateOrSetSchemaOptions = Partial<{
   required: boolean;
 }>;
 
@@ -99,7 +99,7 @@ export interface INotSchema extends ISchemaBase {
   readonly baseSchema: JSONSchemaOrReference;
 }
 
-export type NotSchemaCreateOptions = Partial<{
+export type NotCreateOrSetSchemaOptions = Partial<{
   required: boolean;
 }>;
 
@@ -108,7 +108,7 @@ export interface IOneOfSchema extends ISchemaBase {
   readonly alternatives: ReadonlyArray<JSONSchemaOrReference>;
 }
 
-export type OneOfSchemaCreateOptions = Partial<{
+export type OneOfCreateOrSetSchemaOptions = Partial<{
   required: boolean;
 }>;
 
@@ -117,7 +117,7 @@ export interface IAnyOfSchema extends ISchemaBase {
   readonly alternatives: ReadonlyArray<JSONSchemaOrReference>;
 }
 
-export type AnyOfSchemaCreateOptions = Partial<{
+export type AnyOfCreateOrSetSchemaOptions = Partial<{
   required: boolean;
 }>;
 
@@ -126,7 +126,7 @@ export interface IAllOfSchema extends ISchemaBase {
   readonly alternatives: ReadonlyArray<JSONSchemaOrReference>;
 }
 
-export type AllOfSchemaCreateOptions = Partial<{
+export type AllOfCreateOrSetSchemaOptions = Partial<{
   required: boolean;
 }>;
 

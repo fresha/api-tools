@@ -1,7 +1,5 @@
 import assert from 'assert';
 
-import { SchemaType } from '../types';
-
 import { BasicNode } from './BasicNode';
 import { Encoding } from './Encoding';
 
@@ -10,6 +8,7 @@ import type {
   ExampleModel,
   MediaTypeModel,
   MediaTypeModelParent,
+  CreateOrSetSchemaOptions,
   SchemaModel,
 } from './types';
 
@@ -36,8 +35,8 @@ export class MediaType extends BasicNode<MediaTypeModelParent> implements MediaT
     this.encoding = new Map<string, EncodingModel>();
   }
 
-  setSchema(type: SchemaType): SchemaModel {
-    const result = SchemaFactory.create(this, type);
+  setSchema(options: CreateOrSetSchemaOptions): SchemaModel {
+    const result = SchemaFactory.createOrGet(this, options);
     this.schema = result;
     return result;
   }

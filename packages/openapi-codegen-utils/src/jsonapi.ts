@@ -5,7 +5,7 @@ import {
   SchemaFactory,
   SchemaModel,
   SchemaModelParent,
-  SchemaPropertyCreateOptions,
+  CreateSchemaPropertyOptions,
 } from '@fresha/openapi-model/build/3.0.3';
 import pluralize from 'pluralize';
 
@@ -128,7 +128,7 @@ export const createResourceSchema = (parent: SchemaModelParent, type: string): S
 export const addResourceAttribute = (
   resourceSchema: SchemaModel,
   name: string,
-  options: SchemaPropertyCreateOptions,
+  options: CreateSchemaPropertyOptions,
 ): SchemaModel => {
   assert(resourceSchema.type === null, `Resource schema must have type set to null`);
   const attributesSchema = resourceSchema.allOf?.at(1)?.getPropertyOrThrow('attributes');
@@ -148,7 +148,7 @@ export const addResourceAttribute = (
  */
 export const addResourceAttributes = (
   resourceSchema: SchemaModel,
-  attrs: Record<string, SchemaPropertyCreateOptions>,
+  attrs: Record<string, CreateSchemaPropertyOptions>,
 ): void => {
   for (const [attrName, attrOptions] of Object.entries(attrs)) {
     addResourceAttribute(resourceSchema, attrName, attrOptions);
