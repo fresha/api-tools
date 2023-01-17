@@ -167,6 +167,8 @@ export class ActionFunc {
       true,
     );
     actionFunc.setIsAsync(true);
+    actionFunc.getParameterOrThrow('extraParams').setHasQuestionToken(true);
+
     actionFunc.addStatements((writer: CodeBlockWriter) => {
       writer.writeLine(`const url = makeUrl(${this.generateCallUrl()});`);
 
@@ -205,9 +207,12 @@ export class ActionFunc {
       writer.newLine();
 
       if (this.usesAuthCookie) {
-        writer.writeLine('authorizeRequest(request);');
+        writer.writeLine('authorizeRequest(request, extraParams);');
         writer.newLine();
       }
+
+      writer.writeLine('applyExtraParams(request, extraParams)');
+      writer.newLine();
 
       if (this.parsesResponse) {
         if (this.responseType) {
@@ -241,6 +246,11 @@ export class ActionFunc {
       }
       params[paramName] = paramInfo.typeString;
     }
+
+    addImportDeclarations(this.context.sourceFile, {
+      './utils': ['t:ExtraCallParams', 'applyExtraParams'],
+    });
+    params.extraParams = 'ExtraCallParams';
 
     return params;
   }

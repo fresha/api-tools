@@ -45,6 +45,8 @@ test('simple test', () => {
       callJsonApi,
       toString,
       authorizeRequest,
+      ExtraCallParams,
+      applyExtraParams,
     } from './utils';
     import type {
       JSONAPIServerResource,
@@ -71,14 +73,18 @@ test('simple test', () => {
 
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
 
-    export async function readEmployeeList(): Promise<ReadEmployeeListResponse> {
+    export async function readEmployeeList(
+      extraParams?: ExtraCallParams,
+    ): Promise<ReadEmployeeListResponse> {
       const url = makeUrl(\`/employees\`);
 
       const request = {
         headers: COMMON_HEADERS,
       };
 
-      authorizeRequest(request);
+      authorizeRequest(request, extraParams);
+
+      applyExtraParams(request, extraParams);
 
       const response = await callJsonApi(url, request);
 
@@ -120,6 +126,8 @@ test('action returns raw response', () => {
       makeUrl,
       callApi,
       toString,
+      ExtraCallParams,
+      applyExtraParams
     } from './utils';
     import type {
       JSONAPIServerResource,
@@ -130,12 +138,16 @@ test('action returns raw response', () => {
 
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
 
-    export async function readEmployeeList(): Promise<Response> {
+    export async function readEmployeeList(
+      extraParams?: ExtraCallParams,
+    ): Promise<Response> {
       const url = makeUrl(\`/employees\`);
 
       const request = {
         headers: COMMON_HEADERS,
       };
+
+      applyExtraParams(request, extraParams);
 
       const response = await callApi(url, request);
 
