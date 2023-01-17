@@ -54,15 +54,43 @@ export class UtilsFile {
         authCookie = value;
       };
 
-      export const authorizeRequest = (request: RequestInit): void => {
-        assert(authCookieName && authCookie, "Authorization cookie is not set");
+      export type ExtraCallParams = {
+        authCookieName?: string;
+        authCookie?: string;
+        xForwardedFor?: string;
+        xForwardedHost?: string;
+        xForwardedProto?: string;
+      };
+
+      export const authorizeRequest = (request: RequestInit, extraParams?: ExtraCallParams): void => {
+        const finalAuthCookieName = extraParams?.authCookieName || authCookieName;
+        const finalAuthCookie = extraParams?.authCookie || authCookie;
+        assert(finalAuthCookieName && finalAuthCookie, "Authorization cookie is not set");
         if (typeof window !== "undefined") {
           request.credentials = "include";
         } else {
           request.headers = {
             ...request.headers,
-            cookie: \`\${authCookieName}=\${authCookie};\`,
+            cookie: \`\${finalAuthCookieName}=\${finalAuthCookie};\`,
           };
+        }
+      };
+
+      export const applyExtraParams = (request: RequestInit, extraParams?: ExtraCallParams): void => {
+        if (extraParams?.xForwardedFor || extraParams?.xForwardedHost || extraParams?.xForwardedProto) {
+          const headers = {
+            ...request.headers
+          } as Record<string, string>;
+          if (extraParams.xForwardedFor) {
+            headers['X-Forwarded-For'] = extraParams.xForwardedFor;
+          }
+          if (extraParams.xForwardedHost) {
+            headers['X-Forwarded-Host'] = extraParams.xForwardedHost;
+          }
+          if (extraParams.xForwardedProto) {
+            headers['X-Forwarded-Proto'] = extraParams.xForwardedProto;
+          }
+          request.headers = headers;
         }
       };
 
