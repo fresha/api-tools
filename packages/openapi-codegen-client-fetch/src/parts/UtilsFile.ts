@@ -17,9 +17,20 @@ export class UtilsFile {
     this.sourceFile.insertText(
       0,
       `
-      import assert from 'assert';
-
       import type { JSONValue } from '@fresha/api-tools-core';
+
+      export type APIClientErrorKind = 'config' | 'network' | 'logic';
+
+      export class APIClientError extends Error {
+        readonly kind: APIClientErrorKind;
+        readonly original?: unknown;
+
+        constructor(kind: APIClientErrorKind, message: string, original?: unknown) {
+          super(message);
+          this.kind = kind;
+          this.original = original;
+        }
+      }
 
       export type FetchFunc = (url: string, init: RequestInit) => Promise<Response>;
 
@@ -32,7 +43,9 @@ export class UtilsFile {
       };
 
       export const init = (params: InitParams): void => {
-        assert(params.rootUrl, 'Expected rootUrl to be a non-empty string');
+        if (!params.rootUrl) {
+          throw new APIClientError('config', 'Expected rootUrl to be a non-empty string');
+        }
         rootUrl = params.rootUrl;
         if (params.fetcher) {
           fetcher = params.fetcher;
@@ -40,7 +53,9 @@ export class UtilsFile {
       };
 
       export const makeUrl = (url: string): URL => {
-        assert(rootUrl, 'Root URL is not set');
+        if (!rootUrl) {
+          throw new APIClientError('config', 'Root URL is not set');
+        }
         return new URL(url, rootUrl);
       };
 
@@ -48,8 +63,9 @@ export class UtilsFile {
       let authCookie = '';
 
       export const setAuthCookie = (name: string, value: string): void => {
-        assert(name, "Expected cookie name to be a non-empty string");
-        assert(value, "Expected cookie value to be a non-empty string");
+        if (!name || !value) {
+          throw new APIClientError('config', 'Expected cookie name and value to be non-empty');
+        }
         authCookieName = name;
         authCookie = value;
       };
@@ -65,7 +81,9 @@ export class UtilsFile {
       export const authorizeRequest = (request: RequestInit, extraParams?: ExtraCallParams): void => {
         const finalAuthCookieName = extraParams?.authCookieName || authCookieName;
         const finalAuthCookie = extraParams?.authCookie || authCookie;
-        assert(finalAuthCookieName && finalAuthCookie, "Authorization cookie is not set");
+        if (!finalAuthCookieName || !finalAuthCookie) {
+          throw new APIClientError('config', 'Authorization cookie is not set');
+        }
         if (typeof window !== "undefined") {
           request.credentials = "include";
         } else {
@@ -104,28 +122,21 @@ export class UtilsFile {
         "Content-Type": "application/vnd.api+json",
       };
 
-      class APIError extends Error {
-        readonly original?: unknown;
-
-        constructor(message: string, original?: unknown) {
-          super(message);
-          this.original = original;
-        }
-      }
-
       export const callApi = async (url: URL, request: RequestInit): Promise<Response> => {
-        assert(fetcher, 'Fetch function is not set');
+        if (!fetcher) {
+          throw new APIClientError('config', 'Fetch function is not set');
+        }
 
         let result: Response;
 
         try {
           result = await fetcher(url.toString(), request);
         } catch (err) {
-          throw new APIError(\`Error calling \${url.toString()}\`, err);
+          throw new APIClientError('network', \`Error calling \${url.toString()}\`, err);
         }
 
         if (!result.ok) {
-          throw new APIError('Request failed', result);
+          throw new APIClientError('logic', 'Request failed', result);
         }
 
         return result;
@@ -138,7 +149,7 @@ export class UtilsFile {
         try {
           json = await result.json();
         } catch (err) {
-          throw new APIError(\`Cannot parse JSON response for \${url.toString()}\`, err);
+          throw new APIClientError('logic', \`Cannot parse JSON response for \${url.toString()}\`, err);
         }
 
         return json as JSONValue;
