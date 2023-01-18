@@ -17,7 +17,7 @@ export class IndexFile {
     this.sourceFile.insertText(
       0,
       `export * from './actions';
-      export { init, setAuthCookie } from './utils';
+      export { init, setAuthCookie, APIClientErrorKind, APIClientError } from './utils';
       `,
     );
   }
