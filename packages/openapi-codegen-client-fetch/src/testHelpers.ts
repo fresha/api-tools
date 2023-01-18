@@ -10,6 +10,7 @@ export const createTestContext = (openapi: OpenAPIModel): Context => {
   return {
     ...base,
     includeDeprecated: false,
+    includeInternal: false,
     includedTags: new Set<string>(),
     excludedTags: new Set<string>(),
     transformRequest: 'kebab',

@@ -24,7 +24,11 @@ export class Generator extends GeneratorBase<Context> {
   }
 
   collectData(): void {
-    for (const operation of getOperations(this.context.openapi)) {
+    for (const operation of getOperations(this.context.openapi, {
+      deprecated: this.context.includeDeprecated,
+      internal: this.context.includeInternal,
+      tags: Array.from(this.context.includedTags),
+    })) {
       const actionFunc = new ActionFunc({
         ...this.context,
         sourceFile: this.sourceFile,
