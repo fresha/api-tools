@@ -53,6 +53,16 @@ export const getCodegenOptions = (
 };
 
 /**
+ * Returns true if a given operation model is marked as internal.
+ * As a marker, the `x-internal` specification extension is used.
+ *
+ * @param operation operation model
+ */
+export const isInternalOperation = (operation: OperationModel): boolean => {
+  return !!operation.getExtension('internal');
+};
+
+/**
  * Defines which OpenAPI operations to include in iteration.
  */
 type OperationFilter = {
@@ -60,6 +70,11 @@ type OperationFilter = {
    * If true, deprecated operations will be included (by default they are not).
    */
   deprecated?: boolean;
+
+  /**
+   * If true, internal operations will be included (by default they are not).
+   */
+  internal?: boolean;
 
   /**
    * If it is not empty, only operations assigned tags from this set will be
@@ -76,14 +91,17 @@ export const getOperations = function* getOperations(
   options?: OperationFilter,
 ): IterableIterator<OperationModel> {
   const includeDeprecated = options?.deprecated ?? false;
+  const includeInternal = options?.internal ?? false;
   const includeTags = options?.tags?.length ? new Set<string>(options.tags) : null;
 
   for (const pathItem of openapi.paths.values()) {
     for (const [, operation] of pathItem.operations()) {
-      if (!operation.deprecated || includeDeprecated) {
-        if (includeTags == null || operation.tags.some(tag => includeTags.has(tag))) {
-          yield operation;
-        }
+      if (
+        (includeDeprecated || !operation.deprecated) &&
+        (includeInternal || !isInternalOperation(operation)) &&
+        (!includeTags || operation.tags.some(tag => includeTags.has(tag)))
+      ) {
+        yield operation;
       }
     }
   }
