@@ -47,7 +47,7 @@
   "dependencies": {
     "@fresha/api-tools-core": "^0.4.0",
     "@fresha/code-morph-test-utils": "^0.1.0",
-    "@fresha/openapi-codegen-utils": "^0.1.0",
+    "@fresha/openapi-codegen-utils": "^0.1.1",
     "@fresha/openapi-model": "^0.5.0",
     "jest-matcher-utils": "^29.1.2",
     "ts-morph": "^16.0.0"

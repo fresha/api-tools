@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-server-mock",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenAPI code generation for mock API servers",
   "main": "build/index.js",
   "scripts": {
@@ -47,7 +47,7 @@
   "license": "MIT",
   "dependencies": {
     "@fresha/code-morph-ts": "0.1.0",
-    "@fresha/openapi-codegen-utils": "^0.1.0",
+    "@fresha/openapi-codegen-utils": "^0.1.1",
     "@fresha/openapi-model": "^0.5.0",
     "ts-morph": "^16.0.0"
   },
