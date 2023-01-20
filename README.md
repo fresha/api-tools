@@ -8,7 +8,13 @@ Next generation tools for Web API development. These include
 
 aimed at simplifying development of Web APIs.
 
-## Typical use cases
+## Table of Content
+
+1. [Typical use cases](#typical-use-cases)
+2. [Using](#using)
+3. [Development](#development)
+
+<h2>Typical use cases</h2>
 
 ### Manage schemas
 
@@ -50,3 +56,53 @@ aimed at simplifying development of Web APIs.
     - pagination
     - schemas
   - API patterns & templates
+
+<h2>Using</h2>
+
+If you are a user, you may want to start with downloading command-line tools:
+
+### OpenAPI schema linter
+
+```bash
+npm install @fresha/openapi-lint
+```
+
+### OpenAPI schema versioning & diffing tool
+
+```bash
+npm install @fresha/openapi-diff
+```
+
+### OpenAPI code generators
+
+```bash
+npm install @fresha/openapi-codegen-cli
+```
+
+<h2>Development</h2>
+
+If you are willing to contribute to `api-tools`, great ! :) It is very simple
+
+clone the repository
+
+```bash
+git clone https://github.com/fresha/api-tools
+```
+
+and build
+
+```bash
+npm run build
+```
+
+Voila, you are ready to making your first commit.
+
+`api-tools` uses Lerna to automate day-to-day tasks. For most common of them,
+shortcuts are defined:
+
+```bash
+npm run build     # build
+npm run lint:fix  # run eslint with auto-fixing on
+npm run test      # run tests
+npm run check:fix # run lint, followed by running tests
+```
