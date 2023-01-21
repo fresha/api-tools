@@ -176,7 +176,7 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   oneOf: Nullable<SchemaModel[]>;
   anyOf: Nullable<SchemaModel[]>;
   not: Nullable<SchemaModel>;
-  items: Nullable<SchemaModel>;
+  items: Nullable<SchemaModel | SchemaModel[]>;
   readonly properties: ReadonlyMap<string, SchemaModel>;
   additionalProperties: Nullable<SchemaModel | boolean>;
   description: Nullable<CommonMarkString>;
@@ -209,6 +209,12 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
    * null schemas or nullable (i.e. have nullable attribute set to true).
    */
   isNullish(): boolean;
+
+  /**
+   * Returns true is this schema represents a tuple, i.e. an array of fixed size those
+   * elements may have different types.
+   */
+  isTuple(): boolean;
 
   // /**
   //  * Returns type of this schema, deduced from own type and types of allOf subschemas.
@@ -258,6 +264,28 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
    * @return this.items
    */
   setItems(options: CreateOrSetSchemaOptions): SchemaModel;
+
+  /**
+   * Utility function to handle tuple-like schemas. It adds a new subschema at the end of
+   * `items` schema array. If items is not an array, it makes it one.
+   *
+   * @see https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation
+   */
+  addTupleItem(options: CreateOrSetSchemaOptions): SchemaModel;
+
+  /**
+   * Utility function to handle tuple-like schemas. It removes a tuple subschema from given
+   * index in the `items` schema array. It `items` is not an array, it does nothing.
+   *
+   * @param index subschema index
+   */
+  deleteTupleItemAt(index: number): void;
+
+  /**
+   * Utility function to handle tuple-like schemas. It removes all subschemas from `items`
+   * array, but does not change the `items` itself.
+   */
+  clearTupleItems(): void;
 
   addAllOf(options: CreateOrSetSchemaOptions): SchemaModel;
   deleteAllOfAt(index: number): void;

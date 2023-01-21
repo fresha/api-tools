@@ -139,7 +139,7 @@ describe('SchemaFactory', () => {
     expect(stringArraySchema.parent).toBe(openapi.components);
     expect(stringArraySchema.minItems).toBeNull();
     expect(stringArraySchema.maxItems).toBeNull();
-    expect(stringArraySchema.items?.type).toBe('string');
+    expect(!Array.isArray(stringArraySchema.items) && stringArraySchema.items?.type).toBe('string');
 
     const numberArraySchema = SchemaFactory.createArray(openapi.components, {
       itemsOptions: 'number',
@@ -676,6 +676,26 @@ describe('Schema', () => {
     expect(itemsSchema).toBe(schema.items);
     expect(itemsSchema.type).toBe('number');
     expect(itemsSchema.format).toBe('double');
+  });
+
+  test('addTupleItem, removeTupleItemAt, clearTupleItems', () => {
+    const schema = SchemaFactory.create(openapi.components, 'array');
+    const item1 = schema.addTupleItem('boolean');
+    const item2 = schema.addTupleItem('string');
+    const item3 = schema.addTupleItem('integer');
+    expect(schema.isTuple()).toBeTruthy();
+
+    expect(Array.isArray(schema.items)).toBe(true);
+
+    expect(schema.items).toHaveProperty('0', item1);
+    expect(schema.items).toHaveProperty('1', item2);
+    expect(schema.items).toHaveProperty('2', item3);
+
+    schema.deleteTupleItemAt(1);
+    expect(schema.items).toHaveProperty('1', item3);
+
+    schema.clearTupleItems();
+    expect(schema.items).toStrictEqual([]);
   });
 
   test('addAllOf', () => {

@@ -58,7 +58,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   readonly oneOf: SchemaModel[];
   readonly anyOf: SchemaModel[];
   not: Nullable<SchemaModel>;
-  items: Nullable<SchemaModel>;
+  items: Nullable<SchemaModel | SchemaModel[]>;
   readonly properties: Map<string, SchemaModel>;
   additionalProperties: Nullable<SchemaModel | boolean>;
   description: Nullable<CommonMarkString>;
@@ -319,6 +319,10 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     );
   }
 
+  isTuple(): boolean {
+    return this.type === 'array' && Array.isArray(this.items);
+  }
+
   *getProperties(): IterableIterator<SchemaPropertyObject> {
     for (const [name, schema] of this.properties) {
       yield { name, schema, required: this.isPropertyRequired(name) };
@@ -432,6 +436,29 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     assert(!this.items, `This schema's items have already been set`);
     this.items = isSchemaModel(options) ? options : Schema.create(this, options);
     return this.items;
+  }
+
+  addTupleItem(options: CreateOrSetSchemaOptions): SchemaModel {
+    if (!Array.isArray(this.items)) {
+      this.items = [];
+    }
+
+    const subschema = SchemaFactory.createOrGet(this, options);
+    this.items.push(subschema);
+
+    return subschema;
+  }
+
+  deleteTupleItemAt(index: number): void {
+    if (Array.isArray(this.items)) {
+      this.items.splice(index, 1);
+    }
+  }
+
+  clearTupleItems(): void {
+    if (Array.isArray(this.items)) {
+      this.items.splice(0, this.items.length);
+    }
   }
 
   addAllOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {

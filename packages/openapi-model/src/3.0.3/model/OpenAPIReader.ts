@@ -511,7 +511,13 @@ export class OpenAPIReader {
       model.not = this.parseSchema(json.not, model);
     }
     if (json.items) {
-      model.setItems(this.parseSchema(json.items, model));
+      if (Array.isArray(json.items)) {
+        for (const item of json.items) {
+          model.addTupleItem(this.parseSchema(item, model));
+        }
+      } else {
+        model.setItems(this.parseSchema(json.items, model));
+      }
     }
     if (json.properties) {
       for (const [key, value] of Object.entries(json.properties)) {
