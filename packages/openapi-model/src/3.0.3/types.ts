@@ -161,7 +161,7 @@ export type SchemaObject = {
   oneOf?: ObjectOrRef<SchemaObject>[];
   anyOf?: ObjectOrRef<SchemaObject>[];
   not?: ObjectOrRef<SchemaObject>;
-  items?: ObjectOrRef<SchemaObject>;
+  items?: ObjectOrRef<SchemaObject> | ObjectOrRef<SchemaObject>[];
   properties?: Record<string, ObjectOrRef<SchemaObject>>;
   additionalProperties?: ObjectOrRef<SchemaObject> | boolean;
   description?: CommonMarkString;

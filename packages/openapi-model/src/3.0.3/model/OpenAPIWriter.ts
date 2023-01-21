@@ -389,7 +389,11 @@ export class OpenAPIWriter {
       result.not = this.writeSchema(schema.not, schema);
     }
     if (schema.items != null) {
-      result.items = this.writeSchema(schema.items, schema);
+      if (Array.isArray(schema.items)) {
+        result.items = schema.items.map(subschema => this.writeSchema(subschema, schema));
+      } else {
+        result.items = this.writeSchema(schema.items, schema);
+      }
     }
     if (schema.properties.size) {
       result.properties = {};
