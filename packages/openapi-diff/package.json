@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-diff",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Diffing/versioning tool for OpenAPI schemas",
   "main": "build/index.js",
   "scripts": {
@@ -40,9 +40,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "0.1.0",
-    "@fresha/jest-config": "0.1.0",
-    "@fresha/typescript-config": "0.1.0",
+    "@fresha/eslint-config": "^0.1.1",
+    "@fresha/jest-config": "^0.1.1",
+    "@fresha/typescript-config": "^0.1.1",
     "typescript": "^4.7.2"
   }
 }
