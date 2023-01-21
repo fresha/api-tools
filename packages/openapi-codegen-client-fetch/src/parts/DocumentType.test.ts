@@ -157,6 +157,8 @@ describe('primary data', () => {
 
     responseSchema.setProperty('data', 'array').setItems(employee);
 
+    debugger;
+
     const documentType = createDocumentType(operation, 'SimpleResponseDocument');
 
     documentType.collectData(namedTypes);
