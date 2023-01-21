@@ -60,5 +60,6 @@
     "chalk": "^4.1.0",
     "glob": "^8.0.3",
     "yargs": "^17.6.2"
-  }
+  },
+  "gitHead": "059b7df7acf8ec7858bd70aaa18d7ba6001203f3"
 }

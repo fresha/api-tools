@@ -56,5 +56,6 @@
     "@fresha/openapi-codegen-test-utils": "^0.1.4",
     "@fresha/typescript-config": "^0.1.1",
     "typescript": "^4.7.2"
-  }
+  },
+  "gitHead": "059b7df7acf8ec7858bd70aaa18d7ba6001203f3"
 }

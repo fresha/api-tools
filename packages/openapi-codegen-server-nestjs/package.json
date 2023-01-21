@@ -72,5 +72,6 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
     "reflect-metadata": "^0.1.13"
-  }
+  },
+  "gitHead": "059b7df7acf8ec7858bd70aaa18d7ba6001203f3"
 }

@@ -50,5 +50,6 @@
     "pluralize": "^8.0.0",
     "ts-morph": "^16.0.0",
     "winston": "^3.8.2"
-  }
+  },
+  "gitHead": "059b7df7acf8ec7858bd70aaa18d7ba6001203f3"
 }
