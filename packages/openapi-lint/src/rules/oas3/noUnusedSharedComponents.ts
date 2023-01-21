@@ -15,7 +15,13 @@ const removeReferenceSchema = (schema: SchemaModel, sharedSchemas: Set<SchemaMod
     removeReferenceSchema(schema.additionalProperties, sharedSchemas);
   }
   if (schema.items) {
-    removeReferenceSchema(schema.items, sharedSchemas);
+    if (Array.isArray(schema.items)) {
+      for (const item of schema.items) {
+        removeReferenceSchema(item, sharedSchemas);
+      }
+    } else {
+      removeReferenceSchema(schema.items, sharedSchemas);
+    }
   }
   if (schema.allOf?.length) {
     for (const alt of schema.allOf) {

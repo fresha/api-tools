@@ -119,6 +119,11 @@ export class ResourceType extends NamedType {
 
       let isArray = false;
       if (propDataSchema?.type === 'array') {
+        assert(
+          !Array.isArray(propDataSchema?.items),
+          'Relationship items subschema itself must not be an array',
+          this.context.operation,
+        );
         propDataSchema = propDataSchema?.items;
         isArray = true;
       }

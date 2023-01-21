@@ -39,23 +39,36 @@ export class DocumentType extends NamedType {
     primaryDataSchema: Nullable<SchemaModel>,
     namedTypes: Map<string, NamedType>,
   ): void {
+    const primaryDataSchemas: SchemaModel[] = [];
+
     if (primaryDataSchema?.type === 'array') {
-      primaryDataSchema = primaryDataSchema.items;
+      if (Array.isArray(primaryDataSchema.items)) {
+        primaryDataSchemas.push(...primaryDataSchema.items);
+      } else if (primaryDataSchema.items) {
+        primaryDataSchemas.push(primaryDataSchema.items);
+      }
       this.primaryDataIsArray = true;
+    } else if (primaryDataSchema) {
+      primaryDataSchemas.push(primaryDataSchema);
     }
 
     assert(primaryDataSchema, `Cannot determine type of primary data`, this.context.operation);
 
-    const primaryDataAlternatives = [
-      ...(primaryDataSchema.oneOf ?? []),
-      ...(primaryDataSchema.anyOf ?? []),
-    ];
+    const primaryDataAlternatives = [];
+    for (const primaryDataAlt of primaryDataSchemas) {
+      primaryDataAlternatives.push(
+        ...(primaryDataAlt.oneOf ?? []),
+        ...(primaryDataAlt.anyOf ?? []),
+      );
+    }
     if (primaryDataAlternatives.length) {
       for (const subschema of primaryDataAlternatives) {
         this.determineSinglePrimaryDataType(subschema, namedTypes);
       }
-    } else {
-      this.determineSinglePrimaryDataType(primaryDataSchema, namedTypes);
+    } else if (primaryDataSchemas.length) {
+      for (const subschema of primaryDataSchemas) {
+        this.determineSinglePrimaryDataType(subschema, namedTypes);
+      }
     }
   }
 
@@ -102,17 +115,23 @@ export class DocumentType extends NamedType {
       return;
     }
 
-    if (includedItemsSchema.type === 'object') {
-      this.determineSingleIncludedDataType(includedItemsSchema, namedTypes);
+    const includedItemsSchemas: SchemaModel[] = [];
+    if (Array.isArray(includedItemsSchema)) {
+      includedItemsSchemas.push(...includedItemsSchema);
     } else {
-      // multiple types of resources
-      const subshemas = [
-        ...(includedItemsSchema.oneOf ?? []),
-        ...(includedItemsSchema.anyOf ?? []),
-      ];
+      includedItemsSchemas.push(includedItemsSchema);
+    }
 
-      for (const subschema of subshemas) {
-        this.determineSingleIncludedDataType(subschema, namedTypes);
+    for (const s of includedItemsSchemas) {
+      if (s.type === 'object') {
+        this.determineSingleIncludedDataType(s, namedTypes);
+      } else {
+        // multiple types of resources
+        const subshemas = [...(s.oneOf ?? []), ...(s.anyOf ?? [])];
+
+        for (const subschema of subshemas) {
+          this.determineSingleIncludedDataType(subschema, namedTypes);
+        }
       }
     }
   }

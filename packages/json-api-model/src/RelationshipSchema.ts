@@ -17,7 +17,7 @@ export const parseRelationshipSchema = (relSchema: SchemaModel): RelationshipInf
 
   let relDataSchema = relSchema.getPropertyOrThrow('data');
   if (relDataSchema.type === 'array') {
-    assert(relDataSchema.items);
+    assert(relDataSchema.items && !Array.isArray(relDataSchema.items));
     relDataSchema = relDataSchema.items;
     cardinality = 'many';
   } else if (relDataSchema.isNullish()) {

@@ -443,7 +443,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
       this.items = [];
     }
 
-    const subschema = SchemaFactory.createOrGet(this, options);
+    const subschema = Schema.createOrGet(this, options);
     this.items.push(subschema);
 
     return subschema;

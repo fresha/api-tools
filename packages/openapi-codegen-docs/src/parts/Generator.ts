@@ -77,12 +77,29 @@ export class Generator extends GeneratorBase<Context> {
       for (const response of operation.responses.codes.values()) {
         const responseDocumentSchema = response.content.get(mediaType)?.schema;
 
-        let primaryDataSchema = responseDocumentSchema?.getProperty('data') ?? null;
-        if (primaryDataSchema?.type === 'array') {
-          primaryDataSchema = primaryDataSchema.items;
+        const primarySubschemas: SchemaModel[] = [];
+        const primaryDataSchemas = responseDocumentSchema?.getProperty('data') ?? null;
+        if (primaryDataSchemas?.type === 'array') {
+          if (Array.isArray(primaryDataSchemas.items)) {
+            primarySubschemas.push(...primaryDataSchemas.items);
+          } else if (primaryDataSchemas.items) {
+            primarySubschemas.push(primaryDataSchemas.items);
+          }
+        } else if (primaryDataSchemas) {
+          primarySubschemas.push(primaryDataSchemas);
         }
-        if (primaryDataSchema?.anyOf?.length) {
-          for (const subschema of primaryDataSchema.anyOf) {
+        for (const subschema of primarySubschemas) {
+          if (subschema.anyOf?.length) {
+            for (const subschemaAlt of subschema.anyOf) {
+              this.addUsage(
+                subschemaAlt,
+                operation.parent.pathUrl,
+                operation.httpMethod,
+                undefined,
+                'data',
+              );
+            }
+          } else if (subschema) {
             this.addUsage(
               subschema,
               operation.parent.pathUrl,
@@ -91,42 +108,42 @@ export class Generator extends GeneratorBase<Context> {
               'data',
             );
           }
-        } else if (primaryDataSchema) {
-          this.addUsage(
-            primaryDataSchema,
-            operation.parent.pathUrl,
-            operation.httpMethod,
-            undefined,
-            'data',
-          );
         }
 
-        const includedSchema = responseDocumentSchema?.getProperty('included')?.items ?? null;
-        const subschemas: SchemaModel[] = [];
-        if (includedSchema?.anyOf?.length) {
-          subschemas.push(...includedSchema.anyOf);
+        const includedSchemaRaw = responseDocumentSchema?.getProperty('included')?.items ?? null;
+        const includedSchemaArray: SchemaModel[] = [];
+        if (Array.isArray(includedSchemaRaw)) {
+          includedSchemaArray.push(...includedSchemaRaw);
+        } else if (includedSchemaRaw != null) {
+          includedSchemaArray.push(includedSchemaRaw);
         }
-        if (includedSchema?.oneOf?.length) {
-          subschemas.push(...includedSchema.oneOf);
-        }
-        if (subschemas.length) {
-          for (const subschema of subschemas) {
+        for (const includedSchema of includedSchemaArray) {
+          const subschemas: SchemaModel[] = [];
+          if (includedSchema?.anyOf?.length) {
+            subschemas.push(...includedSchema.anyOf);
+          }
+          if (includedSchema?.oneOf?.length) {
+            subschemas.push(...includedSchema.oneOf);
+          }
+          if (subschemas.length) {
+            for (const subschema of subschemas) {
+              this.addUsage(
+                subschema,
+                operation.parent.pathUrl,
+                operation.httpMethod,
+                undefined,
+                'include',
+              );
+            }
+          } else if (includedSchema) {
             this.addUsage(
-              subschema,
+              includedSchema,
               operation.parent.pathUrl,
               operation.httpMethod,
               undefined,
               'include',
             );
           }
-        } else if (includedSchema) {
-          this.addUsage(
-            includedSchema,
-            operation.parent.pathUrl,
-            operation.httpMethod,
-            undefined,
-            'include',
-          );
         }
       }
     }

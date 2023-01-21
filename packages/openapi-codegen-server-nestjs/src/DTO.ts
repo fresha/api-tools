@@ -178,25 +178,27 @@ export class DTO {
     assert(this.schema);
 
     let itemTypeString = 'unknown[]';
-    switch (prop.schema.items?.type) {
-      case 'boolean':
-        itemTypeString = 'boolean[]';
-        break;
-      case 'integer':
-      case 'number':
-        itemTypeString = 'number[]';
-        break;
-      case 'string':
-        itemTypeString = 'string[]';
-        break;
-      case 'object':
-        itemTypeString = 'object[]';
-        break;
-      case undefined:
-      case null:
-        break;
-      default:
-        assert.fail(`Unsupported schema type ${String(prop.schema.items?.type)}`);
+    if (!Array.isArray(prop.schema.items)) {
+      switch (prop.schema.items?.type) {
+        case 'boolean':
+          itemTypeString = 'boolean[]';
+          break;
+        case 'integer':
+        case 'number':
+          itemTypeString = 'number[]';
+          break;
+        case 'string':
+          itemTypeString = 'string[]';
+          break;
+        case 'object':
+          itemTypeString = 'object[]';
+          break;
+        case undefined:
+        case null:
+          break;
+        default:
+          assert.fail(`Unsupported schema type ${String(prop.schema.items?.type)}`);
+      }
     }
 
     const propDef = classDecl.addProperty({

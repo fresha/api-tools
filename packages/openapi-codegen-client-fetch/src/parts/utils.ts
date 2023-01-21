@@ -38,6 +38,10 @@ export const schemaToType = (schema: Nullable<SchemaModel>): string => {
       return elements.join(' | ');
     }
     case 'array': {
+      if (Array.isArray(schema.items)) {
+        const subtypes = schema.items.map(s => schemaToType(s));
+        return schema.nullable ? `[${subtypes.join(', ')}] | null` : `[${subtypes.join(', ')}]`;
+      }
       const subtype = schemaToType(schema.items);
       return schema.nullable ? `${subtype}[] | null` : `${subtype}[]`;
     }

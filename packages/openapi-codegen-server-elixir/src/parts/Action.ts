@@ -164,6 +164,12 @@ export class Action {
               break;
             }
             case 'array': {
+              assert(
+                !Array.isArray(param.schema.items),
+                `Unsupported tuple type "${String(param.schema?.type)}" for parameter "${
+                  param.name
+                }" from "${String(param.in)}"`,
+              );
               const itemSchemaType = param.schema.items?.type;
               if (
                 itemSchemaType === 'string' ||
