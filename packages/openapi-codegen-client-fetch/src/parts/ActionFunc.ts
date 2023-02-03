@@ -9,15 +9,13 @@ import {
   getCodegenOptions,
 } from '@fresha/openapi-codegen-utils';
 
+import { DocumentType } from './DocumentType';
+import { schemaToType } from './utils';
+
 import type { NamedType } from './NamedType';
 import type { ActionContext } from '../context';
 import type { ParameterModel } from '@fresha/openapi-model/build/3.0.3';
-
-import { DocumentType } from './DocumentType';
-
 import type { CodeBlockWriter } from 'ts-morph';
-
-import { schemaToType } from './utils';
 
 type ParameterInfo = {
   parameter: ParameterModel;

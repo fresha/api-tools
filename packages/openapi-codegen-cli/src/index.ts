@@ -14,11 +14,13 @@ const argv = yargs(hideBin(process.argv))
   .usage('Usage: $0 GENERATOR_NAME [OPTIONS]')
   .demandCommand(1, 'Please specify generator name');
 
-argv.command(freshaClientCommand);
-argv.command(fetchClientCommand);
-argv.command(elixirCodegenCommand);
-argv.command(jsonApiDocgenCommand);
-argv.command(mockServerCommand);
-argv.command(nestJsServerCommand);
+type CommandModule = yargs.CommandModule<Record<string, unknown>, unknown>;
+
+argv.command(freshaClientCommand as unknown as CommandModule);
+argv.command(fetchClientCommand as unknown as CommandModule);
+argv.command(elixirCodegenCommand as unknown as CommandModule);
+argv.command(jsonApiDocgenCommand as unknown as CommandModule);
+argv.command(mockServerCommand as unknown as CommandModule);
+argv.command(nestJsServerCommand as unknown as CommandModule);
 
 argv.parseSync();

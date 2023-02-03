@@ -2,14 +2,12 @@ import { addImportDeclaration, addTypeAlias } from '@fresha/code-morph-ts';
 import { assert, getSchemaMultiProperty } from '@fresha/openapi-codegen-utils';
 import { StructureKind, SyntaxKind } from 'ts-morph';
 
+import { NamedType } from './NamedType';
+import { schemaToType } from './utils';
+
 import type { ActionContext } from '../context';
 import type { JSONValue, Nullable } from '@fresha/api-tools-core';
-
-import { NamedType } from './NamedType';
-
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
-
-import { schemaToType } from './utils';
 
 enum RelationshipCardinality {
   ZeroOrOne = '0',

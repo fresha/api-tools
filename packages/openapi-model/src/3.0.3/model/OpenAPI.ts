@@ -3,6 +3,11 @@ import assert from 'assert';
 import { Components } from './Components';
 import { ExternalDocumentation } from './ExternalDocumentation';
 import { Info } from './Info';
+import { PathItem } from './PathItem';
+import { Paths } from './Paths';
+import { SecurityRequirement } from './SecurityRequirement';
+import { Server } from './Server';
+import { Tag } from './Tag';
 
 import type {
   OpenApiVersion,
@@ -14,9 +19,6 @@ import type {
   OpenAPIModelFactory,
   SecurityRequirementModel,
 } from './types';
-
-import { PathItem } from './PathItem';
-
 import type {
   CommonMarkString,
   Nullable,
@@ -24,11 +26,6 @@ import type {
   JSONValue,
   ParametrisedURLString,
 } from '@fresha/api-tools-core';
-
-import { Paths } from './Paths';
-import { SecurityRequirement } from './SecurityRequirement';
-import { Server } from './Server';
-import { Tag } from './Tag';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#openapi-object

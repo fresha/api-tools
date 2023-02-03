@@ -3,9 +3,6 @@ import { Generator as GeneratorBase, pathUrlToUrlExp } from '@fresha/openapi-cod
 
 import { Controller } from './Controller';
 import { ControllerTestSuite } from './ControllerTestSuite';
-
-import type { Context } from '../context';
-
 import { ErrorView } from './ErrorView';
 import { FallbackController } from './FallbackController';
 import { Resource } from './Resource';
@@ -13,6 +10,8 @@ import { ResourceTestSuite } from './ResourceTestSuite';
 import { Router } from './Router';
 import { View } from './View';
 import { ViewTestSuite } from './ViewTestSuite';
+
+import type { Context } from '../context';
 
 export class Generator extends GeneratorBase<Context> {
   protected readonly router: Router;
