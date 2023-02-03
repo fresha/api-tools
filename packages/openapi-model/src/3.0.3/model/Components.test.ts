@@ -2,13 +2,12 @@ import { Callback } from './Callback';
 import { Example } from './Example';
 import { Link } from './Link';
 import { OpenAPIFactory } from './OpenAPI';
-
-import type { ComponentsModel, OpenAPIModel, ParameterLocation, SecuritySchemeType } from './types';
-
 import { PathParameter, QueryParameter } from './Parameter';
 import { RequestBody } from './RequestBody';
 import { Response } from './Response';
 import { SchemaFactory } from './Schema';
+
+import type { ComponentsModel, OpenAPIModel, ParameterLocation, SecuritySchemeType } from './types';
 
 let openapi: OpenAPIModel;
 let components: ComponentsModel;

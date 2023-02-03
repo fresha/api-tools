@@ -3,6 +3,7 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { Header } from './Header';
 import { Link } from './Link';
+import { MediaType } from './MediaType';
 
 import type {
   HeaderModel,
@@ -11,9 +12,6 @@ import type {
   ResponseModel,
   ResponseModelParent,
 } from './types';
-
-import { MediaType } from './MediaType';
-
 import type { MIMETypeString } from '@fresha/api-tools-core';
 
 /**

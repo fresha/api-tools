@@ -6,10 +6,9 @@ import yaml from 'yaml';
 import { OpenAPI, OpenAPIFactory } from './OpenAPI';
 import { OpenAPIWriter } from './OpenAPIWriter';
 import { RequestBody } from './RequestBody';
+import { Schema, SchemaFactory } from './Schema';
 
 import type { JSONObject } from '@fresha/api-tools-core';
-
-import { Schema, SchemaFactory } from './Schema';
 
 test('how easy is to use this class', () => {
   const api = OpenAPIFactory.create('Test of this class ease of use', '0.1.0');

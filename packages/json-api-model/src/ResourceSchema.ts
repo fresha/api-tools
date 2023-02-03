@@ -4,6 +4,7 @@ import { Nullable, titleCase } from '@fresha/api-tools-core';
 import pluralize from 'pluralize';
 
 import { AttributeSchema } from './AttributeSchema';
+import { parseRelationshipSchema, Relationship } from './RelationshipSchema';
 
 import type {
   JSONAPIAttributeSchema,
@@ -12,9 +13,6 @@ import type {
   JSONAPIResourceSchema,
   RelationshipCardinality,
 } from './types';
-
-import { parseRelationshipSchema, Relationship } from './RelationshipSchema';
-
 import type { SchemaModel, CreateSchemaPropertyOptions } from '@fresha/openapi-model/build/3.0.3';
 
 const isSchemaModel = (obj: CreateSchemaPropertyOptions): obj is SchemaModel => {

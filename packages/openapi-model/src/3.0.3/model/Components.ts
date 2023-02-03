@@ -3,6 +3,18 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { Callback } from './Callback';
 import { Example } from './Example';
+import { Header } from './Header';
+import { Link } from './Link';
+import { CookieParameter, HeaderParameter, PathParameter, QueryParameter } from './Parameter';
+import { RequestBody } from './RequestBody';
+import { Response } from './Response';
+import { Schema, SchemaFactory } from './Schema';
+import {
+  APIKeySecurityScheme,
+  HTTPSecurityScheme,
+  OAuth2SecurityScheme,
+  OpenIdConnectSecurityScheme,
+} from './SecurityScheme';
 
 import type {
   CallbackModel,
@@ -18,22 +30,7 @@ import type {
   SchemaModel,
   SecuritySchemaModel,
 } from './types';
-
-import { Header } from './Header';
-
 import type { CommonMarkString } from '@fresha/api-tools-core';
-
-import { Link } from './Link';
-import { CookieParameter, HeaderParameter, PathParameter, QueryParameter } from './Parameter';
-import { RequestBody } from './RequestBody';
-import { Response } from './Response';
-import { Schema, SchemaFactory } from './Schema';
-import {
-  APIKeySecurityScheme,
-  HTTPSecurityScheme,
-  OAuth2SecurityScheme,
-  OpenIdConnectSecurityScheme,
-} from './SecurityScheme';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#components-object

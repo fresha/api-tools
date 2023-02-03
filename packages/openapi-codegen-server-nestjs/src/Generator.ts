@@ -4,15 +4,11 @@ import path from 'path';
 import { Generator as GeneratorBase } from '@fresha/openapi-codegen-utils';
 
 import { Controller } from './Controller';
-
-import type { Context } from './context';
-
 import { DTO } from './DTO';
-
-import type { Nullable } from '@fresha/api-tools-core';
-
 import { Module } from './Module';
 
+import type { Context } from './context';
+import type { Nullable } from '@fresha/api-tools-core';
 import type { PathItemModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 export class Generator extends GeneratorBase<Context> {

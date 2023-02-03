@@ -3,6 +3,10 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { Callback } from './Callback';
 import { PathParameter, QueryParameter, HeaderParameter, CookieParameter } from './Parameter';
+import { RequestBody } from './RequestBody';
+import { Responses } from './Responses';
+import { SecurityRequirement } from './SecurityRequirement';
+import { Server } from './Server';
 
 import type {
   CallbackModel,
@@ -18,14 +22,7 @@ import type {
   SecurityRequirementModel,
   ServerModel,
 } from './types';
-
-import { RequestBody } from './RequestBody';
-
 import type { CommonMarkString, Nullable, ParametrisedURLString } from '@fresha/api-tools-core';
-
-import { Responses } from './Responses';
-import { SecurityRequirement } from './SecurityRequirement';
-import { Server } from './Server';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#operation-object

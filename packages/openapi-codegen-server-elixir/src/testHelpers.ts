@@ -4,9 +4,9 @@ import { createJSONAPISchemaRegistry } from '@fresha/json-api-model';
 import { createTestContext as createBaseTestContext } from '@fresha/openapi-codegen-test-utils';
 import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 
-import type { Context } from './context';
-
 import { Generator } from './parts';
+
+import type { Context } from './context';
 
 export const createTestContext = (phoenixApp: string, rootDir = '/'): Context => {
   const openapi = OpenAPIFactory.create();
