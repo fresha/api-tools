@@ -1,6 +1,6 @@
 {
   "name": "@fresha/json-api-model",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "JSON:API object model",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -46,7 +46,7 @@
   "license": "MIT",
   "dependencies": {
     "@fresha/api-tools-core": "^0.4.2",
-    "@fresha/openapi-model": "^0.6.2",
+    "@fresha/openapi-model": "^0.6.3",
     "pluralize": "^8.0.0"
   },
   "devDependencies": {

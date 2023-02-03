@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-test-utils",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Testing utilites for OpenAPI codegens",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -47,8 +47,8 @@
   "dependencies": {
     "@fresha/api-tools-core": "^0.4.2",
     "@fresha/code-morph-test-utils": "^0.1.1",
-    "@fresha/openapi-codegen-utils": "^0.1.5",
-    "@fresha/openapi-model": "^0.6.2",
+    "@fresha/openapi-codegen-utils": "^0.1.6",
+    "@fresha/openapi-model": "^0.6.3",
     "jest-matcher-utils": "^29.1.2",
     "ts-morph": "^16.0.0"
   },
