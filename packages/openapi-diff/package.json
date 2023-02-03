@@ -6,6 +6,9 @@
   "bin": {
     "fresha-openapi-diff": "./bin/fresha-openapi-diff.js"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -60,5 +63,5 @@
     "chalk": "^4.1.2",
     "yargs": "^17.6.2"
   },
-  "gitHead": "f639bd0e2501337ff3ed8e260c46944865a9cc3d"
+  "gitHead": "5830273395fc060b19d06814b9396ce07eea778d"
 }

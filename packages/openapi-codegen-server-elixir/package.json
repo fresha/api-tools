@@ -3,6 +3,9 @@
   "version": "0.2.7",
   "description": "OpenAPI code generation for Elixir/Phoenix servers",
   "main": "build/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -61,5 +64,5 @@
     "@fresha/typescript-config": "^0.1.1",
     "typescript": "^4.7.2"
   },
-  "gitHead": "f639bd0e2501337ff3ed8e260c46944865a9cc3d"
+  "gitHead": "5830273395fc060b19d06814b9396ce07eea778d"
 }
