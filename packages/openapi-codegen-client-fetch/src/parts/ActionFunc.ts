@@ -200,7 +200,7 @@ export class ActionFunc {
           writer.block(() => {
             writer.writeLine('...COMMON_HEADERS,');
             for (const [headerName, varName] of this.headerToSet) {
-              writer.writeLine(`'${headerName}': ${varName}`);
+              writer.writeLine(`'${headerName}': params.${varName}`);
             }
           });
           writer.writeLine(',');
