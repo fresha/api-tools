@@ -164,7 +164,7 @@ export class ActionFunc {
     const actionFunc = addFunction(
       this.context.sourceFile,
       this.name,
-      this.parameterVars.size
+      this.parameterVars.size || this.requestType
         ? { params: '{}', extraParams: 'ExtraCallParams' }
         : { extraParams: 'ExtraCallParams' },
       `Promise<${resultType}>`,
@@ -240,7 +240,7 @@ export class ActionFunc {
   protected generateParameters(actionFunc: FunctionDeclaration): void {
     actionFunc.getParameterOrThrow('extraParams').setHasQuestionToken(true);
 
-    if (this.parameterVars.size) {
+    if (this.parameterVars.size || this.requestType) {
       const paramsType = actionFunc
         .getParameterOrThrow('params')
         .getTypeNodeOrThrow()
