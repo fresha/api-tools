@@ -25,7 +25,7 @@ test('simple test', () => {
   operation.operationId = 'readEmployeeList';
 
   const paramOffset = operation.addParameter('offset', 'query');
-  paramOffset.required = false;
+  paramOffset.required = true;
   paramOffset.schema = SchemaFactory.create(paramOffset, 'number');
 
   const paramLimit = operation.addParameter('limit', 'query');
@@ -83,13 +83,15 @@ test('simple test', () => {
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
 
     export async function readEmployeeList(
-      offset: number,
-      limit: number,
+      params: {
+        offset: number,
+        limit?: number,
+      },
       extraParams?: ExtraCallParams,
     ): Promise<ReadEmployeeListResponse> {
       const url = makeUrl(\`/employees\`);
-      addQueryParam(url, 'offset', offset);
-      addQueryParam(url, 'limit', limit);
+      addQueryParam(url, 'offset', params.offset);
+      addQueryParam(url, 'limit', params.limit);
 
       const request = {
         headers: COMMON_HEADERS,
