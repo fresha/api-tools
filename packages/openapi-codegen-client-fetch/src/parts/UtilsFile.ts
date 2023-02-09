@@ -112,8 +112,10 @@ export class UtilsFile {
         }
       };
 
-      export const toString = (val: unknown): string => {
-        return String(val);
+      export const addQueryParam = (url: URL, name: string, param: unknown): void => {
+        if (param !== undefined) {
+          url.searchParams.set(name, String(param));
+        }
       };
 
       export const COMMON_HEADERS = {
