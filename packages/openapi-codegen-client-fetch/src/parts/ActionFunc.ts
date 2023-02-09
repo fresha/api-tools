@@ -131,13 +131,12 @@ export class ActionFunc {
     this.context.logger.info(`Generating code for action ${this.name}`);
 
     addImportDeclarations(this.context.sourceFile, {
-      './utils': [
-        'COMMON_HEADERS',
-        'makeUrl',
-        this.parsesResponse ? 'callJsonApi' : 'callApi',
-        'toString',
-      ],
+      './utils': ['COMMON_HEADERS', 'makeUrl', this.parsesResponse ? 'callJsonApi' : 'callApi'],
     });
+
+    if (this.parameterVars.size) {
+      addImportDeclaration(this.context.sourceFile, './utils', 'addQueryParam');
+    }
 
     if (this.usesAuthCookie) {
       addImportDeclaration(this.context.sourceFile, './utils', 'authorizeRequest');
@@ -172,9 +171,7 @@ export class ActionFunc {
 
       for (const [paramName, paramInfo] of this.parameterVars) {
         if (paramInfo.parameter.in === 'query') {
-          writer.writeLine(
-            `url.searchParams.set('${paramInfo.parameter.name}', toString(${paramName}));`,
-          );
+          writer.writeLine(`addQueryParam(url, '${paramInfo.parameter.name}', ${paramName});`);
         }
       }
       writer.newLine();

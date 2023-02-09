@@ -1,6 +1,6 @@
 import { buildEmployeeSchemasForTesting } from '@fresha/openapi-codegen-test-utils';
 import { MEDIA_TYPE_JSON_API, setResourceSchema } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OperationModel } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OperationModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
 import '@fresha/openapi-codegen-test-utils/build/matchers';
 
@@ -23,6 +23,15 @@ test('simple test', () => {
 
   const operation = openapi.setPathItem('/employees').setOperation('get');
   operation.operationId = 'readEmployeeList';
+
+  const paramOffset = operation.addParameter('offset', 'query');
+  paramOffset.required = false;
+  paramOffset.schema = SchemaFactory.create(paramOffset, 'number');
+
+  const paramLimit = operation.addParameter('limit', 'query');
+  paramLimit.required = false;
+  paramLimit.schema = SchemaFactory.create(paramLimit, 'number');
+
   operation
     .setResponse(200, 'returns a list of employees')
     .setContent(MEDIA_TYPE_JSON_API)
@@ -43,7 +52,7 @@ test('simple test', () => {
       COMMON_HEADERS,
       makeUrl,
       callJsonApi,
-      toString,
+      addQueryParam,
       authorizeRequest,
       ExtraCallParams,
       applyExtraParams,
@@ -74,9 +83,13 @@ test('simple test', () => {
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
 
     export async function readEmployeeList(
+      offset: number,
+      limit: number,
       extraParams?: ExtraCallParams,
     ): Promise<ReadEmployeeListResponse> {
       const url = makeUrl(\`/employees\`);
+      addQueryParam(url, 'offset', offset);
+      addQueryParam(url, 'limit', limit);
 
       const request = {
         headers: COMMON_HEADERS,
@@ -125,7 +138,6 @@ test('action returns raw response', () => {
       COMMON_HEADERS,
       makeUrl,
       callApi,
-      toString,
       ExtraCallParams,
       applyExtraParams
     } from './utils';
