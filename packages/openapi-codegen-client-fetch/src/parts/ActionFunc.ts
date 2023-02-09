@@ -8,6 +8,7 @@ import {
   getOperationResponseSchemas,
   getCodegenOptions,
 } from '@fresha/openapi-codegen-utils';
+import { CodeBlockWriter, SyntaxKind } from 'ts-morph';
 
 import { DocumentType } from './DocumentType';
 import { schemaToType } from './utils';
@@ -15,7 +16,7 @@ import { schemaToType } from './utils';
 import type { NamedType } from './NamedType';
 import type { ActionContext } from '../context';
 import type { ParameterModel } from '@fresha/openapi-model/build/3.0.3';
-import type { CodeBlockWriter } from 'ts-morph';
+import type { FunctionDeclaration } from 'ts-morph';
 
 type ParameterInfo = {
   parameter: ParameterModel;
@@ -156,22 +157,31 @@ export class ActionFunc {
       resultType = this.responseType?.name;
     }
 
+    addImportDeclarations(this.context.sourceFile, {
+      './utils': ['t:ExtraCallParams', 'applyExtraParams'],
+    });
+
     const actionFunc = addFunction(
       this.context.sourceFile,
       this.name,
-      this.generateParameters(),
+      this.parameterVars.size
+        ? { params: '{}', extraParams: 'ExtraCallParams' }
+        : { extraParams: 'ExtraCallParams' },
       `Promise<${resultType}>`,
       true,
     );
     actionFunc.setIsAsync(true);
-    actionFunc.getParameterOrThrow('extraParams').setHasQuestionToken(true);
+
+    this.generateParameters(actionFunc);
 
     actionFunc.addStatements((writer: CodeBlockWriter) => {
       writer.writeLine(`const url = makeUrl(${this.generateCallUrl()});`);
 
       for (const [paramName, paramInfo] of this.parameterVars) {
         if (paramInfo.parameter.in === 'query') {
-          writer.writeLine(`addQueryParam(url, '${paramInfo.parameter.name}', ${paramName});`);
+          writer.writeLine(
+            `addQueryParam(url, '${paramInfo.parameter.name}', params.${paramName});`,
+          );
         }
       }
       writer.newLine();
@@ -183,7 +193,7 @@ export class ActionFunc {
           writer.writeLine(`method: '${httpMethod}',`);
         }
         if (this.requestType) {
-          writer.writeLine('body: JSON.stringify(body),');
+          writer.writeLine('body: JSON.stringify(params.body),');
         }
         if (this.headerToSet.size) {
           writer.write('headers:');
@@ -227,27 +237,37 @@ export class ActionFunc {
     });
   }
 
-  protected generateParameters(): Record<string, string> {
-    const params: Record<string, string> = {};
-    if (this.requestType) {
-      params.body = this.requestType.name;
-    }
+  protected generateParameters(actionFunc: FunctionDeclaration): void {
+    actionFunc.getParameterOrThrow('extraParams').setHasQuestionToken(true);
 
-    for (const [paramName, paramInfo] of this.parameterVars) {
-      if (paramInfo.typeString === 'JSONObject') {
-        addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', 't:JSONObject');
-      } else if (paramInfo.typeString === 'JSONArray') {
-        addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', 't:JSONArray');
+    if (this.parameterVars.size) {
+      const paramsType = actionFunc
+        .getParameterOrThrow('params')
+        .getTypeNodeOrThrow()
+        .asKindOrThrow(SyntaxKind.TypeLiteral);
+
+      if (this.requestType) {
+        paramsType.addProperty({
+          name: 'body',
+          type: this.requestType.name,
+          hasQuestionToken: !this.requestType.schema.required,
+        });
       }
-      params[paramName] = paramInfo.typeString;
+
+      for (const [paramName, paramInfo] of this.parameterVars) {
+        if (paramInfo.typeString === 'JSONObject') {
+          addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', 't:JSONObject');
+        } else if (paramInfo.typeString === 'JSONArray') {
+          addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', 't:JSONArray');
+        }
+
+        paramsType.addProperty({
+          name: paramName,
+          type: paramInfo.typeString,
+          hasQuestionToken: !paramInfo.parameter.required,
+        });
+      }
     }
-
-    addImportDeclarations(this.context.sourceFile, {
-      './utils': ['t:ExtraCallParams', 'applyExtraParams'],
-    });
-    params.extraParams = 'ExtraCallParams';
-
-    return params;
   }
 
   protected generateCallUrl(): string {
@@ -259,7 +279,7 @@ export class ActionFunc {
         `Found '${match}' parameter in '${pathUrl}', but not path parameter`,
         this.context.operation,
       );
-      return `\${${argName}}`;
+      return `\${params.${argName}}`;
     });
 
     return `\`${str}\``;
