@@ -79,14 +79,14 @@ export class UtilsFile {
       };
 
       export const authorizeRequest = (request: RequestInit, extraParams?: ExtraCallParams): void => {
-        const finalAuthCookieName = extraParams?.authCookieName || authCookieName;
-        const finalAuthCookie = extraParams?.authCookie || authCookie;
-        if (!finalAuthCookieName || !finalAuthCookie) {
-          throw new APIClientError('config', 'Authorization cookie is not set');
-        }
         if (typeof window !== "undefined") {
           request.credentials = "include";
         } else {
+          const finalAuthCookieName = extraParams?.authCookieName || authCookieName;
+          const finalAuthCookie = extraParams?.authCookie || authCookie;
+          if (!finalAuthCookieName || !finalAuthCookie) {
+            throw new APIClientError('config', 'Authorization cookie is not set');
+          }
           request.headers = {
             ...request.headers,
             cookie: \`\${finalAuthCookieName}=\${finalAuthCookie};\`,
