@@ -223,6 +223,9 @@ export class ActionFunc {
         if (this.responseType) {
           writer.writeLine(`const response = await callJsonApi(url, request);`);
           writer.newLine();
+          addImportDeclaration(this.context.sourceFile, './utils', 'dispatchSuccess');
+          writer.writeLine('dispatchSuccess(params, response)');
+          writer.newLine();
           writer.writeLine(`return response as unknown as ${this.responseType.name};`);
         } else {
           writer.writeLine(`await callJsonApi(url, request);`);

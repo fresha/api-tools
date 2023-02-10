@@ -56,6 +56,7 @@ test('simple test', () => {
       authorizeRequest,
       ExtraCallParams,
       applyExtraParams,
+      dispatchSuccess,
     } from './utils';
     import type {
       JSONAPIServerResource,
@@ -102,6 +103,8 @@ test('simple test', () => {
       applyExtraParams(request, extraParams);
 
       const response = await callJsonApi(url, request);
+
+      dispatchSuccess(params, response);
 
       return response as unknown as ReadEmployeeListResponse;
     }
