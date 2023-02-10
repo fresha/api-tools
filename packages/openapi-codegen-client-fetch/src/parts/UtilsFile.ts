@@ -34,12 +34,16 @@ export class UtilsFile {
 
       export type FetchFunc = (url: string, init: RequestInit) => Promise<Response>;
 
+      export type SuccessCallbackFunc = (params: unknown, response: JSONValue) => void;
+
       let rootUrl = '';
       let fetcher: FetchFunc = global.fetch;
+      let successCallback: SuccessCallbackFunc | null = null;
 
       export type InitParams = {
         rootUrl: string;
         fetcher?: FetchFunc;
+        successCallback?: SuccessCallbackFunc;
       };
 
       export const init = (params: InitParams): void => {
@@ -49,6 +53,9 @@ export class UtilsFile {
         rootUrl = params.rootUrl;
         if (params.fetcher) {
           fetcher = params.fetcher;
+        }
+        if (params.successCallback) {
+          successCallback = params.successCallback;
         }
       };
 
@@ -155,6 +162,12 @@ export class UtilsFile {
         }
 
         return json as JSONValue;
+      };
+
+      export const dispatchSuccess = (params: unknown, response: JSONValue): void => {
+        if (successCallback) {
+          successCallback(params, response);
+        }
       };
     `,
     );
