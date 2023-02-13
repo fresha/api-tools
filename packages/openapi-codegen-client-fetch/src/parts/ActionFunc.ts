@@ -186,6 +186,17 @@ export class ActionFunc {
       }
       writer.newLine();
 
+      if (this.requestType) {
+        if (this.context.apiNaming) {
+          const transformFunc = `${this.context.apiNaming}CaseDeep`;
+          addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', 't:JSONValue');
+          addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', transformFunc);
+          writer.writeLine(`const body = ${transformFunc}(params.body as unknown as JSONValue)`);
+        } else {
+          writer.writeLine('const body = params.body;');
+        }
+      }
+
       writer.writeLine('const request = {');
       writer.indent(() => {
         const httpMethod = this.context.operation.httpMethod.toLowerCase();
@@ -193,7 +204,7 @@ export class ActionFunc {
           writer.writeLine(`method: '${httpMethod}',`);
         }
         if (this.requestType) {
-          writer.writeLine('body: JSON.stringify(params.body),');
+          writer.writeLine('body: JSON.stringify(body),');
         }
         if (this.headerToSet.size) {
           writer.write('headers:');
@@ -221,7 +232,15 @@ export class ActionFunc {
 
       if (this.parsesResponse) {
         if (this.responseType) {
-          writer.writeLine(`const response = await callJsonApi(url, request);`);
+          if (this.context.clientNaming) {
+            const transformFunc = `${this.context.clientNaming}CaseDeep`;
+            addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', transformFunc);
+            writer.writeLine(`let response = await callJsonApi(url, request);`);
+            writer.newLine();
+            writer.writeLine(`response = ${transformFunc}(response);`);
+          } else {
+            writer.writeLine(`const response = await callJsonApi(url, request);`);
+          }
           writer.newLine();
           addImportDeclaration(this.context.sourceFile, './utils', 'dispatchSuccess');
           writer.writeLine('dispatchSuccess(params, response)');

@@ -10,8 +10,8 @@ export interface Context extends TSProjectContext {
   readonly includeInternal: boolean;
   readonly includedTags: Set<string>;
   readonly excludedTags: Set<string>;
-  readonly transformRequest: Nullable<NamingConvention>;
-  readonly transformResponse: Nullable<NamingConvention>;
+  readonly apiNaming: Nullable<NamingConvention>;
+  readonly clientNaming: Nullable<NamingConvention>;
 }
 
 export interface ActionContext extends Context {
