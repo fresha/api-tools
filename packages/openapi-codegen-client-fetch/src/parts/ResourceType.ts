@@ -1,3 +1,11 @@
+import {
+  camelCase,
+  JSONValue,
+  kebabCase,
+  Nullable,
+  snakeCase,
+  titleCase,
+} from '@fresha/api-tools-core';
 import { addImportDeclaration, addTypeAlias } from '@fresha/code-morph-ts';
 import { assert, getSchemaMultiProperty } from '@fresha/openapi-codegen-utils';
 import { StructureKind, SyntaxKind } from 'ts-morph';
@@ -6,7 +14,6 @@ import { NamedType } from './NamedType';
 import { schemaToType } from './utils';
 
 import type { ActionContext } from '../context';
-import type { JSONValue, Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 enum RelationshipCardinality {
@@ -204,7 +211,7 @@ export class ResourceType extends NamedType {
         if (!typeName.startsWith('Unknown')) {
           typeLiteral.addProperty({
             kind: StructureKind.PropertySignature,
-            name: `'${name}'`,
+            name: `'${this.toClientName(name)}'`,
             type: typeName,
             hasQuestionToken: !this.attributesSchema.required.has(name),
           });
@@ -223,11 +230,26 @@ export class ResourceType extends NamedType {
 
         typeLiteral.addProperty({
           kind: StructureKind.PropertySignature,
-          name: `'${name}'`,
+          name: `'${this.toClientName(name)}'`,
           type: `${relName}<'${info.resourceType}'>`,
           hasQuestionToken: !info.required,
         });
       }
+    }
+  }
+
+  protected toClientName(name: string): string {
+    switch (this.context.clientNaming) {
+      case 'camel':
+        return camelCase(name);
+      case 'kebab':
+        return kebabCase(name);
+      case 'title':
+        return titleCase(name);
+      case 'snake':
+        return snakeCase(name);
+      default:
+        return name;
     }
   }
 }

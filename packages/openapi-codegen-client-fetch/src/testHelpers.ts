@@ -13,8 +13,8 @@ export const createTestContext = (openapi: OpenAPIModel): Context => {
     includeInternal: false,
     includedTags: new Set<string>(),
     excludedTags: new Set<string>(),
-    transformRequest: 'kebab',
-    transformResponse: 'camel',
+    apiNaming: null,
+    clientNaming: null,
   };
 };
 

@@ -18,8 +18,8 @@ type Params = BaseParams & {
   withInternal?: boolean;
   withTags?: string[];
   withoutTags?: string[];
-  transformRequest?: NamingConvention;
-  transformResponse?: NamingConvention;
+  apiNaming?: NamingConvention;
+  clientNaming?: NamingConvention;
 };
 
 export const builder = (args: Argv): Argv<Params> =>
@@ -34,10 +34,10 @@ export const builder = (args: Argv): Argv<Params> =>
     .describe('with-tags', 'Generate only operation with tags')
     .array('without-tags')
     .describe('without-tags', 'Generates operations not assigned with this tags')
-    .choices('transform-request', ['camel', 'kebab', 'snake', 'title'])
-    .describe('transform-request', 'Transforms request bodies to specified convention')
-    .choices('transform-response', ['camel', 'kebab', 'snake', 'title'])
-    .describe('transform-response', 'Converts responses to specified convention');
+    .choices('api-naming', ['camel', 'kebab', 'snake', 'title'])
+    .describe('api-naming', 'Naming convention in OpenAPI schema')
+    .choices('client-naming', ['camel', 'kebab', 'snake', 'title'])
+    .describe('client-naming', 'Naming convention on a client');
 
 export const handler = (args: ArgumentsCamelCase<Params>): void => {
   const baseContext = createTSProjectContext(args);
@@ -48,8 +48,8 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     includeInternal: !!args.withInternal,
     includedTags: new Set<string>(args.withTags),
     excludedTags: new Set<string>(args.withoutTags),
-    transformRequest: args.transformRequest ?? null,
-    transformResponse: args.transformResponse ?? null,
+    apiNaming: args.apiNaming ?? null,
+    clientNaming: args.clientNaming ?? null,
   });
 
   generator.run();
