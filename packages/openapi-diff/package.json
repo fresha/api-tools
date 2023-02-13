@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-diff",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Diffing/versioning tool for OpenAPI schemas",
   "main": "build/index.js",
   "bin": {
@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@fresha/api-tools-core": "^0.4.2",
-    "@fresha/openapi-model": "^0.6.5",
+    "@fresha/openapi-model": "^0.6.6",
     "chalk": "^4.1.2",
     "yargs": "^17.6.2"
   },
