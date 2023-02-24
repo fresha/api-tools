@@ -199,8 +199,8 @@ export class ActionFunc {
 
       writer.writeLine('const request = {');
       writer.indent(() => {
-        const httpMethod = this.context.operation.httpMethod.toLowerCase();
-        if (httpMethod !== 'get') {
+        const httpMethod = this.context.operation.httpMethod.toUpperCase();
+        if (httpMethod !== 'GET') {
           writer.writeLine(`method: '${httpMethod}',`);
         }
         if (this.requestType) {
