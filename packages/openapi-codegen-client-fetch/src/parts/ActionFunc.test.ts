@@ -136,7 +136,7 @@ test('specific naming convention for client library', () => {
 
   openapi.components.setSecuritySchema('the_auth', 'apiKey');
 
-  const operation = openapi.setPathItem('/employees').setOperation('get');
+  const operation = openapi.setPathItem('/employees').setOperation('patch');
   operation.operationId = 'readEmployeeList';
 
   operation
@@ -199,6 +199,7 @@ test('specific naming convention for client library', () => {
       const url = makeUrl(\`/employees\`);
 
       const request = {
+        method: 'PATCH',
         headers: COMMON_HEADERS,
       };
 
