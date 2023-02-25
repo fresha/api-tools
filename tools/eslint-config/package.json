@@ -3,6 +3,11 @@
   "version": "0.1.1",
   "description": "ESLint configuration",
   "author": "Fresha Engineering",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git",
+    "directory": "tools/eslint-config"
+  },
   "contributors": [
     {
       "name": "Andriy Mykulyak",

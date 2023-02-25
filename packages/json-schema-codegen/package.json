@@ -3,6 +3,11 @@
   "version": "0.1.1",
   "description": "Code generators for JSON Schema",
   "main": "build/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git",
+    "directory": "packages/json-schema-codegen"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "build:watch": "npm run build -- --watch",

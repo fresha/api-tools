@@ -3,6 +3,11 @@
   "version": "0.1.1",
   "description": "Configuration for TypeScript projects",
   "author": "Fresha Engineering",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git",
+    "directory": "tools/typescript-config"
+  },
   "contributors": [
     {
       "name": "Andriy Mykulyak",
