@@ -2,6 +2,11 @@
   "name": "@fresha/jest-config",
   "version": "0.1.1",
   "description": "Common Jest configuration for this project",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git",
+    "directory": "tools/jest-config"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "build:watch": "npm run build -- --watch",

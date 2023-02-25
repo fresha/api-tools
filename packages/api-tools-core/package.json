@@ -2,6 +2,11 @@
   "name": "@fresha/api-tools-core",
   "version": "0.4.2",
   "description": "Core project functionality",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git",
+    "directory": "packages/api-tools-core"
+  },
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {

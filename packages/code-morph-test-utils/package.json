@@ -4,6 +4,11 @@
   "description": "Testing utilites for code morphers",
   "main": "build/index.js",
   "types": "build/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git",
+    "directory": "packages/code-morph-test-utils"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "build:watch": "npm run build -- --watch",

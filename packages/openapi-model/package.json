@@ -3,6 +3,11 @@
   "version": "0.6.6",
   "description": "OpenAPI object model",
   "main": "build/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/surgeventures/api-tools.git",
+    "directory": "packages/openapi-model"
+  },
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "build:watch": "npm run build -- --watch",
