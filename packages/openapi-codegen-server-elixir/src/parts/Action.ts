@@ -289,18 +289,14 @@ export class Action {
     const elixirAtttName = snakeCase(propName);
     const parsers: string[] = [];
 
-    let minimum: number | null = null;
-    if (propSchema.minimum) {
-      minimum = propSchema.minimum;
-    } else if (propSchema.exclusiveMinimum) {
-      minimum = propSchema.exclusiveMinimum + 1;
+    let minimum: Nullable<number> = null;
+    if (propSchema.minimum != null) {
+      minimum = propSchema.exclusiveMinimum ? propSchema.minimum + 1 : propSchema.minimum;
     }
 
-    let maximum: number | null = null;
-    if (propSchema.maximum) {
-      maximum = propSchema.maximum;
-    } else if (propSchema.exclusiveMaximum) {
-      maximum = propSchema.exclusiveMaximum - 1;
+    let maximum: Nullable<number> = null;
+    if (propSchema.maximum != null) {
+      maximum = propSchema.exclusiveMaximum ? propSchema.maximum - 1 : propSchema.maximum;
     }
 
     if (minimum == null || maximum == null) {
@@ -333,8 +329,14 @@ export class Action {
     const parsers: string[] = [];
 
     // Surgex.Parsers doesn't have a way to distinguish between >min and >=min
-    const minimum = propSchema.minimum || propSchema.exclusiveMinimum || null;
-    const maximum = propSchema.maximum || propSchema.exclusiveMaximum || null;
+    let minimum: Nullable<number> = null;
+    if (propSchema.minimum != null) {
+      minimum = propSchema.exclusiveMinimum ? propSchema.minimum - 1 : propSchema.minimum;
+    }
+    let maximum: Nullable<number> = null;
+    if (propSchema.maximum != null) {
+      maximum = propSchema.exclusiveMaximum ? propSchema.maximum + 1 : propSchema.maximum;
+    }
 
     // Surgex.Parsers doesn't distinguish between float and double
     if (minimum == null || maximum == null) {

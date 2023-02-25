@@ -352,11 +352,7 @@ export class Differ {
           this.#items.push(new DiffItem(`${basePointer}/type`, 'major', `changed`));
         }
 
-        this.diffSchema(
-          schema1.items as Nullable<SchemaModel>,
-          schema2.items as Nullable<SchemaModel>,
-          `${basePointer}/items`,
-        );
+        this.diffSchema(schema1.items, schema2.items, `${basePointer}/items`);
 
         const propNames1 = new Set<string>(schema1.properties.keys());
         const propNames2 = new Set<string>(schema2.properties.keys());

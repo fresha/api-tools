@@ -443,8 +443,8 @@ describe('Schema', () => {
         const prop0 = schema.setProperty('prop0', { type: 'integer' });
         expect(prop0).toHaveProperty('minimum', null);
         expect(prop0).toHaveProperty('maximum', null);
-        expect(prop0).toHaveProperty('exclusiveMinimum', null);
-        expect(prop0).toHaveProperty('exclusiveMaximum', null);
+        expect(prop0).toHaveProperty('exclusiveMinimum', false);
+        expect(prop0).toHaveProperty('exclusiveMaximum', false);
 
         const prop1 = schema.setProperty('prop1', { type: 'integer', minimum: 12 });
         expect(prop1).toHaveProperty('minimum', 12);
@@ -456,19 +456,19 @@ describe('Schema', () => {
         expect(prop3).toHaveProperty('minimum', 12);
         expect(prop3).toHaveProperty('maximum', 30);
 
-        const prop4 = schema.setProperty('prop4', { type: 'integer', exclusiveMinimum: 12 });
-        expect(prop4).toHaveProperty('exclusiveMinimum', 12);
+        const prop4 = schema.setProperty('prop4', { type: 'integer', exclusiveMinimum: true });
+        expect(prop4).toHaveProperty('exclusiveMinimum', true);
 
-        const prop5 = schema.setProperty('prop5', { type: 'integer', exclusiveMaximum: 25 });
-        expect(prop5).toHaveProperty('exclusiveMaximum', 25);
+        const prop5 = schema.setProperty('prop5', { type: 'integer', exclusiveMaximum: false });
+        expect(prop5).toHaveProperty('exclusiveMaximum', false);
 
         const prop6 = schema.setProperty('prop6', {
           type: 'integer',
-          exclusiveMinimum: 12,
-          exclusiveMaximum: 30,
+          exclusiveMinimum: true,
+          exclusiveMaximum: false,
         });
-        expect(prop6).toHaveProperty('exclusiveMinimum', 12);
-        expect(prop6).toHaveProperty('exclusiveMaximum', 30);
+        expect(prop6).toHaveProperty('exclusiveMinimum', true);
+        expect(prop6).toHaveProperty('exclusiveMaximum', false);
       });
     });
 
@@ -676,26 +676,6 @@ describe('Schema', () => {
     expect(itemsSchema).toBe(schema.items);
     expect(itemsSchema.type).toBe('number');
     expect(itemsSchema.format).toBe('double');
-  });
-
-  test('addTupleItem, removeTupleItemAt, clearTupleItems', () => {
-    const schema = SchemaFactory.create(openapi.components, 'array');
-    const item1 = schema.addTupleItem('boolean');
-    const item2 = schema.addTupleItem('string');
-    const item3 = schema.addTupleItem('integer');
-    expect(schema.isTuple()).toBeTruthy();
-
-    expect(Array.isArray(schema.items)).toBe(true);
-
-    expect(schema.items).toHaveProperty('0', item1);
-    expect(schema.items).toHaveProperty('1', item2);
-    expect(schema.items).toHaveProperty('2', item3);
-
-    schema.deleteTupleItemAt(1);
-    expect(schema.items).toHaveProperty('1', item3);
-
-    schema.clearTupleItems();
-    expect(schema.items).toStrictEqual([]);
   });
 
   test('addAllOf', () => {

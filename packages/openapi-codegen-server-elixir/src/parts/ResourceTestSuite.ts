@@ -69,15 +69,11 @@ export class ResourceTestSuite {
         case 'integer': {
           let min: number | undefined;
           if (attrSchema.minimum != null) {
-            min = attrSchema.minimum;
-          } else if (attrSchema.exclusiveMinimum != null) {
-            min = attrSchema.exclusiveMinimum + 1;
+            min = attrSchema.exclusiveMinimum ? attrSchema.minimum : attrSchema.minimum + 1;
           }
           let max: number | undefined;
           if (attrSchema.maximum != null) {
-            max = attrSchema.maximum;
-          } else if (attrSchema.exclusiveMaximum != null) {
-            max = attrSchema.exclusiveMaximum - 1;
+            max = attrSchema.exclusiveMaximum ? attrSchema.maximum : attrSchema.maximum - 1;
           }
           result.set(attrName, faker.datatype.number({ min, max }));
           break;
@@ -85,15 +81,11 @@ export class ResourceTestSuite {
         case 'number': {
           let min: number | undefined;
           if (attrSchema.minimum != null) {
-            min = attrSchema.minimum;
-          } else if (attrSchema.exclusiveMinimum != null) {
-            min = attrSchema.exclusiveMinimum + 1;
+            min = attrSchema.exclusiveMinimum ? attrSchema.minimum : attrSchema.minimum + 1;
           }
           let max: number | undefined;
           if (attrSchema.maximum != null) {
-            max = attrSchema.maximum;
-          } else if (attrSchema.exclusiveMaximum != null) {
-            max = attrSchema.exclusiveMaximum - 1;
+            max = attrSchema.exclusiveMaximum ? attrSchema.maximum : attrSchema.maximum - 1;
           }
           result.set(attrName, faker.datatype.number({ min, max, precision: 0.01 }));
           break;
