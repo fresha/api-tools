@@ -36,23 +36,7 @@ paths:
         $ref: "#/components/requestBodies/JSONAPIRequest"
       responses:
         default:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  - type: string
-                    nullable: true
-                  - type: number
-                    minimum: 0
-                    maximum: 100
-                  - type: object
-                    properties:
-                      one:
-                        type: boolean
-                      two:
-                        type: number
+          $ref: "#/components/responses/JSONAPIDataResponse"
 components:
   schemas:
     JSONAPIVersion:

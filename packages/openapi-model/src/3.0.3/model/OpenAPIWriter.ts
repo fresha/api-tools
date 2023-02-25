@@ -328,13 +328,13 @@ export class OpenAPIWriter {
     if (schema.maximum != null) {
       result.maximum = schema.maximum;
     }
-    if (schema.exclusiveMaximum != null) {
+    if (schema.exclusiveMaximum) {
       result.exclusiveMaximum = schema.exclusiveMaximum;
     }
     if (schema.minimum != null) {
       result.minimum = schema.minimum;
     }
-    if (schema.exclusiveMinimum != null) {
+    if (schema.exclusiveMinimum) {
       result.exclusiveMinimum = schema.exclusiveMinimum;
     }
     if (schema.maxLength != null) {
@@ -389,11 +389,7 @@ export class OpenAPIWriter {
       result.not = this.writeSchema(schema.not, schema);
     }
     if (schema.items != null) {
-      if (Array.isArray(schema.items)) {
-        result.items = schema.items.map(subschema => this.writeSchema(subschema, schema));
-      } else {
-        result.items = this.writeSchema(schema.items, schema);
-      }
+      result.items = this.writeSchema(schema.items, schema);
     }
     if (schema.properties.size) {
       result.properties = {};

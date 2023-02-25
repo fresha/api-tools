@@ -40,9 +40,9 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   title: Nullable<string>;
   multipleOf: Nullable<number>;
   maximum: Nullable<number>;
-  exclusiveMaximum: Nullable<number>;
+  exclusiveMaximum: boolean;
   minimum: Nullable<number>;
-  exclusiveMinimum: Nullable<number>;
+  exclusiveMinimum: boolean;
   maxLength: Nullable<number>;
   minLength: Nullable<number>;
   pattern: Nullable<string>;
@@ -58,7 +58,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   readonly oneOf: SchemaModel[];
   readonly anyOf: SchemaModel[];
   not: Nullable<SchemaModel>;
-  items: Nullable<SchemaModel | SchemaModel[]>;
+  items: Nullable<SchemaModel>;
   readonly properties: Map<string, SchemaModel>;
   additionalProperties: Nullable<SchemaModel | boolean>;
   description: Nullable<CommonMarkString>;
@@ -158,10 +158,10 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
             result.maximum = params.maximum;
           }
           if (params.exclusiveMinimum != null) {
-            result.exclusiveMinimum = params.exclusiveMinimum;
+            result.exclusiveMinimum = !!params.exclusiveMinimum;
           }
           if (params.exclusiveMaximum != null) {
-            result.exclusiveMaximum = params.exclusiveMaximum;
+            result.exclusiveMaximum = !!params.exclusiveMaximum;
           }
           break;
         }
@@ -267,9 +267,9 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.title = null;
     this.multipleOf = null;
     this.maximum = null;
-    this.exclusiveMaximum = null;
+    this.exclusiveMaximum = false;
     this.minimum = null;
-    this.exclusiveMinimum = null;
+    this.exclusiveMinimum = false;
     this.minLength = null;
     this.maxLength = null;
     this.pattern = null;
@@ -436,29 +436,6 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     assert(!this.items, `This schema's items have already been set`);
     this.items = isSchemaModel(options) ? options : Schema.create(this, options);
     return this.items;
-  }
-
-  addTupleItem(options: CreateOrSetSchemaOptions): SchemaModel {
-    if (!Array.isArray(this.items)) {
-      this.items = [];
-    }
-
-    const subschema = Schema.createOrGet(this, options);
-    this.items.push(subschema);
-
-    return subschema;
-  }
-
-  deleteTupleItemAt(index: number): void {
-    if (Array.isArray(this.items)) {
-      this.items.splice(index, 1);
-    }
-  }
-
-  clearTupleItems(): void {
-    if (Array.isArray(this.items)) {
-      this.items.splice(0, this.items.length);
-    }
   }
 
   addAllOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {

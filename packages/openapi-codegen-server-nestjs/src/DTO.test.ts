@@ -81,9 +81,9 @@ describe('serialization', () => {
     const schema = context.openapi.components.setSchema('Error', 'object');
     schema.setProperties({
       min: { type: 'number', minimum: 10 },
-      minExclusive: { type: 'number', exclusiveMinimum: 15 },
+      minExclusive: { type: 'number', minimum: 15, exclusiveMinimum: true },
       max: { type: 'number', maximum: 20 },
-      maxExclusive: { type: 'number', exclusiveMaximum: 25 },
+      maxExclusive: { type: 'number', maximum: 25, exclusiveMaximum: false },
     });
 
     new DTO(context, 'Response', schema).generateCode();
@@ -101,7 +101,7 @@ describe('serialization', () => {
         min?: number;
 
         @Expose()
-        @Min(15)
+        @Min(16)
         @IsInt()
         minExclusive?: number;
 

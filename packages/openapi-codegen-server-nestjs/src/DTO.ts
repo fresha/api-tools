@@ -109,19 +109,19 @@ export class DTO {
     addDecorator(propDef, 'Expose', undefined);
     if (prop.schema.minimum != null) {
       addImportDeclaration(this.sourceFile, 'class-validator', 'Min');
-      addDecorator(propDef, 'Min', prop.schema.minimum);
-    }
-    if (prop.schema.exclusiveMinimum != null) {
-      addImportDeclaration(this.sourceFile, 'class-validator', 'Min');
-      addDecorator(propDef, 'Min', prop.schema.exclusiveMinimum);
+      addDecorator(
+        propDef,
+        'Min',
+        prop.schema.exclusiveMinimum ? prop.schema.minimum + 1 : prop.schema.minimum,
+      );
     }
     if (prop.schema.maximum != null) {
       addImportDeclaration(this.sourceFile, 'class-validator', 'Max');
-      addDecorator(propDef, 'Max', prop.schema.maximum);
-    }
-    if (prop.schema.exclusiveMaximum != null) {
-      addImportDeclaration(this.sourceFile, 'class-validator', 'Max');
-      addDecorator(propDef, 'Max', prop.schema.exclusiveMaximum);
+      addDecorator(
+        propDef,
+        'Max',
+        prop.schema.exclusiveMaximum ? prop.schema.maximum - 1 : prop.schema.maximum,
+      );
     }
     addImportDeclaration(this.sourceFile, 'class-validator', 'IsInt');
     addDecorator(propDef, 'IsInt', undefined);

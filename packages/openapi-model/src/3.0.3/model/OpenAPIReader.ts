@@ -482,9 +482,9 @@ export class OpenAPIReader {
     model.title = getStringAttribute(json, 'title', false);
     model.multipleOf = getNumericAttribute(json, 'multipleOf', false);
     model.maximum = getNumericAttribute(json, 'maximum', false);
-    model.exclusiveMaximum = json.exclusiveMaximum ?? null;
+    model.exclusiveMaximum = json.exclusiveMaximum ?? false;
     model.minimum = getNumericAttribute(json, 'minimum', false);
-    model.exclusiveMinimum = json.exclusiveMinimum ?? null;
+    model.exclusiveMinimum = json.exclusiveMinimum ?? false;
     model.minLength = getNumericAttribute(json, 'minLength', false);
     model.maxLength = getNumericAttribute(json, 'maxLength', false);
     model.pattern = getStringAttribute(json, 'pattern', false);
@@ -508,13 +508,7 @@ export class OpenAPIReader {
       model.not = this.parseSchema(json.not, model);
     }
     if (json.items) {
-      if (Array.isArray(json.items)) {
-        for (const item of json.items) {
-          model.addTupleItem(this.parseSchema(item, model));
-        }
-      } else {
-        model.setItems(this.parseSchema(json.items, model));
-      }
+      model.setItems(this.parseSchema(json.items, model));
     }
     if (json.properties) {
       for (const [key, value] of Object.entries(json.properties)) {

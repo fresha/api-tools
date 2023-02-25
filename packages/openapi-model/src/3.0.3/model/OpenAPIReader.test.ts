@@ -44,9 +44,9 @@ describe('SchemaModel', () => {
     expect(emptySchema).toHaveProperty('title', null);
     expect(emptySchema).toHaveProperty('multipleOf', null);
     expect(emptySchema).toHaveProperty('maximum', null);
-    expect(emptySchema).toHaveProperty('exclusiveMaximum', null);
+    expect(emptySchema).toHaveProperty('exclusiveMaximum', false);
     expect(emptySchema).toHaveProperty('minimum', null);
-    expect(emptySchema).toHaveProperty('exclusiveMinimum', null);
+    expect(emptySchema).toHaveProperty('exclusiveMinimum', false);
     expect(emptySchema).toHaveProperty('minLength', null);
     expect(emptySchema).toHaveProperty('maxLength', null);
     expect(emptySchema).toHaveProperty('pattern', null);
@@ -95,9 +95,9 @@ describe('SchemaModel', () => {
             title: 'error message schema',
             multipleOf: 4,
             maximum: 100,
-            exclusiveMaximum: 99,
+            exclusiveMaximum: false,
             minimum: 10,
-            exclusiveMinimum: 11,
+            exclusiveMinimum: true,
             minLength: 5,
             maxLength: 25,
             pattern: '*',
@@ -152,9 +152,9 @@ describe('SchemaModel', () => {
     expect(errorMessageSchema).toHaveProperty('title', 'error message schema');
     expect(errorMessageSchema).toHaveProperty('multipleOf', 4);
     expect(errorMessageSchema).toHaveProperty('maximum', 100);
-    expect(errorMessageSchema).toHaveProperty('exclusiveMaximum', 99);
+    expect(errorMessageSchema).toHaveProperty('exclusiveMaximum', false);
     expect(errorMessageSchema).toHaveProperty('minimum', 10);
-    expect(errorMessageSchema).toHaveProperty('exclusiveMinimum', 11);
+    expect(errorMessageSchema).toHaveProperty('exclusiveMinimum', true);
     expect(errorMessageSchema).toHaveProperty('minLength', 5);
     expect(errorMessageSchema).toHaveProperty('maxLength', 25);
     expect(errorMessageSchema).toHaveProperty('pattern', '*');
