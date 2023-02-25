@@ -24,6 +24,12 @@
   "keywords": [
     "JSON:API"
   ],
+  "files": [
+    "build/",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
   "author": "Fresha Engineering",
   "contributors": [
     {

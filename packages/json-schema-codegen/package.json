@@ -17,6 +17,15 @@
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "build/",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "JSON Schema"
   ],
