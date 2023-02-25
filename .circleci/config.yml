@@ -11,7 +11,8 @@ jobs:
           install-yarn: false
           node-version: "16.14"
       - run: npm install
-      - run: npx lerna run check --stream
+      - run: npx lerna run build --skip-nx-cache
+      - run: npx lerna run check --skip-nx-cache
 workflows:
   node-tests:
     jobs:

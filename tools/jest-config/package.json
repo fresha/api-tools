@@ -13,7 +13,6 @@
     "lint": "run-s eslint typecheck",
     "lint:fix": "run-s eslint:fix typecheck",
     "prebuild": "npm run clean",
-    "prebuild:watch": "npm run clean",
     "test": "jest --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
