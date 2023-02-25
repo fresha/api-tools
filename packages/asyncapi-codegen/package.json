@@ -21,6 +21,15 @@
     "AsyncAPI",
     "code generator"
   ],
+  "files": [
+    "build/",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Fresha Engineering",
   "contributors": [
     {

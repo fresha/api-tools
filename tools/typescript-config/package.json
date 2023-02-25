@@ -17,6 +17,15 @@
       "url": "https://github.com/mykulyak"
     }
   ],
+  "files": [
+    "tsconfig.json",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "main": "tsconfig.json"
 }

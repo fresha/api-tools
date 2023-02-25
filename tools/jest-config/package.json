@@ -16,6 +16,15 @@
     "test": "jest --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
+  "files": [
+    "build/",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "Fresha Engineering",
   "contributors": [
     {

@@ -17,6 +17,15 @@
       "url": "https://github.com/mykulyak"
     }
   ],
+  "files": [
+    "index.js",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "main": "index.js",
   "dependencies": {
