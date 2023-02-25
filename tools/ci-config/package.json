@@ -3,8 +3,8 @@
   "version": "0.1.2",
   "description": "Generates CI configuration",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsc --project tsconfig.build.json",
+    "build:watch": "npm run build -- --watch",
     "check": "run-s lint",
     "check:fix": "run-s lint:fix",
     "clean": "rimraf ./build",

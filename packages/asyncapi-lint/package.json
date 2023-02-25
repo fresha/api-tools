@@ -4,8 +4,8 @@
   "description": "Linting tool for AsyncAPI schemas",
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsc --project tsconfig.build.json",
+    "build:watch": "npm run build -- --watch",
     "check": "run-s lint test",
     "check:fix": "run-s lint:fix test",
     "clean": "rimraf ./build",
@@ -14,7 +14,6 @@
     "lint": "run-s eslint typecheck",
     "lint:fix": "run-s eslint:fix typecheck",
     "prebuild": "npm run clean",
-    "prebuild:watch": "npm run clean",
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
