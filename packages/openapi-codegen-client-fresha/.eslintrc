@@ -1,7 +1,0 @@
-{
-  "extends": ["@fresha"],
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": ["./tsconfig.json"]
-  }
-}

@@ -1,5 +1,4 @@
 import * as fetchClientCommand from '@fresha/openapi-codegen-client-fetch/build/command';
-import * as freshaClientCommand from '@fresha/openapi-codegen-client-fresha/build/command';
 import * as jsonApiDocgenCommand from '@fresha/openapi-codegen-docs-json-api/build/command';
 import * as elixirCodegenCommand from '@fresha/openapi-codegen-server-elixir/build/command';
 import * as mockServerCommand from '@fresha/openapi-codegen-server-mock/build/command';
@@ -16,7 +15,6 @@ const argv = yargs(hideBin(process.argv))
 
 type CommandModule = yargs.CommandModule<Record<string, unknown>, unknown>;
 
-argv.command(freshaClientCommand as unknown as CommandModule);
 argv.command(fetchClientCommand as unknown as CommandModule);
 argv.command(elixirCodegenCommand as unknown as CommandModule);
 argv.command(jsonApiDocgenCommand as unknown as CommandModule);

@@ -62,7 +62,6 @@
   },
   "dependencies": {
     "@fresha/openapi-codegen-client-fetch": "^0.2.15",
-    "@fresha/openapi-codegen-client-fresha": "^0.2.9",
     "@fresha/openapi-codegen-docs-json-api": "^0.1.10",
     "@fresha/openapi-codegen-server-elixir": "^0.2.9",
     "@fresha/openapi-codegen-server-mock": "^0.1.9",
