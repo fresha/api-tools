@@ -161,10 +161,11 @@ export class ActionFunc {
       './utils': ['t:ExtraCallParams', 'applyExtraParams'],
     });
 
+    const actionFuncHasParams = this.parameterVars.size || this.requestType;
     const actionFunc = addFunction(
       this.context.sourceFile,
       this.name,
-      this.parameterVars.size || this.requestType
+      actionFuncHasParams
         ? { params: '{}', extraParams: 'ExtraCallParams' }
         : { extraParams: 'ExtraCallParams' },
       `Promise<${resultType}>`,
@@ -243,7 +244,11 @@ export class ActionFunc {
           }
           writer.newLine();
           addImportDeclaration(this.context.sourceFile, './utils', 'dispatchSuccess');
-          writer.writeLine('dispatchSuccess(params, response)');
+          writer.writeLine(
+            actionFuncHasParams
+              ? 'dispatchSuccess(params, response)'
+              : 'dispatchSuccess(undefined, response)',
+          );
           writer.newLine();
           writer.writeLine(`return response as unknown as ${this.responseType.name};`);
         } else {
