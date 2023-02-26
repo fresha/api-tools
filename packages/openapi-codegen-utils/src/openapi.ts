@@ -310,3 +310,28 @@ export const getSchemaProperties = function* getSchemaProperties(
     }
   }
 };
+
+export const getNumericSchemaRange = (
+  schema: SchemaModel,
+  precision = 0.0,
+): { min?: number; max?: number } => {
+  assert(
+    schema.type === 'integer' || schema.type === 'number',
+    'This function is indended to work for numeric schemas only',
+  );
+
+  let { minimum, maximum } = schema;
+  const delta = schema.type === 'integer' ? 1 : precision;
+
+  if (minimum != null && schema.exclusiveMinimum) {
+    minimum += delta;
+  }
+  if (maximum != null && schema.exclusiveMaximum) {
+    maximum -= delta;
+  }
+
+  return {
+    min: minimum ?? undefined,
+    max: maximum ?? undefined,
+  };
+};

@@ -2,6 +2,7 @@ import assert from 'assert';
 
 import { faker } from '@faker-js/faker';
 import { JSONValue, snakeCase } from '@fresha/api-tools-core';
+import { getNumericSchemaRange } from '@fresha/openapi-codegen-utils';
 
 import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
@@ -13,7 +14,7 @@ export class ResourceTestSuite {
   protected readonly resourceModuleName: string;
   protected readonly resourceModuleAlias: string;
   protected readonly resource: JSONAPIResourceSchema;
-  protected readonly sourceFile: SourceFile;
+  readonly sourceFile: SourceFile;
 
   constructor(
     context: Context,
@@ -60,34 +61,21 @@ export class ResourceTestSuite {
 
     result.set('id', faker.datatype.number({ min: 1, max: 1000 }));
 
-    const attributesSchema = resourceSchema.getPropertyOrThrow('attributes');
+    const attributesSchema = resourceSchema.getPropertyDeepOrThrow('attributes');
     for (const [attrName, attrSchema] of attributesSchema.properties) {
       switch (attrSchema.type) {
         case 'boolean':
           result.set(attrName, faker.datatype.boolean());
           break;
-        case 'integer': {
-          let min: number | undefined;
-          if (attrSchema.minimum != null) {
-            min = attrSchema.exclusiveMinimum ? attrSchema.minimum : attrSchema.minimum + 1;
-          }
-          let max: number | undefined;
-          if (attrSchema.maximum != null) {
-            max = attrSchema.exclusiveMaximum ? attrSchema.maximum : attrSchema.maximum - 1;
-          }
-          result.set(attrName, faker.datatype.number({ min, max }));
+        case 'integer':
+          result.set(attrName, faker.datatype.number(getNumericSchemaRange(attrSchema)));
           break;
-        }
         case 'number': {
-          let min: number | undefined;
-          if (attrSchema.minimum != null) {
-            min = attrSchema.exclusiveMinimum ? attrSchema.minimum : attrSchema.minimum + 1;
-          }
-          let max: number | undefined;
-          if (attrSchema.maximum != null) {
-            max = attrSchema.exclusiveMaximum ? attrSchema.maximum : attrSchema.maximum - 1;
-          }
-          result.set(attrName, faker.datatype.number({ min, max, precision: 0.01 }));
+          const precision = 0.01;
+          result.set(
+            attrName,
+            faker.datatype.number({ precision, ...getNumericSchemaRange(attrSchema, precision) }),
+          );
           break;
         }
         case 'string': {
@@ -125,7 +113,7 @@ export class ResourceTestSuite {
       }
     }
 
-    const relationshipsSchema = resourceSchema.getPropertyOrThrow('relationships');
+    const relationshipsSchema = resourceSchema.getPropertyDeepOrThrow('relationships');
     for (const [relName] of relationshipsSchema.properties) {
       const key = `${relName}Id`;
       result.set(key, faker.datatype.number({ min: 1, max: 1000 }));

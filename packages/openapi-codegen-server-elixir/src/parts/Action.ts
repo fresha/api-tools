@@ -1,7 +1,10 @@
 import assert from 'assert';
 
 import { Nullable, snakeCase } from '@fresha/api-tools-core';
-import { getOperationRequestBodySchema } from '@fresha/openapi-codegen-utils';
+import {
+  getNumericSchemaRange,
+  getOperationRequestBodySchema,
+} from '@fresha/openapi-codegen-utils';
 
 import type { Context } from '../context';
 import type { SourceFile } from '@fresha/code-morph-ex';
@@ -288,26 +291,17 @@ export class Action {
   ): void {
     const elixirAtttName = snakeCase(propName);
     const parsers: string[] = [];
+    const { min, max } = getNumericSchemaRange(propSchema);
 
-    let minimum: Nullable<number> = null;
-    if (propSchema.minimum != null) {
-      minimum = propSchema.exclusiveMinimum ? propSchema.minimum + 1 : propSchema.minimum;
-    }
-
-    let maximum: Nullable<number> = null;
-    if (propSchema.maximum != null) {
-      maximum = propSchema.exclusiveMaximum ? propSchema.maximum - 1 : propSchema.maximum;
-    }
-
-    if (minimum == null || maximum == null) {
+    if (min == null && max == null) {
       parsers.push(':integer');
     } else {
       const parts = ['{:integer'];
-      if (minimum != null) {
-        parts.push(`min: ${minimum}`);
+      if (min != null) {
+        parts.push(`min: ${min}`);
       }
-      if (maximum != null) {
-        parts.push(`max: ${maximum}`);
+      if (max != null) {
+        parts.push(`max: ${max}`);
       }
       parsers.push(`${parts.join(', ')}}`);
     }
@@ -327,27 +321,19 @@ export class Action {
   ): void {
     const elixirAtttName = snakeCase(propName);
     const parsers: string[] = [];
-
     // Surgex.Parsers doesn't have a way to distinguish between >min and >=min
-    let minimum: Nullable<number> = null;
-    if (propSchema.minimum != null) {
-      minimum = propSchema.exclusiveMinimum ? propSchema.minimum - 1 : propSchema.minimum;
-    }
-    let maximum: Nullable<number> = null;
-    if (propSchema.maximum != null) {
-      maximum = propSchema.exclusiveMaximum ? propSchema.maximum + 1 : propSchema.maximum;
-    }
+    const { min, max } = getNumericSchemaRange(propSchema);
 
     // Surgex.Parsers doesn't distinguish between float and double
-    if (minimum == null || maximum == null) {
+    if (min == null && max == null) {
       parsers.push(':float');
     } else {
       const parts = ['{:float'];
-      if (minimum != null) {
-        parts.push(`min: ${minimum}`);
+      if (min != null) {
+        parts.push(`min: ${min}`);
       }
-      if (maximum != null) {
-        parts.push(`max: ${maximum}`);
+      if (max != null) {
+        parts.push(`max: ${max}`);
       }
       parsers.push(`${parts.join(', ')}}`);
     }
