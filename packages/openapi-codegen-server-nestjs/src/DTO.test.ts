@@ -83,7 +83,11 @@ describe('serialization', () => {
       min: { type: 'number', minimum: 10 },
       minExclusive: { type: 'number', minimum: 15, exclusiveMinimum: true },
       max: { type: 'number', maximum: 20 },
-      maxExclusive: { type: 'number', maximum: 25, exclusiveMaximum: false },
+      maxExclusive: { type: 'number', maximum: 25, exclusiveMaximum: true },
+      intMin: { type: 'integer', minimum: 10 },
+      intMinExclusive: { type: 'integer', minimum: 15, exclusiveMinimum: true },
+      intMax: { type: 'integer', maximum: 20 },
+      intMaxExclusive: { type: 'integer', maximum: 25, exclusiveMaximum: true },
     });
 
     new DTO(context, 'Response', schema).generateCode();
@@ -101,7 +105,7 @@ describe('serialization', () => {
         min?: number;
 
         @Expose()
-        @Min(16)
+        @Min(15)
         @IsInt()
         minExclusive?: number;
 
@@ -114,6 +118,26 @@ describe('serialization', () => {
         @Max(25)
         @IsInt()
         maxExclusive?: number;
+
+        @Expose()
+        @Min(10)
+        @IsInt()
+        intMin?: number;
+
+        @Expose()
+        @Min(16)
+        @IsInt()
+        intMinExclusive?: number;
+
+        @Expose()
+        @Max(20)
+        @IsInt()
+        intMax?: number;
+
+        @Expose()
+        @Max(24)
+        @IsInt()
+        intMaxExclusive?: number;
       }`,
     );
   });

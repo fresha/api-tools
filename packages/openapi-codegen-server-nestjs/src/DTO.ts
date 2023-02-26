@@ -3,6 +3,7 @@ import path from 'path';
 
 import { Nullable, titleCase } from '@fresha/api-tools-core';
 import { addDecorator, addImportDeclaration } from '@fresha/code-morph-ts';
+import { getNumericSchemaRange } from '@fresha/openapi-codegen-utils';
 
 import type { Context } from './context';
 import type { SchemaModel, SchemaPropertyObject } from '@fresha/openapi-model/build/3.0.3';
@@ -47,6 +48,7 @@ export class DTO {
           case 'boolean':
             this.addBooleanProperty(classDecl, prop);
             break;
+          case 'integer':
           case 'number':
             this.addNumericProperty(classDecl, prop);
             break;
@@ -105,23 +107,17 @@ export class DTO {
     });
     propDef.prependWhitespace('\n');
 
+    const { min, max } = getNumericSchemaRange(prop.schema);
+
     addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
-    if (prop.schema.minimum != null) {
+    if (min != null) {
       addImportDeclaration(this.sourceFile, 'class-validator', 'Min');
-      addDecorator(
-        propDef,
-        'Min',
-        prop.schema.exclusiveMinimum ? prop.schema.minimum + 1 : prop.schema.minimum,
-      );
+      addDecorator(propDef, 'Min', min);
     }
-    if (prop.schema.maximum != null) {
+    if (max != null) {
       addImportDeclaration(this.sourceFile, 'class-validator', 'Max');
-      addDecorator(
-        propDef,
-        'Max',
-        prop.schema.exclusiveMaximum ? prop.schema.maximum - 1 : prop.schema.maximum,
-      );
+      addDecorator(propDef, 'Max', max);
     }
     addImportDeclaration(this.sourceFile, 'class-validator', 'IsInt');
     addDecorator(propDef, 'IsInt', undefined);

@@ -13,6 +13,7 @@ import {
   getOperationCacheOptions,
   getOperations,
   getSchemaProperties,
+  getNumericSchemaRange,
 } from './openapi';
 
 test('getAPIName', () => {
@@ -209,4 +210,62 @@ test('getSchemaProperties', () => {
 
   const keys = Array.from(getSchemaProperties(schema), ([name]) => name);
   expect(keys).toStrictEqual(['s1', 's2', 'p1', 'p2', 'r1', 'r2']);
+});
+
+describe('getNumericSchemaRange', () => {
+  test('integer schema', () => {
+    const schema = OpenAPIFactory.create().components.setSchema('Schema1', 'integer');
+    schema.minimum = 10;
+    schema.maximum = 20;
+
+    expect(getNumericSchemaRange(schema)).toStrictEqual({
+      min: 10,
+      max: 20,
+    });
+
+    schema.exclusiveMinimum = true;
+    expect(getNumericSchemaRange(schema)).toStrictEqual({
+      min: 11,
+      max: 20,
+    });
+
+    schema.exclusiveMaximum = true;
+    expect(getNumericSchemaRange(schema)).toStrictEqual({
+      min: 11,
+      max: 19,
+    });
+
+    expect(getNumericSchemaRange(schema, 10)).toStrictEqual({
+      min: 11,
+      max: 19,
+    });
+  });
+
+  test('floating-point schema', () => {
+    const schema = OpenAPIFactory.create().components.setSchema('Schema1', 'number');
+    schema.minimum = 10;
+    schema.maximum = 20;
+
+    const limits0 = getNumericSchemaRange(schema);
+    expect(limits0.min).toBeCloseTo(10, 10);
+    expect(limits0.max).toBeCloseTo(20, 10);
+
+    const limits1 = getNumericSchemaRange(schema, 0.1);
+    expect(limits1.min).toBeCloseTo(10, 10);
+    expect(limits1.max).toBeCloseTo(20, 10);
+
+    schema.exclusiveMinimum = true;
+    const limits2 = getNumericSchemaRange(schema, 0.01);
+    expect(limits2.min).toBeCloseTo(10.01, 2);
+    expect(limits2.max).toBeCloseTo(20, 2);
+
+    schema.exclusiveMaximum = true;
+    const limits3 = getNumericSchemaRange(schema, 0.1);
+    expect(limits3.min).toBeCloseTo(10.1, 1);
+    expect(limits3.max).toBeCloseTo(19.9, 1);
+
+    const limits4 = getNumericSchemaRange(schema, 0.001);
+    expect(limits4.min).toBeCloseTo(10.001, 3);
+    expect(limits4.max).toBeCloseTo(19.999, 3);
+  });
 });

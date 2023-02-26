@@ -112,6 +112,14 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
     birthDate: 'date',
     score: 'number',
     gender: { type: 'string', required: true, enum: ['male', 'female', 'other'] },
+    num1: { type: 'number', minimum: 10, exclusiveMinimum: true },
+    num2: { type: 'number', minimum: 10, exclusiveMinimum: false },
+    num3: { type: 'number', maximum: 20, exclusiveMaximum: true },
+    num4: { type: 'number', maximum: 20, exclusiveMaximum: false },
+    int1: { type: 'integer', minimum: 10, exclusiveMinimum: true },
+    int2: { type: 'integer', minimum: 10, exclusiveMinimum: false },
+    int3: { type: 'integer', maximum: 20, exclusiveMaximum: true },
+    int4: { type: 'integer', maximum: 20, exclusiveMaximum: false },
   });
 
   const resourceSchema = requestBodySchema.getPropertyOrThrow('data');
@@ -170,6 +178,14 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
             birth_date: :date,
             score: :float,
             gender: [:string, :required, {:contain, ~w{male female other}}],
+            num1: {:float, min: 10},
+            num2: {:float, min: 10},
+            num3: {:float, max: 20},
+            num4: {:float, max: 20},
+            int1: {:integer, min: 11},
+            int2: {:integer, min: 10},
+            int3: {:integer, max: 19},
+            int4: {:integer, max: 20},
           },
           relationships: %{
             location: [:resource_id, :required],
