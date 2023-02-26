@@ -211,7 +211,7 @@ test('specific naming convention for client library', () => {
 
       response = camelCaseDeep(response);
 
-      dispatchSuccess(params, response);
+      dispatchSuccess(undefined, response);
 
       return response as unknown as ReadEmployeeListResponse;
     }
