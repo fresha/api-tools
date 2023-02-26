@@ -4,7 +4,7 @@ on:
   - workflow_dispatch
 jobs:
   check:
-    name: lint and run tests
+    name: run linter and unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
