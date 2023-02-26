@@ -11,6 +11,17 @@ info:
     url: https://github.com/mykulyak
   x-root-url: API_SERVER_URL
 paths:
+  # /test-parameterless-get:
+  #   get:
+  #     description: A GET operation without parameters
+  #     operationId: testParameterlessGet
+  #     responses:
+  #       200:
+  #         description: A list of BlockedTime resources.
+  #         content:
+  #           application/vnd.api+json:
+  #             schema:
+  #               $ref: "#/components/schemas/BlockedTimeListDocument"
   /blocked-times:
     get:
       description: Returns list of blocked time resources, based on search criteria

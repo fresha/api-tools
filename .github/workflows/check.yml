@@ -3,8 +3,8 @@ on:
   - pull_request
   - workflow_dispatch
 jobs:
-  check:
-    name: run linter and unit tests
+  eslint:
+    name: linter
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -16,4 +16,32 @@ jobs:
       - name: Build the project
         run: npx lerna run build --skip-nx-cache
       - name: Run check scripts
-        run: npx lerna run check --skip-nx-cache
+        run: npx lerna run eslint --skip-nx-cache
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Install dependencies
+        run: npm install
+      - name: Build the project
+        run: npx lerna run build --skip-nx-cache
+      - name: Run check scripts
+        run: npx lerna run typecheck --skip-nx-cache
+  jest:
+    name: jest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Install dependencies
+        run: npm install
+      - name: Build the project
+        run: npx lerna run build --skip-nx-cache
+      - name: Run check scripts
+        run: npx lerna run test --skip-nx-cache

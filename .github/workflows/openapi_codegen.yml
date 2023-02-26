@@ -1,0 +1,142 @@
+name: openapi_codegen
+on:
+  - pull_request
+  - workflow_dispatch
+env:
+  SCHEMA_FILE: examples/openapi-codegen-test-api.yaml
+jobs:
+  client_fetch:
+    name: client-fetch
+    runs-on: ubuntu-latest
+    env:
+      BUILD_DIR: examples/openapi-codegen/client-fetch
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Install dependencies
+        run: npm install
+      - name: Build the project
+        run: npx lerna run build --skip-nx-cache --scope=@fresha/openapi-codegen-cli
+      - name: Prepare the build folder
+        run: |
+          mkdir -p "$BUILD_DIR"
+          cp -R examples/codegen/client_fetch/* "$BUILD_DIR"
+          cd "$BUILD_DIR"
+          npm install
+          cd ../../..
+      - name: Generate code
+        run: |
+          npx fresha-openapi-codegen client-fetch \
+            --input "$SCHEMA_FILE" \
+            --output "$BUILD_DIR" \
+            --json-api \
+            --api-naming kebab \
+            --client-naming camel \
+            --verbose
+      - name: Transpile generated code
+        run: |
+          cd "$BUILD_DIR"
+          npm run build -- --module commonjs --outDir ./build/cjs
+          npm run build -- --module esnext --outDir ./build/esm
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    env:
+      BUILD_DIR: examples/openapi-codegen/docs
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Install dependencies
+        run: npm install
+      - name: Build the project
+        run: npx lerna run build --skip-nx-cache --scope=@fresha/openapi-codegen-cli
+      - name: Prepare the build folder
+        run: mkdir -p "$BUILD_DIR"
+      - name: Generate the documentation
+        run: |
+          npx fresha-openapi-codegen docs-json-api \
+            --input "$SCHEMA_FILE" \
+            --output "$BUILD_DIR" \
+            --json-api \
+            --verbose
+  server_elixir:
+    name: server-elixir
+    runs-on: ubuntu-latest
+    env:
+      BUILD_DIR: examples/openapi-codegen/server-elixir
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Install dependencies
+        run: npm install
+      - name: Build the project
+        run: npx lerna run build --skip-nx-cache --scope=@fresha/openapi-codegen-cli
+      - name: Prepare the build folder
+        run: |
+          mkdir -p "$BUILD_DIR"
+      - name: Generate the code
+        run: |
+          npx fresha-openapi-codegen server-elixir \
+            --input "$SCHEMA_FILE" \
+            --output "$BUILD_DIR" \
+            --json-api \
+            --phoenix-app ElixirApiWeb \
+            --test-factory-module ElixirApiTestFactory \
+            --verbose
+  # server_nestjs:
+  #   name: server-nestjs
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     BUILD_DIR: examples/openapi-codegen/server-nestjs
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - uses: actions/setup-node@v3
+  #       with:
+  #         node-version: 18.x
+  #     - name: Install dependencies
+  #       run: npm install
+  #     - name: Build the project
+  #       run: npx lerna run build --skip-nx-cache --scope=@fresha/openapi-codegen-cli
+  #     - name: Prepare the build folder
+  #       run: |
+  #         mkdir -p "$BUILD_DIR"
+  #         cp -R examples/codegen/nestjs_multi_api/* "$BUILD_DIR"
+  #     - name: Generate application code
+  #       run: |
+  #         npx fresha-openapi-codegen server-nestjs \
+  #           --input "$SCHEMA_FILE" \
+  #           --output "$BUILD_DIR" \
+  #           --json-api \
+  #           --nest-app web \
+  #           --verbose
+  server_mock:
+    name: server-mock
+    runs-on: ubuntu-latest
+    env:
+      BUILD_DIR: examples/openapi-codegen/server-mock
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+      - name: Install dependencies
+        run: npm install
+      - name: Build the project
+        run: npx lerna run build --skip-nx-cache --scope=@fresha/openapi-codegen-cli
+      - name: Prepare the build folder
+        run: |
+          mkdir -p "$BUILD_DIR"
+          cp -R examples/codegen/mock_api/* "$BUILD_DIR"
+      - name: Generate application code
+        run: |
+          npx fresha-openapi-codegen server-mock \
+            --input "$SCHEMA_FILE" \
+            --output "$BUILD_DIR" \
+            --json-api \
+            --verbose
