@@ -1,6 +1,6 @@
 {
   "name": "@fresha/code-morph-ex",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Elixir code parser and generator written in TypeScript",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -53,13 +53,13 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/code-morph-test-utils": "^0.1.1",
-    "@fresha/eslint-config": "^0.1.1",
-    "@fresha/typescript-config": "^0.1.1",
+    "@fresha/code-morph-test-utils": "^0.2.0",
+    "@fresha/eslint-config": "^0.2.0",
+    "@fresha/typescript-config": "^0.2.0",
     "typescript": "^4.7.2"
   },
   "dependencies": {
-    "@fresha/api-tools-core": "^0.4.2",
+    "@fresha/api-tools-core": "^0.5.0",
     "memfs": "^3.4.9"
   }
 }

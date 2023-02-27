@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-utils",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Shared utilites for OpenAPI codegens",
   "main": "build/index.js",
   "publishConfig": {
@@ -51,15 +51,15 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "^0.1.1",
-    "@fresha/jest-config": "^0.1.1",
-    "@fresha/typescript-config": "^0.1.1",
+    "@fresha/eslint-config": "^0.2.0",
+    "@fresha/jest-config": "^0.2.0",
+    "@fresha/typescript-config": "^0.2.0",
     "@types/pluralize": "^0.0.29",
     "typescript": "^4.7.2"
   },
   "dependencies": {
-    "@fresha/api-tools-core": "^0.4.2",
-    "@fresha/openapi-model": "^0.6.6",
+    "@fresha/api-tools-core": "^0.5.0",
+    "@fresha/openapi-model": "^0.7.0",
     "pluralize": "^8.0.0",
     "ts-morph": "^16.0.0",
     "winston": "^3.8.2"

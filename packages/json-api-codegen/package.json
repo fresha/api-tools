@@ -1,6 +1,6 @@
 {
   "name": "@fresha/json-api-codegen",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Code generators for JSON:API resources",
   "main": "build/index.js",
   "repository": {
@@ -51,9 +51,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "^0.1.1",
-    "@fresha/jest-config": "^0.1.1",
-    "@fresha/typescript-config": "^0.1.1",
+    "@fresha/eslint-config": "^0.2.0",
+    "@fresha/jest-config": "^0.2.0",
+    "@fresha/typescript-config": "^0.2.0",
     "typescript": "^4.7.2"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@fresha/async-codegen-client-typescript",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "AsyncAPI code generation for TypeScript clients",
   "main": "build/index.js",
   "repository": {
@@ -53,9 +53,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "^0.1.1",
-    "@fresha/jest-config": "^0.1.1",
-    "@fresha/typescript-config": "^0.1.1",
+    "@fresha/eslint-config": "^0.2.0",
+    "@fresha/jest-config": "^0.2.0",
+    "@fresha/typescript-config": "^0.2.0",
     "typescript": "^4.7.2"
   }
 }
