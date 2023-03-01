@@ -34,7 +34,7 @@ export class UtilsFile {
 
       export type FetchFunc = (url: string, init: RequestInit) => Promise<Response>;
 
-      export type SuccessCallbackFunc = (params: unknown, response: JSONValue) => void;
+      export type SuccessCallbackFunc = (actionName: string, params: unknown, response: JSONValue) => void;
 
       let rootUrl = '';
       let fetcher: FetchFunc = global.fetch;
@@ -164,9 +164,9 @@ export class UtilsFile {
         return json as JSONValue;
       };
 
-      export const dispatchSuccess = (params: unknown, response: JSONValue): void => {
+      export const dispatchSuccess = (actionName: string, params: unknown, response: JSONValue): void => {
         if (successCallback) {
-          successCallback(params, response);
+          successCallback(actionName, params, response);
         }
       };
     `,
