@@ -245,9 +245,9 @@ export class ActionFunc {
           writer.newLine();
           addImportDeclaration(this.context.sourceFile, './utils', 'dispatchSuccess');
           writer.writeLine(
-            actionFuncHasParams
-              ? 'dispatchSuccess(params, response)'
-              : 'dispatchSuccess(undefined, response)',
+            `dispatchSuccess('${this.name}', ${
+              actionFuncHasParams ? 'params' : 'undefined'
+            }, response)`,
           );
           writer.newLine();
           writer.writeLine(`return response as unknown as ${this.responseType.name};`);

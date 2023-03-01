@@ -111,7 +111,7 @@ test('simple test', () => {
 
       const response = await callJsonApi(url, request);
 
-      dispatchSuccess(params, response);
+      dispatchSuccess('readEmployeeList', params, response);
 
       return response as unknown as ReadEmployeeListResponse;
     }
@@ -211,7 +211,7 @@ test('specific naming convention for client library', () => {
 
       response = camelCaseDeep(response);
 
-      dispatchSuccess(undefined, response);
+      dispatchSuccess('readEmployeeList', undefined, response);
 
       return response as unknown as ReadEmployeeListResponse;
     }
