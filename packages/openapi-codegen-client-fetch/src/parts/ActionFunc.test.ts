@@ -64,6 +64,7 @@ test('simple test', () => {
       ExtraCallParams,
       applyExtraParams,
       dispatchSuccess,
+      transformResponse,
     } from './utils';
     import type {
       JSONAPIServerResource,
@@ -113,7 +114,7 @@ test('simple test', () => {
 
       dispatchSuccess('readEmployeeList', params, response);
 
-      return response as unknown as ReadEmployeeListResponse;
+      return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response);
     }
   `);
 });
@@ -170,6 +171,7 @@ test('specific naming convention for client library', () => {
       ExtraCallParams,
       applyExtraParams,
       dispatchSuccess,
+      transformResponse,
     } from './utils';
     import {
       JSONAPIServerResource,
@@ -213,7 +215,7 @@ test('specific naming convention for client library', () => {
 
       dispatchSuccess('readEmployeeList', undefined, response);
 
-      return response as unknown as ReadEmployeeListResponse;
+      return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response);
     }
   `);
 });
