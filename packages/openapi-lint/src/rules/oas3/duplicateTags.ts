@@ -19,8 +19,8 @@ export const run: RuleFunc = (
     if (options.autoFix) {
       let i = openapi.tags.length;
       while (i >= 0) {
-        const tagName = openapi.tags[i].name;
-        const j = openapi.tags.findIndex(tag => tag.name === tagName);
+        const tagName = openapi.tagAt(i).name;
+        const j = openapi.indexOfTag(tagName);
         if (j >= 0 && j < i) {
           openapi.deleteTagAt(i);
         }
@@ -28,7 +28,7 @@ export const run: RuleFunc = (
       }
     } else {
       const tagNames = new Set<string>();
-      for (const tag of openapi.tags) {
+      for (const tag of openapi.tags()) {
         if (tagNames.has(tag.name)) {
           result.addError(`Duplicate tag '${tag.name}'`);
         } else {

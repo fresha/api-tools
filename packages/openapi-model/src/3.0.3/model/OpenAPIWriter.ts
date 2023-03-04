@@ -12,7 +12,6 @@ import type {
   CookieParameterSerializationStyle,
   EncodingModel,
   ExampleModel,
-  ExtensionFields,
   ExternalDocumentationModel,
   HeaderModel,
   HeaderParameterModel,
@@ -43,6 +42,7 @@ import type {
   SecuritySchemaModel,
   ServerModel,
   ServerVariableModel,
+  SpecificationExtensionsModel,
   TagModel,
 } from './types';
 import type {
@@ -104,19 +104,19 @@ export class OpenAPIWriter {
       info: this.writeInfo(openapi.info),
       paths: {},
     };
-    this.writeExtensionFields(openapi.extensions, result);
-    if (openapi.servers.length) {
-      result.servers = openapi.servers.map(arg => this.writeServer(arg));
+    this.writeExtensionFields(openapi, result);
+    if (openapi.serverCount) {
+      result.servers = Array.from(openapi.servers(), arg => this.writeServer(arg));
     }
     if (!openapi.components.isEmpty()) {
       result.components = this.writeComponents(openapi.components);
     }
     result.paths = this.writePaths(openapi.paths);
-    if (openapi.security.length) {
-      result.security = this.writeSecurityRequirementArray(openapi.security);
+    if (openapi.securityRequirementCount) {
+      result.security = this.writeSecurityRequirementArray(openapi.securityRequirements());
     }
-    if (openapi.tags.length) {
-      result.tags = openapi.tags.map(arg => this.writeTag(arg));
+    if (openapi.tagCount) {
+      result.tags = Array.from(openapi.tags(), arg => this.writeTag(arg));
     }
     return result;
   }
@@ -130,41 +130,41 @@ export class OpenAPIWriter {
     this.schemaPointers.set(openapi.info.license, '#/info/license');
 
     this.schemaPointers.set(openapi.components, '#/components');
-    for (const [key, value] of openapi.components.schemas) {
+    for (const [key, value] of openapi.components.schemas()) {
       this.schemaPointers.set(value, `#/components/schemas/${key}`);
     }
-    for (const [key, value] of openapi.components.responses) {
+    for (const [key, value] of openapi.components.responses()) {
       this.schemaPointers.set(value, `#/components/responses/${key}`);
     }
-    for (const [key, value] of openapi.components.parameters) {
+    for (const [key, value] of openapi.components.parameters()) {
       this.schemaPointers.set(value, `#/components/parameters/${key}`);
     }
-    for (const [key, value] of openapi.components.examples) {
+    for (const [key, value] of openapi.components.examples()) {
       this.schemaPointers.set(value, `#/components/examples/${key}`);
     }
-    for (const [key, value] of openapi.components.requestBodies) {
+    for (const [key, value] of openapi.components.requestBodies()) {
       this.schemaPointers.set(value, `#/components/requestBodies/${key}`);
     }
-    for (const [key, value] of openapi.components.headers) {
+    for (const [key, value] of openapi.components.headers()) {
       this.schemaPointers.set(value, `#/components/headers/${key}`);
     }
-    for (const [key, value] of openapi.components.securitySchemes) {
+    for (const [key, value] of openapi.components.securitySchemas()) {
       this.schemaPointers.set(value, `#/components/securitySchemes/${key}`);
     }
-    for (const [key, value] of openapi.components.links) {
+    for (const [key, value] of openapi.components.links()) {
       this.schemaPointers.set(value, `#/components/links/${key}`);
     }
-    for (const [key, value] of openapi.components.callbacks) {
+    for (const [key, value] of openapi.components.callbacks()) {
       this.schemaPointers.set(value, `#/components/callbacks/${key}`);
     }
   }
 
   // eslint-disable-next-line class-methods-use-this
   private writeExtensionFields(
-    extensionFields: ExtensionFields,
+    extensions: SpecificationExtensionsModel,
     out: Record<string, unknown>,
   ): void {
-    for (const [key, value] of extensionFields) {
+    for (const [key, value] of extensions.extensions()) {
       out[`x-${key}`] = value;
     }
   }
@@ -174,7 +174,7 @@ export class OpenAPIWriter {
       title: info.title,
       version: info.version,
     };
-    this.writeExtensionFields(info.extensions, result);
+    this.writeExtensionFields(info, result);
     if (info.description) {
       result.description = info.description;
     }
@@ -194,7 +194,7 @@ export class OpenAPIWriter {
 
   private writeContact(contact: ContactModel): ContactObject | null {
     const result: ContactObject = {};
-    this.writeExtensionFields(contact.extensions, result);
+    this.writeExtensionFields(contact, result);
     if (contact.name) {
       result.name = contact.name;
     }
@@ -212,7 +212,7 @@ export class OpenAPIWriter {
       return null;
     }
     const result: LicenseObject = { name: license.name };
-    this.writeExtensionFields(license.extensions, result);
+    this.writeExtensionFields(license, result);
     if (license.url) {
       result.url = license.url;
     }
@@ -221,24 +221,24 @@ export class OpenAPIWriter {
 
   private writeServer(server: ServerModel): ServerObject {
     const result: ServerObject = { url: server.url };
-    this.writeExtensionFields(server.extensions, result);
+    this.writeExtensionFields(server, result);
     if (server.description) {
       result.description = server.description;
     }
-    if (server.variables.size) {
+    if (server.variableCount) {
       result.variables = {};
-      for (const [key, value] of server.variables.entries()) {
-        result.variables[key] = this.writeServerVariable(value);
+      for (const [name, variable] of server.variables()) {
+        result.variables[name] = this.writeServerVariable(variable);
       }
     }
     return result;
   }
 
   private writeServerVariable(serverVar: ServerVariableModel): ServerVariableObject {
-    const result: ServerVariableObject = { default: serverVar.default };
-    this.writeExtensionFields(serverVar.extensions, result);
-    if (serverVar.enum.size) {
-      result.enum = Array.from(serverVar.enum);
+    const result: ServerVariableObject = { default: serverVar.defaultValue };
+    this.writeExtensionFields(serverVar, result);
+    if (serverVar.allowedValueCount) {
+      result.enum = Array.from(serverVar.allowedValues());
     }
     if (serverVar.description) {
       result.description = serverVar.description;
@@ -248,58 +248,58 @@ export class OpenAPIWriter {
 
   private writeComponents(components: ComponentsModel): ComponentsObject {
     const result: ComponentsObject = {};
-    this.writeExtensionFields(components.extensions, result);
-    if (components.schemas.size) {
+    this.writeExtensionFields(components, result);
+    if (components.schemaCount) {
       result.schemas = {};
-      for (const [key, schema] of components.schemas) {
+      for (const [key, schema] of components.schemas()) {
         result.schemas[key] = this.writeSchema(schema, components);
       }
     }
-    if (components.responses.size) {
+    if (components.responseCount) {
       result.responses = {};
-      for (const [key, response] of components.responses) {
+      for (const [key, response] of components.responses()) {
         result.responses[key] = this.writeResponse(response, components);
       }
     }
-    if (components.parameters.size) {
+    if (components.parameterCount) {
       result.parameters = {};
-      for (const [key, parameter] of components.parameters) {
+      for (const [key, parameter] of components.parameters()) {
         result.parameters[key] = this.writeParameter(parameter);
       }
     }
-    if (components.examples.size) {
+    if (components.exampleCount) {
       result.examples = {};
-      for (const [key, example] of components.examples) {
+      for (const [key, example] of components.examples()) {
         result.examples[key] = this.writeExample(example);
       }
     }
-    if (components.requestBodies.size) {
+    if (components.requestBodyCount) {
       result.requestBodies = {};
-      for (const [key, requestBody] of components.requestBodies) {
+      for (const [key, requestBody] of components.requestBodies()) {
         result.requestBodies[key] = this.writeRequestBody(requestBody, components);
       }
     }
-    if (components.headers.size) {
+    if (components.headerCount) {
       result.headers = {};
-      for (const [key, header] of components.headers) {
+      for (const [key, header] of components.headers()) {
         result.headers[key] = this.writeHeader(header);
       }
     }
-    if (components.securitySchemes.size) {
+    if (components.securitySchemaCount) {
       result.securitySchemes = {};
-      for (const [key, securitySchemes] of components.securitySchemes) {
+      for (const [key, securitySchemes] of components.securitySchemas()) {
         result.securitySchemes[key] = this.writeSecuritySchema(securitySchemes);
       }
     }
-    if (components.links.size) {
+    if (components.linkCount) {
       result.links = {};
-      for (const [key, link] of components.links) {
+      for (const [key, link] of components.links()) {
         result.links[key] = this.writeLink(link, components);
       }
     }
-    if (components.callbacks.size) {
+    if (components.callbackCount) {
       result.callbacks = {};
-      for (const [key, callback] of components.callbacks) {
+      for (const [key, callback] of components.callbacks()) {
         result.callbacks[key] = this.writeCallback(callback);
       }
     }
@@ -315,7 +315,7 @@ export class OpenAPIWriter {
     }
 
     const result: SchemaObject = {};
-    this.writeExtensionFields(schema.extensions, result);
+    this.writeExtensionFields(schema, result);
     if (schema.type) {
       result.type = schema.type;
     }
@@ -361,8 +361,8 @@ export class OpenAPIWriter {
     if (schema.minProperties != null) {
       result.minProperties = schema.minProperties;
     }
-    if (schema.required.size) {
-      result.required = Array.from(schema.required);
+    if (schema.requiredPropertyCount) {
+      result.required = Array.from(schema.requiredPropertyNames());
     }
     if (schema.enum != null) {
       result.enum = schema.enum;
@@ -434,22 +434,22 @@ export class OpenAPIWriter {
     }
 
     const result: ResponseObject = { description: response.description };
-    this.writeExtensionFields(response.extensions, result);
-    if (response.headers.size) {
+    this.writeExtensionFields(response, result);
+    if (response.headerCount) {
       result.headers = {};
-      for (const [key, header] of response.headers) {
+      for (const [key, header] of response.headers()) {
         result.headers[key] = this.writeHeader(header);
       }
     }
-    if (response.content.size) {
+    if (response.mediaTypeCount) {
       result.content = {};
-      for (const [key, mediaType] of response.content) {
+      for (const [key, mediaType] of response.mediaTypes()) {
         result.content[key] = this.writeMediaType(mediaType);
       }
     }
-    if (response.links.size) {
+    if (response.linkCount) {
       result.links = {};
-      for (const [key, link] of response.links) {
+      for (const [key, link] of response.links()) {
         result.links[key] = this.writeLink(link, response);
       }
     }
@@ -458,7 +458,7 @@ export class OpenAPIWriter {
 
   private writeHeader(header: HeaderModel): HeaderObject {
     const result: HeaderObject = {};
-    this.writeExtensionFields(header.extensions, result);
+    this.writeExtensionFields(header, result);
     if (header.description) {
       result.description = header.description;
     }
@@ -480,15 +480,15 @@ export class OpenAPIWriter {
     if (header.example) {
       result.example = header.example;
     }
-    if (header.examples.size) {
+    if (header.exampleCount) {
       result.examples = {};
-      for (const [key, example] of header.examples) {
+      for (const [key, example] of header.examples()) {
         result.examples[key] = this.writeExample(example);
       }
     }
-    if (header.content) {
+    if (header.mediaTypeCount) {
       result.content = {};
-      for (const [key, mediaType] of header.content) {
+      for (const [key, mediaType] of header.mediaTypes()) {
         result.content[key] = this.writeMediaType(mediaType);
       }
     }
@@ -497,7 +497,7 @@ export class OpenAPIWriter {
 
   private writeExample(example: ExampleModel): ExampleObject {
     const result: ExampleObject = {};
-    this.writeExtensionFields(example.extensions, result);
+    this.writeExtensionFields(example, result);
     if (example.summary) {
       result.summary = example.summary;
     }
@@ -515,22 +515,22 @@ export class OpenAPIWriter {
 
   private writeMediaType(mediaType: MediaTypeModel): MediaTypeObject {
     const result: MediaTypeObject = {};
-    this.writeExtensionFields(mediaType.extensions, result);
+    this.writeExtensionFields(mediaType, result);
     if (mediaType.schema) {
       result.schema = this.writeSchema(mediaType.schema, mediaType);
     }
     if (mediaType.example) {
       result.example = mediaType.example;
     }
-    if (mediaType.examples.size) {
+    if (mediaType.exampleCount) {
       result.examples = {};
-      for (const [key, example] of mediaType.examples) {
+      for (const [key, example] of mediaType.examples()) {
         result.examples[key] = this.writeExample(example);
       }
     }
-    if (mediaType.encoding.size) {
+    if (mediaType.encodingCount) {
       result.encoding = {};
-      for (const [key, encoding] of mediaType.encoding) {
+      for (const [key, encoding] of mediaType.encodings()) {
         result.encoding[key] = this.writeEncoding(encoding);
       }
     }
@@ -539,13 +539,13 @@ export class OpenAPIWriter {
 
   private writeEncoding(encoding: EncodingModel): EncodingObject {
     const result: EncodingObject = {};
-    this.writeExtensionFields(encoding.extensions, result);
+    this.writeExtensionFields(encoding, result);
     if (encoding.contentType) {
       result.contentType = encoding.contentType;
     }
-    if (encoding.headers.size) {
+    if (encoding.headerCount) {
       result.headers = {};
-      for (const [key, header] of encoding.headers) {
+      for (const [key, header] of encoding.headers()) {
         result.headers[key] = this.writeHeader(header);
       }
     }
@@ -566,15 +566,15 @@ export class OpenAPIWriter {
     }
 
     const result: LinkObject = {};
-    this.writeExtensionFields(link.extensions, result);
+    this.writeExtensionFields(link, result);
     if (link.operationRef) {
       result.operationRef = link.operationRef;
     }
     if (link.operationId) {
       result.operationId = link.operationId;
     }
-    if (link.parameters.size) {
-      result.parameters = Object.fromEntries(link.parameters.entries());
+    if (link.parameterCount) {
+      result.parameters = Object.fromEntries(link.parameters());
     }
     if (link.requestBody) {
       result.requestBody = link.requestBody;
@@ -612,7 +612,7 @@ export class OpenAPIWriter {
       | HeaderParameterObject
       | CookieParameterObject,
   ): void {
-    this.writeExtensionFields(parameter.extensions, result);
+    this.writeExtensionFields(parameter, result);
     if (parameter.description) {
       result.description = parameter.description;
     }
@@ -622,18 +622,18 @@ export class OpenAPIWriter {
     if (parameter.schema) {
       result.schema = this.writeSchema(parameter.schema, result as unknown as CookieParameterModel);
     }
-    if (parameter.content.size) {
+    if (parameter.mediaTypeCount) {
       result.content = {};
-      for (const [key, mediaType] of parameter.content) {
+      for (const [key, mediaType] of parameter.mediaTypes()) {
         result.content[key] = this.writeMediaType(mediaType);
       }
     }
     if (parameter.example) {
       result.example = parameter.example;
     }
-    if (parameter.examples.size) {
+    if (parameter.exampleCount) {
       result.examples = {};
-      for (const [key, example] of parameter.examples) {
+      for (const [key, example] of parameter.examples()) {
         result.examples[key] = this.writeExample(example);
       }
     }
@@ -734,13 +734,13 @@ export class OpenAPIWriter {
     const result: RequestBodyObject = {
       content: {},
     };
-    this.writeExtensionFields(requestBody.extensions, result);
+    this.writeExtensionFields(requestBody, result);
     if (requestBody.description) {
       result.description = requestBody.description;
     }
-    if (requestBody.content.size) {
+    if (requestBody.mediaTypeCount) {
       result.content = {};
-      for (const [key, mediaType] of requestBody.content) {
+      for (const [key, mediaType] of requestBody.mediaTypes()) {
         result.content[key] = this.writeMediaType(mediaType);
       }
     }
@@ -762,7 +762,7 @@ export class OpenAPIWriter {
       | OAuth2SecuritySchemeObject
       | OpenIdConnectSecuritySchemeObject,
   ): void {
-    this.writeExtensionFields(scheme.extensions, result);
+    this.writeExtensionFields(scheme, result);
     if (scheme.description) {
       result.description = scheme.description;
     }
@@ -795,26 +795,26 @@ export class OpenAPIWriter {
     this.writeSecuritySchemaCommon(scheme, result);
     if (scheme.flows.authorizationCode) {
       result.flows.authorizationCode = {
-        scopes: Object.fromEntries(scheme.flows.authorizationCode.scopes.entries()),
+        scopes: Object.fromEntries(scheme.flows.authorizationCode.scopes()),
         authorizationUrl: scheme.flows.authorizationCode.authorizationUrl,
         tokenUrl: scheme.flows.authorizationCode.tokenUrl,
       };
     }
     if (scheme.flows.clientCredentials) {
       result.flows.clientCredentials = {
-        scopes: Object.fromEntries(scheme.flows.clientCredentials.scopes.entries()),
+        scopes: Object.fromEntries(scheme.flows.clientCredentials.scopes()),
         tokenUrl: scheme.flows.clientCredentials.tokenUrl,
       };
     }
     if (scheme.flows.implicit) {
       result.flows.implicit = {
-        scopes: Object.fromEntries(scheme.flows.implicit.scopes.entries()),
+        scopes: Object.fromEntries(scheme.flows.implicit.scopes()),
         authorizationUrl: scheme.flows.implicit.authorizationUrl,
       };
     }
     if (scheme.flows.password) {
       result.flows.password = {
-        scopes: Object.fromEntries(scheme.flows.password.scopes.entries()),
+        scopes: Object.fromEntries(scheme.flows.password.scopes()),
         tokenUrl: scheme.flows.password.tokenUrl,
       };
     }
@@ -849,8 +849,8 @@ export class OpenAPIWriter {
 
   private writeCallback(callback: CallbackModel): CallbackObject {
     const result: CallbackObject = {};
-    this.writeExtensionFields(callback.extensions, result);
-    for (const [expr, pathItem] of callback.paths) {
+    this.writeExtensionFields(callback, result);
+    for (const [expr, pathItem] of callback.pathItems()) {
       result[expr] = this.writePathItem(pathItem);
     }
     return result;
@@ -858,7 +858,7 @@ export class OpenAPIWriter {
 
   private writePathItem(pathItem: PathItemModel): PathItemObject {
     const result: PathItemObject = {};
-    this.writeExtensionFields(pathItem.extensions, result);
+    this.writeExtensionFields(pathItem, result);
     if (pathItem.summary) {
       result.summary = pathItem.summary;
     }
@@ -868,11 +868,11 @@ export class OpenAPIWriter {
     for (const [operName, operDesc] of pathItem.operations()) {
       result[operName] = this.writeOperation(operDesc);
     }
-    if (pathItem.servers?.length) {
-      result.servers = pathItem.servers.map(arg => this.writeServer(arg));
+    if (pathItem.serverCount) {
+      result.servers = Array.from(pathItem.servers(), arg => this.writeServer(arg));
     }
-    if (pathItem.parameters.length) {
-      result.parameters = pathItem.parameters.map(arg => this.writeParameter(arg));
+    if (pathItem.parameterCount) {
+      result.parameters = Array.from(pathItem.parameters(), arg => this.writeParameter(arg));
     }
     return result;
   }
@@ -881,9 +881,9 @@ export class OpenAPIWriter {
     const result: OperationObject = {
       responses: this.writeResponses(operation.responses),
     };
-    this.writeExtensionFields(operation.extensions, result);
-    if (operation.tags.length) {
-      result.tags = operation.tags.slice();
+    this.writeExtensionFields(operation, result);
+    if (operation.tagCount) {
+      result.tags = Array.from(operation.tags());
     }
     if (operation.summary) {
       result.summary = operation.summary;
@@ -891,21 +891,21 @@ export class OpenAPIWriter {
     if (operation.description) {
       result.description = operation.description;
     }
-    if (operation.externalDocumentation) {
-      result.externalDocumentation = this.writeExternalDocs(operation.externalDocumentation);
+    if (operation.externalDocs) {
+      result.externalDocumentation = this.writeExternalDocs(operation.externalDocs);
     }
     if (operation.operationId) {
       result.operationId = operation.operationId;
     }
-    if (operation.parameters.length) {
-      result.parameters = operation.parameters.map(arg => this.writeParameter(arg));
+    if (operation.parameterCount) {
+      result.parameters = Array.from(operation.parameters(), arg => this.writeParameter(arg));
     }
     if (operation.requestBody) {
       result.requestBody = this.writeRequestBody(operation.requestBody, operation);
     }
-    if (operation.callbacks?.size) {
+    if (operation.callbackCount) {
       result.callbacks = {};
-      for (const [name, callback] of operation.callbacks) {
+      for (const [name, callback] of operation.callbacks()) {
         result.callbacks[name] = this.writeCallback(callback);
       }
     }
@@ -913,17 +913,17 @@ export class OpenAPIWriter {
       result.deprecated = operation.deprecated;
     }
     if (operation.security) {
-      result.security = this.writeSecurityRequirementArray(operation.security);
+      result.security = this.writeSecurityRequirementArray(operation.security.values());
     }
     if (operation.servers?.length) {
-      result.servers = operation.servers.map(arg => this.writeServer(arg));
+      result.servers = Array.from(operation.servers(), arg => this.writeServer(arg));
     }
     return result;
   }
 
   private writeExternalDocs(externalDocs: ExternalDocumentationModel): ExternalDocumentationObject {
     const result: ExternalDocumentationObject = { url: externalDocs.url };
-    this.writeExtensionFields(externalDocs.extensions, result);
+    this.writeExtensionFields(externalDocs, result);
     if (externalDocs.description) {
       result.description = externalDocs.description;
     }
@@ -932,9 +932,9 @@ export class OpenAPIWriter {
 
   private writeResponses(responses: ResponsesModel): ResponsesObject {
     const result: ResponsesObject = {};
-    this.writeExtensionFields(responses.extensions, result);
-    if (responses.codes.size) {
-      for (const [httpStatus, response] of responses.codes) {
+    this.writeExtensionFields(responses, result);
+    if (responses.responseCount) {
+      for (const [httpStatus, response] of responses.responses()) {
         result[Number(httpStatus)] = this.writeResponse(response, responses);
       }
     }
@@ -945,26 +945,26 @@ export class OpenAPIWriter {
   }
 
   private writeSecurityRequirementArray(
-    security: ReadonlyArray<SecurityRequirementModel>,
+    security: IterableIterator<SecurityRequirementModel>,
   ): SecurityRequirementObject[] {
-    return security.map(item => this.writeSecurityRequirement(item));
+    return Array.from(security, item => this.writeSecurityRequirement(item));
   }
 
   private writeSecurityRequirement(
     securityItem: SecurityRequirementModel,
   ): SecurityRequirementObject {
     const result: SecurityRequirementObject = {};
-    this.writeExtensionFields(securityItem.extensions, result);
-    for (const [key, scopes] of securityItem.scopes) {
-      result[key] = scopes.slice();
+    this.writeExtensionFields(securityItem, result);
+    for (const key of securityItem.schemaNames()) {
+      result[key] = Array.from(securityItem.getScopes(key));
     }
     return result;
   }
 
   private writePaths(paths: PathsModel): PathsObject {
     const result: PathsObject = {};
-    this.writeExtensionFields(paths.extensions, result);
-    for (const [pathUrlExp, pathItem] of paths) {
+    this.writeExtensionFields(paths, result);
+    for (const [pathUrlExp, pathItem] of paths.pathItems()) {
       result[pathUrlExp] = this.writePathItem(pathItem);
     }
     return result;
@@ -978,7 +978,7 @@ export class OpenAPIWriter {
     if (tag.externalDocs) {
       result.externalDocs = this.writeExternalDocs(tag.externalDocs);
     }
-    this.writeExtensionFields(tag.extensions, result);
+    this.writeExtensionFields(tag, result);
     return result;
   }
 

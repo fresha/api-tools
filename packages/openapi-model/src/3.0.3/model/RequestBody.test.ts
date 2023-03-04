@@ -10,30 +10,30 @@ beforeEach(() => {
 
 describe('content collections', () => {
   test('getContent + getContentOrThrow', () => {
-    requestBody.setContent('application/json');
-    requestBody.setContent('application/xml');
-    requestBody.setContent('image/png');
+    requestBody.setMediaType('application/json');
+    requestBody.setMediaType('application/xml');
+    requestBody.setMediaType('image/png');
 
-    expect(requestBody.getContent('image/png')).not.toBeUndefined();
-    expect(requestBody.getContent('app/x')).toBeUndefined();
-    expect(requestBody.getContentOrThrow('application/json')).not.toBeUndefined();
-    expect(() => requestBody.getContentOrThrow('image/x')).toThrow();
+    expect(requestBody.getMediaType('image/png')).not.toBeUndefined();
+    expect(requestBody.getMediaType('app/x')).toBeUndefined();
+    expect(requestBody.getMediaTypeOrThrow('application/json')).not.toBeUndefined();
+    expect(() => requestBody.getMediaTypeOrThrow('image/x')).toThrow();
   });
 
   test('mutation methods', () => {
-    requestBody.setContent('application/json');
-    requestBody.setContent('application/xml');
-    requestBody.setContent('image/png');
+    requestBody.setMediaType('application/json');
+    requestBody.setMediaType('application/xml');
+    requestBody.setMediaType('image/png');
 
-    expect(requestBody.content.size).toBe(3);
+    expect(requestBody.mediaTypeCount).toBe(3);
 
-    requestBody.deleteContent('image/png');
+    requestBody.deleteMediaType('image/png');
 
-    expect(requestBody.content.size).toBe(2);
-    expect(requestBody.getContent('image/png')).toBeUndefined();
+    expect(requestBody.mediaTypeCount).toBe(2);
+    expect(requestBody.getMediaType('image/png')).toBeUndefined();
 
-    requestBody.clearContent();
+    requestBody.clearMediaTypes();
 
-    expect(requestBody.content.size).toBe(0);
+    expect(requestBody.mediaTypeCount).toBe(0);
   });
 });

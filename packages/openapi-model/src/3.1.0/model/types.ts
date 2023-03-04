@@ -3,7 +3,7 @@ import {
   HeaderParameterSerializationStyle,
   PathParameterSerializationStyle,
   QueryParameterSerializationStyle,
-} from '../../baseTypes';
+} from '../../shared/types';
 
 import type {
   CommonMarkString,
@@ -14,8 +14,6 @@ import type {
   ParametrisedURLString,
   URLString,
 } from '@fresha/api-tools-core';
-
-export type ExtensionFields = ReadonlyMap<string, JSONValue>;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#specification-extensions
@@ -104,7 +102,7 @@ export interface InfoModel extends SpecificationExtensionsModel {
  */
 export interface ContactModel extends SpecificationExtensionsModel {
   name: Nullable<string>;
-  url: Nullable<string>;
+  url: Nullable<URLString>;
   email: Nullable<string>;
 }
 

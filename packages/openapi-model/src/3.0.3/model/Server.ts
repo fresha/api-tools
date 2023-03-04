@@ -3,81 +3,87 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { ServerVariable } from './ServerVariable';
 
-import type { ServerModel, ServerModelParent, ServerVariableModel } from './types';
-import type { Nullable } from '@fresha/api-tools-core';
-
-const isValidVariableName = (str: string): boolean => !!str;
+import type { ServerModel, ServerModelParent } from './types';
+import type { CommonMarkString, Nullable } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#server-object
  */
 export class Server extends BasicNode<ServerModelParent> implements ServerModel {
-  private mUrl: string;
-  description: Nullable<string>;
-  private readonly mVariables: Map<string, ServerVariableModel>;
+  #url: string;
+  #description: Nullable<string>;
+  readonly #variables: Map<string, ServerVariable>;
 
   constructor(parent: ServerModelParent, url: string, variableDefaults?: Record<string, string>) {
     super(parent);
-    this.mUrl = url;
-    this.description = null;
-    this.mVariables = new Map<string, ServerVariableModel>();
-    this.syncVariables(url);
-    if (variableDefaults) {
-      for (const [name, variable] of this.mVariables) {
-        if (variableDefaults[name] != null) {
-          variable.default = variableDefaults[name];
-        }
-      }
-    }
+    this.#url = url;
+    this.#description = null;
+    this.#variables = new Map<string, ServerVariable>();
+    this.#syncVariables(url, variableDefaults);
   }
 
   get url(): string {
-    return this.mUrl;
+    return this.#url;
   }
 
-  set url(newUrl: string) {
-    if (newUrl !== this.mUrl) {
-      this.mUrl = newUrl;
-      this.syncVariables(newUrl);
+  set url(value: string) {
+    if (value !== this.#url) {
+      assert(!!value, `'${value}' is not a valid URL`);
+      this.#url = value;
+      this.#syncVariables(value);
     }
   }
 
-  get variables(): ReadonlyMap<string, ServerVariableModel> {
-    return this.mVariables;
+  get description(): Nullable<CommonMarkString> {
+    return this.#description;
   }
 
-  getVariable(name: string): ServerVariableModel | undefined {
-    return this.variables.get(name);
+  set description(value: Nullable<CommonMarkString>) {
+    this.#description = value;
   }
 
-  getVariableOrThrow(name: string): ServerVariableModel {
+  get variableCount(): number {
+    return this.#variables.size;
+  }
+
+  variableNames(): IterableIterator<string> {
+    return this.#variables.keys();
+  }
+
+  variables(): IterableIterator<[string, ServerVariable]> {
+    return this.#variables.entries();
+  }
+
+  hasVariable(name: string): boolean {
+    return this.#variables.has(name);
+  }
+
+  getVariable(name: string): ServerVariable | undefined {
+    return this.#variables.get(name);
+  }
+
+  getVariableOrThrow(name: string): ServerVariable {
     const result = this.getVariable(name);
-    assert(result);
+    assert(result, `Server variable is missing: '${name}'`);
     return result;
   }
 
-  setVariableDefault(name: string, value: string): void {
-    const variable = this.mVariables.get(name);
-    if (!variable) {
-      throw new Error(`Unknown variable ${name}`);
-    }
-    variable.default = value;
-  }
-
-  private syncVariables(newUrl: string): void {
+  #syncVariables(newUrl: string, variableDefaults?: Record<string, string>): void {
     const newVarNames = (newUrl.match(/\{.+?\}/g) || []).map(elem => elem.slice(1, -1));
-    if (!newVarNames.every(isValidVariableName)) {
-      throw new Error(`Illegal variable name in server URL "${newUrl}"`);
-    }
-    for (const [name, variable] of this.mVariables) {
+    assert(
+      newVarNames.every(name => !!name),
+      `Illegal variable name in server URL "${newUrl}"`,
+    );
+    for (const [name, variable] of this.#variables) {
       if (!newVarNames.includes(name)) {
         variable.dispose();
-        this.mVariables.delete(name);
+        this.#variables.delete(name);
       }
     }
     for (const newName of newVarNames) {
-      if (!this.mVariables.has(newName)) {
-        this.mVariables.set(newName, new ServerVariable(this, ''));
+      if (!this.#variables.has(newName)) {
+        const defaultValue = variableDefaults?.[newName] ?? '';
+        this.#variables.set(newName, new ServerVariable(this, defaultValue));
       }
     }
   }

@@ -159,7 +159,7 @@ describe('SchemaFactory', () => {
     const emptyObjectSchema = SchemaFactory.createObject(openapi.components, {});
     expect(emptyObjectSchema.parent).toBe(openapi.components);
     expect(emptyObjectSchema.properties).toHaveProperty('size', 0);
-    expect(emptyObjectSchema.required.size).toBe(0);
+    expect(emptyObjectSchema.requiredPropertyCount).toBe(0);
 
     const objectSchema = SchemaFactory.createObject(openapi.components, {
       name: 'string',
@@ -169,7 +169,7 @@ describe('SchemaFactory', () => {
     expect(objectSchema.properties).toHaveProperty('size', 3);
     expect(objectSchema.properties.get('name')?.type).toBe('string');
     expect(objectSchema.properties.get('age')?.type).toBe('integer');
-    expect(objectSchema.required).toStrictEqual(new Set<string>(['age', 'active']));
+    expect(Array.from(objectSchema.requiredPropertyNames())).toStrictEqual(['age', 'active']);
   });
 
   test('createOrGet()', () => {
@@ -249,7 +249,8 @@ describe('Schema', () => {
       const nullishSchema = openapi.components.setSchema('NullishSchema');
       const alt1 = SchemaFactory.create(nullishSchema, 'object');
       const alt2 = SchemaFactory.create(nullishSchema, null);
-      nullishSchema.oneOf = [alt1, alt2];
+      nullishSchema.addOneOf(alt1);
+      nullishSchema.addOneOf(alt2);
 
       const alt3 = SchemaFactory.create(alt2, 'array');
       const alt4 = SchemaFactory.create(alt2, null);
@@ -267,7 +268,8 @@ describe('Schema', () => {
       const nullishSchema = openapi.components.setSchema('NullishSchema');
       const alt1 = SchemaFactory.create(nullishSchema, 'object');
       const alt2 = SchemaFactory.create(nullishSchema, null);
-      nullishSchema.oneOf = [alt1, alt2];
+      nullishSchema.addOneOf(alt1);
+      nullishSchema.addOneOf(alt2);
 
       const alt3 = SchemaFactory.create(alt2, 'array');
       const alt4 = SchemaFactory.create(alt2, null);
@@ -317,7 +319,7 @@ describe('Schema', () => {
 
     test('empty state', () => {
       expect(schema.properties.size).toBe(0);
-      expect(schema.required.size).toBe(0);
+      expect(schema.requiredPropertyCount).toBe(0);
     });
 
     test('common attributes', () => {
@@ -624,7 +626,7 @@ describe('Schema', () => {
       z: { type: 'boolean', required: true },
     });
     expect(schema.properties.size).toBe(3);
-    expect(schema.required).toStrictEqual(new Set<string>(['z']));
+    expect(Array.from(schema.requiredPropertyNames())).toStrictEqual(['z']);
   });
 
   test('deleteProperty', () => {
@@ -635,12 +637,12 @@ describe('Schema', () => {
       z: { type: 'date', required: true },
     });
     expect(schema.properties.size).toBe(3);
-    expect(schema.required.size).toBe(1);
+    expect(schema.requiredPropertyCount).toBe(1);
 
     schema.deleteProperty('z');
 
     expect(schema.properties.get('z')).toBeUndefined();
-    expect(schema.required.size).toBe(0);
+    expect(schema.requiredPropertyCount).toBe(0);
   });
 
   test('clearProperties()', () => {
@@ -653,7 +655,7 @@ describe('Schema', () => {
     schema.clearProperties();
 
     expect(schema.properties.size).toBe(0);
-    expect(schema.required.size).toBe(0);
+    expect(schema.requiredPropertyCount).toBe(0);
   });
 
   test('setPropertyRequired', () => {
@@ -665,7 +667,7 @@ describe('Schema', () => {
     schema.setPropertyRequired('a', true);
     schema.setPropertyRequired('c', true);
 
-    expect(schema.required).toStrictEqual(new Set<string>(['a', 'c']));
+    expect(Array.from(schema.requiredPropertyNames())).toStrictEqual(['a', 'c']);
   });
 
   test('setItems', () => {

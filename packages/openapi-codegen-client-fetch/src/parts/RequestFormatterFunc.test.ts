@@ -19,12 +19,12 @@ test('simple', () => {
   const openapi = OpenAPIFactory.create();
   buildEmployeeSchemasForTesting(openapi);
 
-  const operation = openapi.setPathItem('/employees').setOperation('post');
+  const operation = openapi.setPathItem('/employees').addOperation('post');
   operation.operationId = 'createEmployee';
 
   const requestBodySchema = operation
     .setRequestBody()
-    .setContent(MEDIA_TYPE_JSON_API)
+    .setMediaType(MEDIA_TYPE_JSON_API)
     .setSchema('object');
   requestBodySchema.title = 'CreateEmployeeRequest';
   setDataDocumentSchema(requestBodySchema, 'employees');
@@ -60,7 +60,13 @@ test('simple', () => {
   const generatedTypes = new Set<string>();
 
   const context = createActionTestContext(operation, 'src/index.ts');
-  const requestType = new DocumentType(context, 'CreateEmployeeRequest', requestBodySchema, true);
+  const requestType = new DocumentType(
+    context,
+    'CreateEmployeeRequest',
+    requestBodySchema,
+    true,
+    true,
+  );
   requestType.collectData(namedTypes);
 
   for (const namedType of namedTypes.values()) {

@@ -24,21 +24,21 @@ const createResourceType = (
   const context = createActionTestContext(operation, '/src/index.ts');
   const schema = getOperationDefaultResponseSchemaOrThrow(operation, true);
   assert(schema);
-  return new ResourceType(context, name, schema, isRequestBody);
+  return new ResourceType(context, name, schema, isRequestBody, true);
 };
 
-let operation = OpenAPIFactory.create().setPathItem('/hello').setOperation('get');
+let operation = OpenAPIFactory.create().setPathItem('/hello').addOperation('get');
 let namedTypes = new Map<string, NamedType>();
 let generatedTypes = new Set<string>();
 
 beforeEach(() => {
-  operation = OpenAPIFactory.create().setPathItem('/hello').setOperation('get');
+  operation = OpenAPIFactory.create().setPathItem('/hello').addOperation('get');
   namedTypes = new Map<string, NamedType>();
   generatedTypes = new Set<string>();
 });
 
 test('simple, client resource', () => {
-  operation.setDefaultResponse('test').setContent(MEDIA_TYPE_JSON_API).setSchema(null);
+  operation.setDefaultResponse('test').setMediaType(MEDIA_TYPE_JSON_API).setSchema(null);
 
   const resourceType = createResourceType(operation, 'SimpleResource', true);
 
@@ -58,7 +58,7 @@ test('simple, client resource', () => {
 test('attributes', () => {
   const schema = operation
     .setDefaultResponse('test')
-    .setContent(MEDIA_TYPE_JSON_API)
+    .setMediaType(MEDIA_TYPE_JSON_API)
     .setSchema(null);
   setResourceSchema(schema, 'hello');
   addResourceAttributes(schema, {
@@ -117,8 +117,7 @@ test('relationships', () => {
   // remove attributes to unclutter output
   employee.getPropertyDeepOrThrow('attributes').clearProperties();
 
-  const mediaType = operation.setDefaultResponse('test').setContent(MEDIA_TYPE_JSON_API);
-  mediaType.schema = employee;
+  operation.setDefaultResponse('test').setMediaType(MEDIA_TYPE_JSON_API).setSchema(employee);
 
   const resourceType = createResourceType(operation, 'HelloResource');
 

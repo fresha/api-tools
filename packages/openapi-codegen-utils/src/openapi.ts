@@ -94,12 +94,21 @@ export const getOperations = function* getOperations(
   const includeInternal = options?.internal ?? false;
   const includeTags = options?.tags?.length ? new Set<string>(options.tags) : null;
 
-  for (const pathItem of openapi.paths.values()) {
+  const hasTag = (operation: OperationModel): boolean => {
+    for (const tag of operation.tags()) {
+      if (includeTags?.has(tag)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  for (const [, pathItem] of openapi.paths.pathItems()) {
     for (const [, operation] of pathItem.operations()) {
       if (
         (includeDeprecated || !operation.deprecated) &&
         (includeInternal || !isInternalOperation(operation)) &&
-        (!includeTags || operation.tags.some(tag => includeTags.has(tag)))
+        (!includeTags || hasTag(operation))
       ) {
         yield operation;
       }
@@ -131,11 +140,11 @@ export const getOperationParameters = function* getOperationParameters(
   operation: OperationModel,
 ): IterableIterator<ParameterModel> {
   const visited = new Set<string>();
-  for (const param of operation.parameters) {
+  for (const param of operation.parameters()) {
     visited.add(`${param.in}:${param.name}`);
     yield param;
   }
-  for (const param of operation.parent.parameters) {
+  for (const param of operation.parent.parameters()) {
     const key = `${param.in}:${param.name}`;
     if (!visited.has(key)) {
       visited.add(key);
@@ -193,7 +202,7 @@ export const getOperationRequestBodySchema = (
   useJsonApi: boolean,
 ): Nullable<SchemaModel> => {
   const mediaType = getMediaType(useJsonApi);
-  return operation.requestBody?.getContentOrThrow(mediaType).schema ?? null;
+  return operation.requestBody?.getMediaTypeOrThrow(mediaType).schema ?? null;
 };
 
 export const getOperationRequestBodySchemaOrThrow = (
@@ -213,7 +222,7 @@ export const getOperationDefaultResponseSchema = (
   useJsonApi: boolean,
 ): Nullable<SchemaModel> => {
   const mediaType = getMediaType(useJsonApi);
-  return operation.responses.default?.getContentOrThrow(mediaType).schema ?? null;
+  return operation.responses.default?.getMediaTypeOrThrow(mediaType).schema ?? null;
 };
 
 export const getOperationDefaultResponseSchemaOrThrow = (
@@ -234,8 +243,8 @@ export const getOperationResponseSchemas = (
 ): SchemaModel[] => {
   const mediaType = getMediaType(useJsonApi);
   const result: SchemaModel[] = [];
-  for (const response of operation.responses.codes.values()) {
-    const schema = response.getContent(mediaType)?.schema;
+  for (const [, response] of operation.responses.responses()) {
+    const schema = response.getMediaType(mediaType)?.schema;
     if (schema) {
       result.push(schema);
     }

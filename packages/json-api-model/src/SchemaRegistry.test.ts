@@ -25,7 +25,7 @@ describe('resources', () => {
     expect(employee.hasRelationships()).toBeFalsy();
 
     expect(registry.getResourceTypes()).toStrictEqual(['employees']);
-    expect(new Set<string>(registry.openapi.components.schemas.keys())).toStrictEqual(
+    expect(new Set<string>(registry.openapi.components.schemaKeys())).toStrictEqual(
       new Set<string>(['EmployeeResourceID']),
     );
   });

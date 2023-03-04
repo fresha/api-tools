@@ -1,7 +1,6 @@
 import { OpenAPIReader } from './OpenAPIReader';
 
 import type { SchemaModel } from './types';
-import type { JSONValue } from '@fresha/api-tools-core';
 
 test('barebones', () => {
   const reader = new OpenAPIReader();
@@ -17,7 +16,7 @@ test('barebones', () => {
 
   expect(openapi.info.title).toBe('Barebones');
   expect(openapi.info.version).toBe('1.2.3');
-  expect(openapi.paths.size).toBe(0);
+  expect(openapi.paths.pathItemCount).toBe(0);
   expect(openapi.components.isEmpty()).toBeTruthy();
 });
 
@@ -38,9 +37,9 @@ describe('SchemaModel', () => {
       },
     });
 
-    expect(openapi.components.schemas).toHaveProperty('size', 1);
+    expect(openapi.components.schemaCount).toBe(1);
 
-    const emptySchema = openapi.components.schemas.get('EmptySchema');
+    const emptySchema = openapi.components.getSchemaOrThrow('EmptySchema');
     expect(emptySchema).toHaveProperty('title', null);
     expect(emptySchema).toHaveProperty('multipleOf', null);
     expect(emptySchema).toHaveProperty('maximum', null);
@@ -55,7 +54,7 @@ describe('SchemaModel', () => {
     expect(emptySchema).toHaveProperty('uniqueItems', false);
     expect(emptySchema).toHaveProperty('minProperties', null);
     expect(emptySchema).toHaveProperty('maxProperties', null);
-    expect(emptySchema).toHaveProperty('required', new Set<string>());
+    expect(Array.from(emptySchema.requiredPropertyNames())).toEqual([]);
     expect(emptySchema).toHaveProperty('enum', null);
     expect(emptySchema).toHaveProperty('type', null);
     expect(emptySchema).toHaveProperty('allOf', []);
@@ -136,19 +135,16 @@ describe('SchemaModel', () => {
       },
     });
 
-    expect(openapi.components.schemas).toHaveProperty('size', 1);
+    expect(openapi.components.schemaCount).toBe(1);
 
-    const errorMessageSchema = openapi.components.schemas.get('ErrorMessage');
+    const errorMessageSchema = openapi.components.getSchemaOrThrow('ErrorMessage');
 
     expect(errorMessageSchema).toHaveProperty('root', openapi);
     expect(errorMessageSchema).toHaveProperty('parent', openapi.components);
-    expect(errorMessageSchema).toHaveProperty(
-      'extensions',
-      new Map<string, JSONValue>([
-        ['prop-1', 'extension property 1'],
-        ['prop-2', ['extension property 2']],
-      ]),
-    );
+    expect(Array.from(errorMessageSchema.extensions())).toStrictEqual([
+      ['prop-1', 'extension property 1'],
+      ['prop-2', ['extension property 2']],
+    ]);
     expect(errorMessageSchema).toHaveProperty('title', 'error message schema');
     expect(errorMessageSchema).toHaveProperty('multipleOf', 4);
     expect(errorMessageSchema).toHaveProperty('maximum', 100);
@@ -163,7 +159,7 @@ describe('SchemaModel', () => {
     expect(errorMessageSchema).toHaveProperty('uniqueItems', true);
     expect(errorMessageSchema).toHaveProperty('minProperties', 2);
     expect(errorMessageSchema).toHaveProperty('maxProperties', 4);
-    expect(errorMessageSchema).toHaveProperty('required', new Set<string>(['x', 'y']));
+    expect(Array.from(errorMessageSchema.requiredPropertyNames())).toEqual(['x', 'y']);
     expect(errorMessageSchema).toHaveProperty('enum', [1, '12', false]);
     expect(errorMessageSchema).toHaveProperty('type', 'string');
 
@@ -264,14 +260,14 @@ describe('ComponentsModel', () => {
       },
     });
 
-    expect(openapi.components.schemas.size).toBe(3);
+    expect(openapi.components.schemaCount).toBe(3);
 
-    const errorMessageSchema = openapi.components.schemas.get('ErrorMessage');
+    const errorMessageSchema = openapi.components.getSchema('ErrorMessage');
 
     expect(errorMessageSchema).toHaveProperty('root', openapi);
     expect(errorMessageSchema).toHaveProperty('parent', openapi.components);
 
-    const errorSchema = openapi.components.schemas.get('Error');
+    const errorSchema = openapi.components.getSchema('Error');
     expect(errorSchema).toHaveProperty('root', openapi);
     expect(errorSchema).toHaveProperty('parent', openapi.components);
     expect(errorSchema?.properties.get('message')).toBe(errorMessageSchema);
@@ -281,7 +277,7 @@ describe('ComponentsModel', () => {
     expect(errorCodeSchema).toHaveProperty('root', openapi);
     expect(errorCodeSchema).toHaveProperty('parent', errorSchema);
 
-    const errorListSchema = openapi.components.schemas.get('ErrorList');
+    const errorListSchema = openapi.components.getSchema('ErrorList');
     expect(errorListSchema).toHaveProperty('root', openapi);
     expect(errorListSchema).toHaveProperty('parent', openapi.components);
   });

@@ -1,6 +1,6 @@
 import { ParameterBase, ParameterParent } from './ParameterBase';
 
-import type { CookieParameterSerializationStyle } from '../../../baseTypes';
+import type { CookieParameterSerializationStyle } from '../../../shared/types';
 import type { CookieParameterModel } from '../types';
 
 export class CookieParameter extends ParameterBase implements CookieParameterModel {

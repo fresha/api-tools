@@ -32,7 +32,7 @@ export type OpenApiVersion = '3.0.3';
 
 export type ExtensionFields = Map<string, JSONValue>;
 
-export interface TreeNode<TParent> extends Disposable {
+export interface TreeNodeModel<TParent> extends Disposable {
   readonly root: OpenAPIModel;
   readonly parent: TParent;
 }
@@ -41,8 +41,10 @@ export interface TreeNode<TParent> extends Disposable {
  * @see https://spec.openapis.org/oas/v3.0.3#specification-extensions
  */
 export interface SpecificationExtensionsModel {
-  readonly extensions: ExtensionFields;
-
+  readonly extensionCount: number;
+  extensionKeys(): IterableIterator<string>;
+  extensions(): IterableIterator<[string, JSONValue]>;
+  hasExtension(key: string): boolean;
   getExtension(key: string): JSONValue | undefined;
   getExtensionOrThrow(key: string): JSONValue;
   setExtension(key: string, value: JSONValue): void;
@@ -56,10 +58,19 @@ export type DiscriminatorModelParent = SchemaModel;
  * @see https://spec.openapis.org/oas/v3.0.3#discriminator-object
  */
 export interface DiscriminatorModel
-  extends TreeNode<DiscriminatorModelParent>,
+  extends TreeNodeModel<DiscriminatorModelParent>,
     SpecificationExtensionsModel {
   propertyName: string;
-  readonly mapping: ReadonlyMap<string, string>;
+
+  readonly mappingCount: number;
+  mappingKeys(): IterableIterator<string>;
+  mappings(): IterableIterator<[string, string]>;
+  hasMapping(key: string): boolean;
+  getMapping(key: string): string | undefined;
+  getMappingOrThrow(key: string): string;
+  setMapping(key: string, value: string): void;
+  deleteMapping(key: string): void;
+  clearMappings(): void;
 }
 
 // Internal type, extracted for convenience.
@@ -155,7 +166,9 @@ export type SchemaPropertyObject = {
  * @see https://spec.openapis.org/oas/v3.0.3#schema-object
  * @see https://github.com/OAI/OpenAPI-Specification/blob/main/schemas/v3.0/schema.yaml
  */
-export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationExtensionsModel {
+export interface SchemaModel
+  extends TreeNodeModel<SchemaModelParent>,
+    SpecificationExtensionsModel {
   title: Nullable<string>;
   multipleOf: Nullable<number>;
   maximum: Nullable<number>;
@@ -170,7 +183,6 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   uniqueItems: boolean;
   maxProperties: Nullable<number>;
   minProperties: Nullable<number>;
-  readonly required: Set<string>;
   enum: Nullable<JSONValue[]>;
   type: Nullable<SchemaType>;
   allOf: Nullable<SchemaModel[]>;
@@ -261,6 +273,9 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
    */
   getPropertyDeepOrThrow(name: string): SchemaModel;
 
+  readonly requiredPropertyCount: number;
+  requiredPropertyNames(): IterableIterator<string>;
+  requiredProperties(): IterableIterator<[string, SchemaModel]>;
   isPropertyRequired(name: string): boolean;
   setPropertyRequired(name: string, value: boolean): void;
 
@@ -285,6 +300,9 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   clearAnyOf(): void;
 
   arrayOf(parent: SchemaModelParent): SchemaModel;
+
+  addExternalDocs(url: URLString): ExternalDocumentationModel;
+  deleteExternalDocs(): void;
 }
 
 export type SchemaCreateArrayObject = {
@@ -313,7 +331,9 @@ export type ContactModelParent = InfoModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#contact-object
  */
-export interface ContactModel extends TreeNode<ContactModelParent>, SpecificationExtensionsModel {
+export interface ContactModel
+  extends TreeNodeModel<ContactModelParent>,
+    SpecificationExtensionsModel {
   name: Nullable<string>;
   url: Nullable<string>;
   email: Nullable<EmailString>;
@@ -324,7 +344,9 @@ export type LicenseModelParent = InfoModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#license-object
  */
-export interface LicenseModel extends TreeNode<LicenseModelParent>, SpecificationExtensionsModel {
+export interface LicenseModel
+  extends TreeNodeModel<LicenseModelParent>,
+    SpecificationExtensionsModel {
   name: string;
   url: Nullable<URLString>;
 }
@@ -334,7 +356,7 @@ export type InfoModelParent = OpenAPIModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#info-object
  */
-export interface InfoModel extends TreeNode<InfoModelParent>, SpecificationExtensionsModel {
+export interface InfoModel extends TreeNodeModel<InfoModelParent>, SpecificationExtensionsModel {
   title: string;
   description: Nullable<CommonMarkString>;
   termsOfService: Nullable<URLString>;
@@ -349,15 +371,17 @@ export type ServerVariableModelParent = ServerModel;
  * @see https://spec.openapis.org/oas/v3.0.3#server-variable-object
  */
 export interface ServerVariableModel
-  extends TreeNode<ServerVariableModelParent>,
+  extends TreeNodeModel<ServerVariableModelParent>,
     SpecificationExtensionsModel {
-  readonly enum: ReadonlySet<string>;
-  default: string;
+  defaultValue: string;
   description: Nullable<CommonMarkString>;
 
-  addEnum(...values: string[]): void;
-  deleteEnumValue(...values: string[]): void;
-  clearEnumValues(): void;
+  readonly allowedValueCount: number;
+  allowedValues(): IterableIterator<string>;
+  hasAllowedValue(value: string): boolean;
+  addAllowedValues(...values: string[]): void;
+  deleteAllowedValues(...values: string[]): void;
+  clearAllowedValues(): void;
 }
 
 export type ServerModelParent = OpenAPIModel | PathItemModel | OperationModel;
@@ -365,14 +389,18 @@ export type ServerModelParent = OpenAPIModel | PathItemModel | OperationModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#server-object
  */
-export interface ServerModel extends TreeNode<ServerModelParent>, SpecificationExtensionsModel {
+export interface ServerModel
+  extends TreeNodeModel<ServerModelParent>,
+    SpecificationExtensionsModel {
   url: string;
   description: Nullable<CommonMarkString>;
-  readonly variables: ReadonlyMap<string, ServerVariableModel>;
 
+  readonly variableCount: number;
+  variableNames(): IterableIterator<string>;
+  variables(): IterableIterator<[string, ServerVariableModel]>;
+  hasVariable(name: string): boolean;
   getVariable(name: string): ServerVariableModel | undefined;
   getVariableOrThrow(name: string): ServerVariableModel;
-  setVariableDefault(name: string, value: string): void;
 }
 
 export type ExternalDocumentationModelParent =
@@ -385,7 +413,7 @@ export type ExternalDocumentationModelParent =
  * @see https://spec.openapis.org/oas/v3.0.3#external-documentation-object
  */
 export interface ExternalDocumentationModel
-  extends TreeNode<ExternalDocumentationModelParent>,
+  extends TreeNodeModel<ExternalDocumentationModelParent>,
     SpecificationExtensionsModel {
   description: Nullable<CommonMarkString>;
   url: URLString;
@@ -397,30 +425,22 @@ export type ParameterModelParent = ComponentsModel | PathItemModel | OperationMo
  * @see https://spec.openapis.org/oas/v3.0.3#parameter-object
  */
 export interface ParameterBaseModel
-  extends TreeNode<ParameterModelParent>,
-    SpecificationExtensionsModel {
+  extends TreeNodeModel<ParameterModelParent>,
+    SpecificationExtensionsModel,
+    MediaTypeModelMap,
+    ExampleModelMap {
   name: string;
   description: Nullable<CommonMarkString>;
   deprecated: boolean;
   explode: boolean;
-  schema: Nullable<SchemaModel>;
+
+  readonly schema: Nullable<SchemaModel>;
+  setSchema(params: CreateOrSetSchemaOptions): SchemaModel;
+  deleteSchema(): void;
+
   example: Nullable<JSONValue>;
-  readonly examples: ReadonlyMap<string, ExampleModel>;
-  readonly content: ReadonlyMap<MIMETypeString, MediaTypeModel>;
 
-  getExample(name: string): ExampleModel | undefined;
-  getExampleOrThrow(name: string): ExampleModel;
-  setExampleModel(name: string, model: ExampleModel): void;
-  setExample(name: string): ExampleModel;
-  deleteExample(name: string): void;
-  clearExamples(): void;
-
-  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
-  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
-  setContentModel(mimeType: MIMETypeString, model: MediaTypeModel): void;
-  setContent(mimeType: MIMETypeString): MediaTypeModel;
-  deleteContent(mimeType: MIMETypeString): void;
-  clearContent(): void;
+  setMediaTypeModel(mimeType: MIMETypeString, model: MediaTypeModel): void;
 }
 
 /**
@@ -477,11 +497,29 @@ export type ExampleModelParent = ComponentsModel | MediaTypeModel | ParameterMod
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#example-object
  */
-export interface ExampleModel extends TreeNode<ExampleModelParent>, SpecificationExtensionsModel {
+export interface ExampleModel
+  extends TreeNodeModel<ExampleModelParent>,
+    SpecificationExtensionsModel {
   summary: Nullable<string>;
   description: Nullable<CommonMarkString>;
   value: JSONValue;
-  externalValue: Nullable<string>;
+  externalValue: Nullable<URLString>;
+}
+
+/**
+ * Common interface for nodes exposing a collection of ExampleModel-s.
+ */
+export interface ExampleModelMap {
+  readonly exampleCount: number;
+  exampleKeys(): IterableIterator<string>;
+  examples(): IterableIterator<[string, ExampleModel]>;
+  hasExample(name: string): boolean;
+  getExample(name: string): ExampleModel | undefined;
+  getExampleOrThrow(name: string): ExampleModel;
+  setExampleModel(name: string, model: ExampleModel): void;
+  setExample(name: string): ExampleModel;
+  deleteExample(name: string): void;
+  clearExamples(): void;
 }
 
 export type HeaderModelParent = ComponentsModel | ResponseModel | EncodingModel;
@@ -489,28 +527,22 @@ export type HeaderModelParent = ComponentsModel | ResponseModel | EncodingModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#header-object
  */
-export interface HeaderModel extends TreeNode<HeaderModelParent>, SpecificationExtensionsModel {
+export interface HeaderModel
+  extends TreeNodeModel<HeaderModelParent>,
+    SpecificationExtensionsModel,
+    MediaTypeModelMap,
+    ExampleModelMap {
   description: Nullable<CommonMarkString>;
   required: boolean;
   deprecated: boolean;
   style: HeaderParameterSerializationStyle;
   explode: boolean;
-  schema: Nullable<SchemaModel>;
+
+  readonly schema: Nullable<SchemaModel>;
+  setSchema(options: CreateOrSetSchemaOptions): SchemaModel;
+  deleteSchema(): void;
+
   example: JSONValue;
-  readonly examples: Map<string, ExampleModel>;
-  readonly content: Map<MIMETypeString, MediaTypeModel>;
-
-  getExample(name: string): ExampleModel | undefined;
-  getExampleOrThrow(name: string): ExampleModel;
-  setExample(name: string): ExampleModel;
-  deleteExample(name: string): void;
-  clearExamples(): void;
-
-  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
-  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
-  setContent(mimeType: MIMETypeString): void;
-  deleteContent(mimeType: MIMETypeString): void;
-  clearContents(): void;
 }
 
 export type EncodingModelParent = MediaTypeModel;
@@ -520,13 +552,18 @@ export type EncodingSerializationStyle = 'form' | 'spaceDelimited' | 'pipeDelimi
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#encoding-object
  */
-export interface EncodingModel extends TreeNode<EncodingModelParent>, SpecificationExtensionsModel {
+export interface EncodingModel
+  extends TreeNodeModel<EncodingModelParent>,
+    SpecificationExtensionsModel {
   contentType: Nullable<string>;
-  readonly headers: ReadonlyMap<string, HeaderModel>;
   style: Nullable<EncodingSerializationStyle>;
   explode: boolean;
   allowReserved: boolean;
 
+  readonly headerCount: number;
+  headerNames(): IterableIterator<string>;
+  headers(): IterableIterator<[string, HeaderModel]>;
+  hasHeader(name: string): boolean;
   getHeader(name: string): HeaderModel | undefined;
   getHeaderOrThrow(name: string): HeaderModel;
   setHeader(name: string): HeaderModel;
@@ -540,27 +577,39 @@ export type MediaTypeModelParent = ParameterModel | RequestBodyModel | ResponseM
  * @see https://spec.openapis.org/oas/v3.0.3#media-type-object
  */
 export interface MediaTypeModel
-  extends TreeNode<MediaTypeModelParent>,
-    SpecificationExtensionsModel {
-  schema: Nullable<SchemaModel>;
-  example: JSONValue;
-  readonly examples: ReadonlyMap<string, ExampleModel>;
-  readonly encoding: ReadonlyMap<string, EncodingModel>;
-
+  extends TreeNodeModel<MediaTypeModelParent>,
+    SpecificationExtensionsModel,
+    ExampleModelMap {
+  readonly schema: Nullable<SchemaModel>;
   setSchema(type: CreateOrSetSchemaOptions): SchemaModel;
   deleteSchema(): void;
 
-  getExample(key: string): ExampleModel | undefined;
-  getExampleOrThrow(key: string): ExampleModel;
-  setExample(key: string): ExampleModel;
-  deleteExample(key: string): void;
-  clearExamples(): void;
+  example: JSONValue;
 
+  readonly encodingCount: number;
+  encodingKeys(): IterableIterator<string>;
+  encodings(): IterableIterator<[string, EncodingModel]>;
+  hasEncoding(key: string): boolean;
   getEncoding(key: string): EncodingModel | undefined;
   getEncodingOrThrow(key: string): EncodingModel;
   setEncoding(key: string): EncodingModel;
   deleteEncoding(key: string): void;
   clearEncodings(): void;
+}
+
+/**
+ * Common interface for nodes that expose collection of MediaTypeModel-s.
+ */
+export interface MediaTypeModelMap {
+  readonly mediaTypeCount: number;
+  mediaTypeKeys(): IterableIterator<MIMETypeString>;
+  mediaTypes(): IterableIterator<[MIMETypeString, MediaTypeModel]>;
+  hasMediaType(mimeType: MIMETypeString): boolean;
+  getMediaType(mimeType: MIMETypeString): MediaTypeModel | undefined;
+  getMediaTypeOrThrow(mimeType: MIMETypeString): MediaTypeModel;
+  setMediaType(mimeType: MIMETypeString): MediaTypeModel;
+  deleteMediaType(mimeType: MIMETypeString): void;
+  clearMediaTypes(): void;
 }
 
 export type RequestBodyModelParent = ComponentsModel | OperationModel;
@@ -569,17 +618,11 @@ export type RequestBodyModelParent = ComponentsModel | OperationModel;
  * @see https://spec.openapis.org/oas/v3.0.3#request-body-object
  */
 export interface RequestBodyModel
-  extends TreeNode<RequestBodyModelParent>,
-    SpecificationExtensionsModel {
+  extends TreeNodeModel<RequestBodyModelParent>,
+    SpecificationExtensionsModel,
+    MediaTypeModelMap {
   description: Nullable<CommonMarkString>;
-  readonly content: ReadonlyMap<MIMETypeString, MediaTypeModel>;
   required: boolean;
-
-  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
-  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
-  setContent(mimeType: MIMETypeString): MediaTypeModel;
-  deleteContent(mimeType: MIMETypeString): void;
-  clearContent(): void;
 }
 
 export type ResponseModelParent = ComponentsModel | ResponsesModel;
@@ -587,29 +630,22 @@ export type ResponseModelParent = ComponentsModel | ResponsesModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#response-object
  */
-export interface ResponseModel extends TreeNode<ResponseModelParent>, SpecificationExtensionsModel {
+export interface ResponseModel
+  extends TreeNodeModel<ResponseModelParent>,
+    SpecificationExtensionsModel,
+    MediaTypeModelMap,
+    LinkModelMap {
   description: CommonMarkString;
-  readonly headers: ReadonlyMap<string, HeaderModel>; // key = HTTP header name
-  readonly content: ReadonlyMap<MIMETypeString, MediaTypeModel>; // key = MIME media type
-  readonly links: ReadonlyMap<string, LinkModel>; // key = short name of the link
 
+  readonly headerCount: number;
+  headerNames(): IterableIterator<string>;
+  headers(): IterableIterator<[string, HeaderModel]>;
+  hasHeader(name: string): boolean;
   getHeader(name: string): HeaderModel | undefined;
   getHeaderOrThrow(name: string): HeaderModel;
   setHeader(name: string): HeaderModel;
   deleteHeader(name: string): void;
   clearHeaders(): void;
-
-  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined;
-  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel;
-  setContent(mimeType: MIMETypeString): MediaTypeModel;
-  deleteContent(mimeType: MIMETypeString): void;
-  clearContent(): void;
-
-  getLink(key: string): LinkModel | undefined;
-  getLinkOrThrow(key: string): LinkModel;
-  setLink(key: string): LinkModel;
-  deleteLink(key: string): void;
-  clearLinks(): void;
 }
 
 export type HTTPStatusCode = number | string;
@@ -620,17 +656,21 @@ export type ResponsesModelParent = OperationModel;
  * @see https://spec.openapis.org/oas/v3.0.3#responses-object
  */
 export interface ResponsesModel
-  extends TreeNode<ResponsesModelParent>,
+  extends TreeNodeModel<ResponsesModelParent>,
     SpecificationExtensionsModel {
-  default: Nullable<ResponseModel>;
-  readonly codes: ReadonlyMap<HTTPStatusCode, ResponseModel>;
-
+  readonly default: Nullable<ResponseModel>;
   setDefaultResponse(description: CommonMarkString): ResponseModel;
+  setDefaultResponseModel(model: ResponseModel): void;
   deleteDefaultResponse(): void;
 
+  readonly responseCount: number;
+  responseCodes(): IterableIterator<HTTPStatusCode>;
+  responses(): IterableIterator<[HTTPStatusCode, ResponseModel]>;
+  hasResponse(code: HTTPStatusCode): boolean;
   getResponse(code: HTTPStatusCode): ResponseModel | undefined;
   getResponseOrThrow(code: HTTPStatusCode): ResponseModel;
   setResponse(code: HTTPStatusCode, description: CommonMarkString): ResponseModel;
+  setResponseModel(code: HTTPStatusCode, model: ResponseModel): void;
   deleteResponse(code: HTTPStatusCode): void;
   clearResponses(): void;
 }
@@ -641,17 +681,12 @@ export type OperationModelParent = PathItemModel;
  * @see https://spec.openapis.org/oas/v3.0.3#operation-object
  */
 export interface OperationModel
-  extends TreeNode<OperationModelParent>,
-    SpecificationExtensionsModel {
-  readonly tags: ReadonlyArray<string>;
+  extends TreeNodeModel<OperationModelParent>,
+    SpecificationExtensionsModel,
+    CallbackModelMap {
   summary: Nullable<string>;
   description: Nullable<CommonMarkString>;
-  externalDocumentation: Nullable<ExternalDocumentationModel>;
   operationId: Nullable<string>;
-  readonly parameters: ReadonlyArray<ParameterModel>;
-  requestBody: Nullable<RequestBodyModel>;
-  readonly responses: ResponsesModel;
-  readonly callbacks: ReadonlyMap<string, CallbackModel>;
   deprecated: boolean;
 
   /**
@@ -659,44 +694,52 @@ export interface OperationModel
    */
   readonly security: Nullable<ReadonlyArray<SecurityRequirementModel>>;
 
-  readonly servers: ReadonlyArray<ServerModel>;
-
   /**
    * HTTP method this operation is associated with, within its path item.
    */
   readonly httpMethod: PathItemOperationKey;
 
+  readonly tagCount: number;
+  tags(): IterableIterator<string>;
+  tagAt(index: number): string;
+  hasTag(name: string): boolean;
   addTag(name: string): void;
   deleteTag(name: string): void;
   deleteTagAt(index: number): void;
   clearTags(): void;
 
+  readonly externalDocs: Nullable<ExternalDocumentationModel>;
+  addExternalDocs(url: URLString): ExternalDocumentationModel;
+  deleteExternalDocs(): void;
+
+  readonly parameterCount: number;
+  parameters(): IterableIterator<ParameterModel>;
+  parameterAt(index: number): ParameterModel;
+  hasParameter(name: string, location?: ParameterLocation): boolean;
   getParameter(name: string, source: ParameterLocation): ParameterModel | undefined;
   getParameterOrThrow(name: string, source: ParameterLocation): ParameterModel;
   addParameter(name: string, source: 'path'): PathParameterModel;
   addParameter(name: string, source: 'query'): QueryParameterModel;
   addParameter(name: string, source: 'header'): HeaderParameterModel;
   addParameter(name: string, source: 'cookie'): CookieParameterModel;
+  addParameterModel(param: ParameterModel): void;
+  deleteParameterAt(index: number): void;
   deleteParameter(name: string): void;
   clearParameters(): void;
 
+  readonly requestBody: Nullable<RequestBodyModel>;
   setRequestBody(): RequestBodyModel;
+  setRequestBodyModel(model: RequestBodyModel): void;
   deleteRequestBody(): void;
 
+  readonly responses: ResponsesModel;
   setDefaultResponse(description: CommonMarkString): ResponseModel;
   deleteDefaultResponse(): void;
-
   getResponse(code: HTTPStatusCode): ResponseModel | undefined;
   getResponseOrThrow(code: HTTPStatusCode): ResponseModel;
   setResponse(code: HTTPStatusCode, description: CommonMarkString): ResponseModel;
   deleteResponse(code: HTTPStatusCode): void;
   clearResponses(): void;
-
-  getCallback(name: string): CallbackModel | undefined;
-  getCallbackOrThrow(name: string): CallbackModel;
-  setCallback(key: string): CallbackModel;
-  deleteCallback(key: string): void;
-  clearCallbacks(): void;
 
   /**
    * Return effective security requirements for this operation. It uses own requirements,
@@ -730,6 +773,9 @@ export interface OperationModel
    */
   setOwnSecurityRequirements(doUse: boolean): void;
 
+  readonly serverCount: number;
+  servers(): IterableIterator<ServerModel>;
+  serverAt(index: number): ServerModel;
   getServer(url: ParametrisedURLString): ServerModel | undefined;
   getServerOrThrow(url: ParametrisedURLString): ServerModel;
   addServer(url: string): ServerModel;
@@ -745,24 +791,16 @@ export type PathItemModelParent = PathsModel | CallbackModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#paths-object
  */
-export interface PathItemModel extends TreeNode<PathItemModelParent>, SpecificationExtensionsModel {
+export interface PathItemModel
+  extends TreeNodeModel<PathItemModelParent>,
+    SpecificationExtensionsModel {
   summary: Nullable<string>;
   description: Nullable<CommonMarkString>;
-  get: Nullable<OperationModel>;
-  put: Nullable<OperationModel>;
-  post: Nullable<OperationModel>;
-  delete: Nullable<OperationModel>;
-  options: Nullable<OperationModel>;
-  head: Nullable<OperationModel>;
-  patch: Nullable<OperationModel>;
-  trace: Nullable<OperationModel>;
-  readonly servers: ServerModel[];
-  readonly parameters: ParameterModel[];
 
-  /**
-   * URL associated with this path item in item's parent collection.
-   */
-  readonly pathUrl: ParametrisedURLString;
+  readonly operationCount: number;
+  operationMethods(): IterableIterator<PathItemOperationKey>;
+  operations(): IterableIterator<[PathItemOperationKey, OperationModel]>;
+  hasOperation(method: PathItemOperationKey): boolean;
 
   /**
    * Returns operation associated with given HTTP method. Returns undefined
@@ -788,18 +826,36 @@ export interface PathItemModel extends TreeNode<PathItemModelParent>, Specificat
    */
   getOperationKeyOrThrow(operation: OperationModel): PathItemOperationKey;
 
-  operations(): IterableIterator<[PathItemOperationKey, OperationModel]>;
-
-  setOperation(method: PathItemOperationKey): OperationModel;
-  removeOperation(method: PathItemOperationKey): void;
+  addOperation(method: PathItemOperationKey): OperationModel;
+  deleteOperation(method: PathItemOperationKey): void;
   clearOperations(): void;
 
+  /**
+   * URL associated with this path item in item's parent collection.
+   */
+  readonly pathUrl: ParametrisedURLString;
+
+  readonly serverCount: number;
+  servers(): IterableIterator<ServerModel>;
+  serverAt(index: number): ServerModel;
   addServer(url: string): ServerModel;
   deleteServer(url: string): void;
   deleteServerAt(index: number): void;
   clearServers(): void;
 
+  readonly parameterCount: number;
+  parameters(): IterableIterator<ParameterModel>;
+  parameterAt(index: number): ParameterModel;
+  deleteParameterAt(index: number): void;
+  hasParameter(name: string, location?: ParameterLocation): boolean;
+  getParameter(name: string, location?: ParameterLocation): ParameterModel;
+  addParameter(name: string, location: 'path'): PathParameterModel;
+  addParameter(name: string, location: 'query'): QueryParameterModel;
+  addParameter(name: string, location: 'header'): HeaderParameterModel;
+  addParameter(name: string, location: 'cookie'): CookieParameterModel;
   addParameterModel(model: ParameterModel): void;
+  deleteParameter(name: string, location?: ParameterLocation): void;
+  clearParameters(): void;
 }
 
 export type PathsModelParent = OpenAPIModel;
@@ -807,10 +863,12 @@ export type PathsModelParent = OpenAPIModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#paths-object
  */
-export interface PathsModel
-  extends TreeNode<PathsModelParent>,
-    Map<ParametrisedURLString, PathItemModel>,
-    SpecificationExtensionsModel {
+export interface PathsModel extends TreeNodeModel<PathsModelParent>, SpecificationExtensionsModel {
+  readonly pathItemCount: number;
+  pathItemUrls(): IterableIterator<ParametrisedURLString>;
+  pathItems(): IterableIterator<[ParametrisedURLString, PathItemModel]>;
+  hasPathItem(url: ParametrisedURLString): boolean;
+
   getItem(url: ParametrisedURLString): PathItemModel | undefined;
   getItemOrThrow(url: ParametrisedURLString): PathItemModel;
 
@@ -826,6 +884,8 @@ export interface PathsModel
    */
   getItemUrlOrThrow(pathItem: PathItemModel): ParametrisedURLString;
 
+  setPathItem(key: ParametrisedURLString): PathItemModel;
+
   sort(
     sorter: (
       entry1: [ParametrisedURLString, PathItemModel],
@@ -840,7 +900,7 @@ export type SecuritySchemaModelParent = ComponentsModel;
  * @see https://spec.openapis.org/oas/v3.0.3#security-scheme-object
  */
 export interface SecuritySchemaBaseModel
-  extends TreeNode<SecuritySchemaModelParent>,
+  extends TreeNodeModel<SecuritySchemaModelParent>,
     SpecificationExtensionsModel {
   description: Nullable<CommonMarkString>;
 }
@@ -869,14 +929,18 @@ export type OAuthFlowModelParent = OAuthFlowsModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#oauth-flow-object
  */
-interface OAuthFlowBaseModel extends TreeNode<OAuthFlowModelParent>, SpecificationExtensionsModel {
+interface OAuthFlowBaseModel
+  extends TreeNodeModel<OAuthFlowModelParent>,
+    SpecificationExtensionsModel {
   refreshUrl: Nullable<URLString>;
-  readonly scopes: ReadonlyMap<string, string>;
 
-  getScope(key: string): string | undefined;
-  getScopeOrThrow(key: string): string;
-  setScope(key: string, value: string): void;
-  deleteScope(key: string): void;
+  readonly scopeCount: number;
+  scopeNames(): IterableIterator<string>;
+  scopes(): IterableIterator<[string, string]>;
+  hasScope(name: string): boolean;
+  getScopeDescription(name: string): string;
+  addScope(name: string, description: string): void;
+  deleteScope(name: string): void;
   clearScopes(): void;
 }
 
@@ -927,12 +991,26 @@ export type OAuthFlowsModelParent = OAuth2SecuritySchemaModel;
  * @see https://spec.openapis.org/oas/v3.0.3#oauth-flows-object
  */
 export interface OAuthFlowsModel
-  extends TreeNode<OAuthFlowsModelParent>,
+  extends TreeNodeModel<OAuthFlowsModelParent>,
     SpecificationExtensionsModel {
-  implicit: Nullable<OAuthImplicitFlowModel>;
-  password: Nullable<OAuthPasswordFlowModel>;
-  clientCredentials: Nullable<OAuthClientCredentialsFlowModel>;
-  authorizationCode: Nullable<OAuthAuthorizationCodeFlowModel>;
+  readonly implicit: Nullable<OAuthImplicitFlowModel>;
+  setImplicit(authorizationUrl: URLString): OAuthImplicitFlowModel;
+  deleteImplicit(): void;
+
+  readonly password: Nullable<OAuthPasswordFlowModel>;
+  setPassword(tokenUrl: URLString): OAuthPasswordFlowModel;
+  deletePassword(): void;
+
+  readonly clientCredentials: Nullable<OAuthClientCredentialsFlowModel>;
+  setClientCredentials(tokenUrl: URLString): OAuthClientCredentialsFlowModel;
+  deleteClientCredentials(): void;
+
+  readonly authorizationCode: Nullable<OAuthAuthorizationCodeFlowModel>;
+  setAuthorizationCode(
+    authorizationUrl: URLString,
+    tokenUrl: URLString,
+  ): OAuthAuthorizationCodeFlowModel;
+  deleteAuthorizationCode(): void;
 }
 
 /**
@@ -967,14 +1045,17 @@ export type LinkModelParent = ComponentsModel | ResponseModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#link-object
  */
-export interface LinkModel extends TreeNode<LinkModelParent>, SpecificationExtensionsModel {
+export interface LinkModel extends TreeNodeModel<LinkModelParent>, SpecificationExtensionsModel {
   operationRef: Nullable<string>;
   operationId: Nullable<string>;
-  readonly parameters: ReadonlyMap<string, JSONValue>;
   requestBody: JSONValue;
   description: Nullable<CommonMarkString>;
   server: Nullable<ServerModel>;
 
+  readonly parameterCount: number;
+  parameterNames(): IterableIterator<string>;
+  parameters(): IterableIterator<[string, JSONValue]>;
+  hasParameter(key: string): boolean;
   getParameter(key: string): JSONValue | undefined;
   getParameterOrThrow(key: string): JSONValue;
   setParameter(key: string, value: JSONValue): void;
@@ -982,14 +1063,34 @@ export interface LinkModel extends TreeNode<LinkModelParent>, SpecificationExten
   clearParameters(): void;
 }
 
+/**
+ * Common interface for all nodes that expose a map of LinkModel-s.
+ */
+export interface LinkModelMap {
+  readonly linkCount: number;
+  linkKeys(): IterableIterator<string>;
+  links(): IterableIterator<[string, LinkModel]>;
+  hasLink(name: string): boolean;
+  getLink(name: string): LinkModel | undefined;
+  getLinkOrThrow(name: string): LinkModel;
+  setLinkModel(name: string, model: LinkModel): void;
+  setLink(name: string): LinkModel;
+  deleteLink(name: string): void;
+  clearLinks(): void;
+}
+
 export type CallbackModelParent = ComponentsModel | OperationModel;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#callback-object
  */
-export interface CallbackModel extends TreeNode<CallbackModelParent>, SpecificationExtensionsModel {
-  readonly paths: ReadonlyMap<ParametrisedURLString, PathItemModel>;
-
+export interface CallbackModel
+  extends TreeNodeModel<CallbackModelParent>,
+    SpecificationExtensionsModel {
+  readonly pathItemCount: number;
+  pathItemUrls(): IterableIterator<ParametrisedURLString>;
+  pathItems(): IterableIterator<[ParametrisedURLString, PathItemModel]>;
+  hasPathItem(key: ParametrisedURLString): boolean;
   getPathItem(key: ParametrisedURLString): PathItemModel | undefined;
   getPathItemOrThrow(key: ParametrisedURLString): PathItemModel;
   setPathItem(key: ParametrisedURLString): PathItemModel;
@@ -1009,26 +1110,39 @@ export interface CallbackModel extends TreeNode<CallbackModelParent>, Specificat
   getItemUrlOrThrow(pathItem: PathItemModel): ParametrisedURLString;
 }
 
+/**
+ * Common interface for nodes exposing a collection of Callback models.
+ */
+export interface CallbackModelMap {
+  readonly callbackCount: number;
+  callbackKeys(): IterableIterator<string>;
+  callbacks(): IterableIterator<[string, CallbackModel]>;
+  hasCallback(name: string): boolean;
+  getCallback(name: string): CallbackModel | undefined;
+  getCallbackOrThrow(name: string): CallbackModel;
+  setCallbackModel(name: string, model: CallbackModel): void;
+  setCallback(name: string): CallbackModel;
+  deleteCallback(name: string): void;
+  clearCallbacks(): void;
+}
+
 export type ComponentsModelParent = OpenAPIModel;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#components-object
  */
 export interface ComponentsModel
-  extends TreeNode<ComponentsModelParent>,
-    SpecificationExtensionsModel {
-  readonly schemas: ReadonlyMap<string, SchemaModel>;
-  readonly responses: ReadonlyMap<string, ResponseModel>;
-  readonly parameters: ReadonlyMap<string, ParameterModel>;
-  readonly examples: ReadonlyMap<string, ExampleModel>;
-  readonly requestBodies: ReadonlyMap<string, RequestBodyModel>;
-  readonly headers: ReadonlyMap<string, HeaderModel>;
-  readonly securitySchemes: ReadonlyMap<string, SecuritySchemaModel>;
-  readonly links: ReadonlyMap<string, LinkModel>;
-  readonly callbacks: ReadonlyMap<string, CallbackModel>;
-
+  extends TreeNodeModel<ComponentsModelParent>,
+    SpecificationExtensionsModel,
+    CallbackModelMap,
+    LinkModelMap,
+    ExampleModelMap {
   isEmpty(): boolean;
 
+  readonly schemaCount: number;
+  schemaKeys(): IterableIterator<string>;
+  schemas(): IterableIterator<[string, SchemaModel]>;
+  hasSchema(name: string): boolean;
   getSchema(name: string): SchemaModel | undefined;
   getSchemaOrThrow(name: string): SchemaModel;
   setSchemaModel(name: string, model: SchemaModel): void;
@@ -1039,6 +1153,10 @@ export interface ComponentsModel
     sorter: (entry1: [string, SchemaModel], entry2: [string, SchemaModel]) => number,
   ): void;
 
+  readonly responseCount: number;
+  responseKeys(): IterableIterator<string>;
+  responses(): IterableIterator<[string, ResponseModel]>;
+  hasResponse(name: string): boolean;
   getResponse(name: string): ResponseModel | undefined;
   getResponseOrThrow(name: string): ResponseModel;
   setResponseModel(name: string, model: ResponseModel): void;
@@ -1046,6 +1164,10 @@ export interface ComponentsModel
   deleteResponse(name: string): void;
   clearResponses(): void;
 
+  readonly parameterCount: number;
+  parameterKeys(): IterableIterator<string>;
+  parameters(): IterableIterator<[string, ParameterModel]>;
+  hasParameter(name: string): boolean;
   getParameter(name: string): ParameterModel | undefined;
   getParameterOrThrow(name: string): ParameterModel;
   setParameterModel(name: string, model: ParameterModel): void;
@@ -1053,13 +1175,10 @@ export interface ComponentsModel
   deleteParameter(name: string): void;
   clearParameters(): void;
 
-  getExample(name: string): ExampleModel | undefined;
-  getExampleOrThrow(name: string): ExampleModel;
-  setExampleModel(name: string, model: ExampleModel): void;
-  setExample(name: string): ExampleModel;
-  deleteExample(name: string): void;
-  clearExamples(): void;
-
+  readonly requestBodyCount: number;
+  requestBodyKeys(): IterableIterator<string>;
+  requestBodies(): Iterable<[string, RequestBodyModel]>;
+  hasRequestBody(name: string): boolean;
   getRequestBody(name: string): RequestBodyModel | undefined;
   getRequestBodyOrThrow(name: string): RequestBodyModel;
   setRequestBodyModel(name: string, model: RequestBodyModel): void;
@@ -1067,6 +1186,10 @@ export interface ComponentsModel
   deleteRequestBody(name: string): void;
   clearRequestBodies(): void;
 
+  readonly headerCount: number;
+  headerKeys(): IterableIterator<string>;
+  headers(): IterableIterator<[string, HeaderModel]>;
+  hasHeader(name: string): boolean;
   getHeader(name: string): HeaderModel | undefined;
   getHeaderOrThrow(name: string): HeaderModel;
   setHeaderModel(name: string, model: HeaderModel): void;
@@ -1074,26 +1197,16 @@ export interface ComponentsModel
   deleteHeader(name: string): void;
   clearHeaders(): void;
 
+  readonly securitySchemaCount: number;
+  securitySchemaKeys(): IterableIterator<string>;
+  securitySchemas(): IterableIterator<[string, SecuritySchemaModel]>;
+  hasSecuritySchema(name: string): boolean;
   getSecuritySchema(name: string): SecuritySchemaModel | undefined;
   getSecuritySchemaOrThrow(name: string): SecuritySchemaModel;
   setSecuritySchemaModel(name: string, model: SecuritySchemaModel): void;
   setSecuritySchema(name: string, kind: SecuritySchemaModel['type']): SecuritySchemaModel;
   deleteSecuritySchema(name: string): void;
   clearSecuritySchemes(): void;
-
-  getLink(name: string): LinkModel | undefined;
-  getLinkOrThrow(name: string): LinkModel;
-  setLinkModel(name: string, model: LinkModel): void;
-  setLink(name: string): LinkModel;
-  deleteLink(name: string): void;
-  clearLinks(): void;
-
-  getCallback(name: string): CallbackModel | undefined;
-  getCallbackOrThrow(name: string): CallbackModel;
-  setCallbackModel(name: string, model: CallbackModel): void;
-  setCallback(name: string): CallbackModel;
-  deleteCallback(name: string): void;
-  clearCallbacks(): void;
 }
 
 export type SecurityRequirementModelParent = OpenAPIModel | OperationModel;
@@ -1102,15 +1215,20 @@ export type SecurityRequirementModelParent = OpenAPIModel | OperationModel;
  * @see https://spec.openapis.org/oas/v3.0.3#security-requirement-object
  */
 export interface SecurityRequirementModel
-  extends TreeNode<SecurityRequirementModelParent>,
+  extends TreeNodeModel<SecurityRequirementModelParent>,
     SpecificationExtensionsModel {
-  readonly scopes: ReadonlyMap<string, ReadonlyArray<string>>;
+  readonly schemaCount: number;
+  schemaNames(): IterableIterator<string>;
+  hasSchema(schemaName: string): boolean;
+  addSchema(schemaName: string, ...scopes: string[]): void;
+  deleteSchema(schemaName: string): void;
+  clearSchemas(): void;
 
-  getScopes(schemeName: string): string[] | undefined;
-  getScopesOrThrow(schemeName: string): string[];
-  addScopes(schemeName: string, ...scope: string[]): void;
-  deleteScopes(schemeName: string, ...scope: string[]): void;
-  clearScopes(): void;
+  scopeCount(schemaName: string): number;
+  getScopes(schemaName: string): IterableIterator<string>;
+  addScopes(schemaName: string, ...scopes: string[]): void;
+  deleteScopes(schemaName: string, ...scopes: string[]): void;
+  clearScopes(schemaName: string): void;
 }
 
 export type TagModelParent = OpenAPIModel;
@@ -1118,10 +1236,13 @@ export type TagModelParent = OpenAPIModel;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#tag-object
  */
-export interface TagModel extends TreeNode<TagModelParent>, SpecificationExtensionsModel {
+export interface TagModel extends TreeNodeModel<TagModelParent>, SpecificationExtensionsModel {
   name: string;
   description: Nullable<CommonMarkString>;
-  externalDocs: Nullable<ExternalDocumentationModel>;
+
+  readonly externalDocs: Nullable<ExternalDocumentationModel>;
+  addExternalDocs(url: URLString): ExternalDocumentationModel;
+  deleteExternalDocs(): void;
 }
 
 export type XMLModelParent = SchemaModel;
@@ -1129,7 +1250,7 @@ export type XMLModelParent = SchemaModel;
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#xml-object
  */
-export interface XMLModel extends TreeNode<XMLModelParent>, SpecificationExtensionsModel {
+export interface XMLModel extends TreeNodeModel<XMLModelParent>, SpecificationExtensionsModel {
   name: Nullable<string>;
   namespace: Nullable<string>;
   prefix: Nullable<string>;
@@ -1144,13 +1265,11 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
   readonly root: OpenAPIModel;
   readonly openapi: OpenApiVersion;
   readonly info: InfoModel;
-  readonly servers: ReadonlyArray<ServerModel>; // by default it contains a server with '/' url
-  readonly paths: PathsModel;
   readonly components: ComponentsModel;
-  readonly security: ReadonlyArray<SecurityRequirementModel>;
-  readonly tags: ReadonlyArray<TagModel>;
-  readonly externalDocs: Nullable<ExternalDocumentationModel>;
 
+  readonly serverCount: number;
+  servers(): IterableIterator<ServerModel>;
+  serverAt(index: number): ServerModel;
   getServer(url: ParametrisedURLString): ServerModel | undefined;
   getServerOrThrow(url: ParametrisedURLString): ServerModel;
   addServer(
@@ -1158,25 +1277,39 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
     variableDefaults?: Record<string, string>,
     description?: CommonMarkString,
   ): ServerModel;
-  removeServerAt(index: number): void;
+  deleteServerAt(index: number): void;
   clearServers(): void;
 
+  readonly paths: PathsModel;
   getPathItem(url: ParametrisedURLString): PathItemModel | undefined;
   getPathItemOrThrow(url: ParametrisedURLString): PathItemModel;
   setPathItem(url: ParametrisedURLString): PathItemModel;
   deletePathItem(url: ParametrisedURLString): void;
   clearPathItems(): void;
 
+  readonly securityRequirementCount: number;
+  securityRequirements(): IterableIterator<SecurityRequirementModel>;
+  securityRequirementAt(index: number): SecurityRequirementModel;
   addSecurityRequirement(): SecurityRequirementModel;
   deleteSecurityRequirementAt(index: number): void;
   clearSecurityRequirements(): void;
 
+  readonly tagCount: number;
+  tagNames(): IterableIterator<string>;
+  tags(): IterableIterator<TagModel>;
+  tagAt(index: number): TagModel;
+  hasTag(name: string): boolean;
+  indexOfTag(name: string): number;
   getTag(name: string): TagModel | undefined;
   getTagOrThrow(name: string): TagModel;
   addTag(name: string): TagModel;
   deleteTag(name: string): void;
   deleteTagAt(index: number): void;
   clearTags(): void;
+
+  readonly externalDocs: Nullable<ExternalDocumentationModel>;
+  addExternalDocs(url: URLString): ExternalDocumentationModel;
+  deleteExternalDocs(): void;
 }
 
 export interface OpenAPIModelFactory {

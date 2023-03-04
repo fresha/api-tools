@@ -12,12 +12,8 @@ import { Tag } from './Tag';
 import type {
   OpenApiVersion,
   OpenAPIModel,
-  ServerModel,
-  PathItemModel,
-  TagModel,
   SpecificationExtensionsModel,
   OpenAPIModelFactory,
-  SecurityRequirementModel,
 } from './types';
 import type {
   CommonMarkString,
@@ -25,6 +21,7 @@ import type {
   VersionString,
   JSONValue,
   ParametrisedURLString,
+  URLString,
 } from '@fresha/api-tools-core';
 
 /**
@@ -37,34 +34,53 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     return new OpenAPI(title ?? 'New API', version ?? '0.1.0');
   }
 
-  readonly openapi: OpenApiVersion;
-  info: Info;
-  readonly servers: Server[];
-  readonly paths: Paths;
-  readonly components: Components;
-  readonly security: SecurityRequirement[];
-  readonly tags: Tag[];
-  externalDocs: Nullable<ExternalDocumentation>;
-  readonly extensions: Map<string, JSONValue>;
+  readonly #info: Info;
+  readonly #servers: Server[];
+  readonly #paths: Paths;
+  readonly #components: Components;
+  readonly #securityRequirements: SecurityRequirement[];
+  readonly #tags: Tag[];
+  #externalDocs: Nullable<ExternalDocumentation>;
+  readonly #extensions: Map<string, JSONValue>;
 
   constructor(title: string, version: VersionString) {
-    this.openapi = '3.0.3';
-    this.info = new Info(this, title, version);
-    this.servers = [];
-    this.paths = new Paths(this);
-    this.components = new Components(this);
-    this.security = [];
-    this.tags = [];
-    this.externalDocs = null;
-    this.extensions = new Map<string, JSONValue>();
+    this.#info = new Info(this, title, version);
+    this.#servers = [];
+    this.#paths = new Paths(this);
+    this.#components = new Components(this);
+    this.#securityRequirements = [];
+    this.#tags = [];
+    this.#externalDocs = null;
+    this.#extensions = new Map<string, JSONValue>();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get openapi(): OpenApiVersion {
+    return '3.0.3';
   }
 
   get root(): OpenAPIModel {
     return this;
   }
 
+  get extensionCount(): number {
+    return this.#extensions.size;
+  }
+
+  extensionKeys(): IterableIterator<string> {
+    return this.#extensions.keys();
+  }
+
+  extensions(): IterableIterator<[string, JSONValue]> {
+    return this.#extensions.entries();
+  }
+
+  hasExtension(key: string): boolean {
+    return this.#extensions.has(key);
+  }
+
   getExtension(key: string): JSONValue | undefined {
-    return this.extensions.get(key);
+    return this.#extensions.get(key);
   }
 
   getExtensionOrThrow(key: string): JSONValue {
@@ -74,22 +90,38 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
   }
 
   setExtension(key: string, value: JSONValue): void {
-    this.extensions.set(key, value);
+    this.#extensions.set(key, value);
   }
 
   deleteExtension(key: string): void {
-    this.extensions.delete(key);
+    this.#extensions.delete(key);
   }
 
   clearExtensions(): void {
-    this.extensions.clear();
+    this.#extensions.clear();
   }
 
-  getServer(url: ParametrisedURLString): ServerModel | undefined {
-    return this.servers.find(item => item.url === url);
+  get info(): Info {
+    return this.#info;
   }
 
-  getServerOrThrow(url: ParametrisedURLString): ServerModel {
+  get serverCount(): number {
+    return this.#servers.length;
+  }
+
+  servers(): IterableIterator<Server> {
+    return this.#servers.values();
+  }
+
+  serverAt(index: number): Server {
+    return this.#servers[index];
+  }
+
+  getServer(url: ParametrisedURLString): Server | undefined {
+    return this.#servers.find(item => item.url === url);
+  }
+
+  getServerOrThrow(url: ParametrisedURLString): Server {
     const result = this.getServer(url);
     assert(result);
     return result;
@@ -99,8 +131,8 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     url: ParametrisedURLString,
     variableDefaults?: Record<string, string>,
     description?: CommonMarkString,
-  ): ServerModel {
-    if (this.servers.find(server => server.url === url)) {
+  ): Server {
+    if (this.#servers.find(server => server.url === url)) {
       throw new Error(`Duplicate server URL ${url}`);
     }
 
@@ -108,29 +140,35 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     if (description) {
       server.description = description;
     }
-    this.servers.push(server);
+    this.#servers.push(server);
     return server;
   }
 
-  removeServerAt(index: number): void {
-    this.servers.splice(index, 1);
+  deleteServerAt(index: number): void {
+    this.#servers[index].dispose();
+    this.#servers.splice(index, 1);
   }
 
   clearServers(): void {
-    this.servers.splice(0, this.servers.length);
+    this.#servers.forEach(server => server.dispose());
+    this.#servers.splice(0, this.#servers.length);
   }
 
-  getPathItem(url: ParametrisedURLString): PathItemModel | undefined {
+  get paths(): Paths {
+    return this.#paths;
+  }
+
+  getPathItem(url: ParametrisedURLString): PathItem | undefined {
     return this.paths.get(url);
   }
 
-  getPathItemOrThrow(url: ParametrisedURLString): PathItemModel {
+  getPathItemOrThrow(url: ParametrisedURLString): PathItem {
     const result = this.paths.get(url);
     assert(result);
     return result;
   }
 
-  setPathItem(url: ParametrisedURLString): PathItemModel {
+  setPathItem(url: ParametrisedURLString): PathItem {
     if (this.paths.has(url)) {
       throw new Error(`Duplicate path item ${url}`);
     }
@@ -147,56 +185,117 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     this.paths.clear();
   }
 
-  addSecurityRequirement(): SecurityRequirementModel {
+  get components(): Components {
+    return this.#components;
+  }
+
+  get securityRequirementCount(): number {
+    return this.#securityRequirements.length;
+  }
+
+  securityRequirements(): IterableIterator<SecurityRequirement> {
+    return this.#securityRequirements.values();
+  }
+
+  securityRequirementAt(index: number): SecurityRequirement {
+    return this.#securityRequirements[index];
+  }
+
+  addSecurityRequirement(): SecurityRequirement {
     const result = new SecurityRequirement(this);
-    this.security.push(result);
+    this.#securityRequirements.push(result);
     return result;
   }
 
   deleteSecurityRequirementAt(index: number): void {
-    this.security.splice(index, 1);
+    this.#securityRequirements[index].dispose();
+    this.#securityRequirements.splice(index, 1);
   }
 
   clearSecurityRequirements(): void {
-    this.security.splice(0, this.security.length);
+    this.#securityRequirements.forEach(req => req.dispose());
+    this.#securityRequirements.splice(0, this.#securityRequirements.length);
   }
 
-  getTag(name: string): TagModel | undefined {
-    return this.tags.find(item => item.name === name);
+  get tagCount(): number {
+    return this.#tags.length;
   }
 
-  getTagOrThrow(name: string): TagModel {
+  *tagNames(): IterableIterator<string> {
+    for (const tag of this.#tags) {
+      yield tag.name;
+    }
+  }
+
+  tags(): IterableIterator<Tag> {
+    return this.#tags.values();
+  }
+
+  tagAt(index: number): Tag {
+    return this.#tags[index];
+  }
+
+  hasTag(name: string): boolean {
+    return !!this.#tags.find(tag => tag.name === name);
+  }
+
+  indexOfTag(name: string): number {
+    return this.#tags.findIndex(tag => tag.name === name);
+  }
+
+  getTag(name: string): Tag | undefined {
+    return this.#tags.find(item => item.name === name);
+  }
+
+  getTagOrThrow(name: string): Tag {
     const result = this.getTag(name);
     assert(result);
     return result;
   }
 
-  addTag(name: string): TagModel {
-    if (this.tags.find(tag => tag.name === name)) {
+  addTag(name: string): Tag {
+    if (this.#tags.find(tag => tag.name === name)) {
       throw new Error(`Duplicate tag ${name}`);
     }
     const tag = new Tag(this, name);
-    this.tags.push(tag);
+    this.#tags.push(tag);
     return tag;
   }
 
   deleteTag(name: string): void {
-    const index = this.tags.findIndex(tag => tag.name === name);
+    const index = this.#tags.findIndex(tag => tag.name === name);
     if (index >= 0) {
       this.deleteTagAt(index);
     }
   }
 
   deleteTagAt(index: number): void {
-    this.tags.splice(index, 1);
+    this.#tags[index].dispose();
+    this.#tags.splice(index, 1);
   }
 
   clearTags(): void {
-    this.tags.splice(0, this.tags.length);
+    this.#tags.forEach(tag => tag.dispose());
+    this.#tags.splice(0, this.#tags.length);
   }
 
   // eslint-disable-next-line class-methods-use-this
   dispose(): void {}
+
+  get externalDocs(): Nullable<ExternalDocumentation> {
+    return this.#externalDocs;
+  }
+
+  addExternalDocs(url: URLString): ExternalDocumentation {
+    assert(!this.#externalDocs, 'External documentation is already set');
+    this.#externalDocs = new ExternalDocumentation(this, url);
+    return this.#externalDocs;
+  }
+
+  deleteExternalDocs(): void {
+    this.#externalDocs?.dispose();
+    this.#externalDocs = null;
+  }
 }
 
 export const OpenAPIFactory: OpenAPIModelFactory = OpenAPI;

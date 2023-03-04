@@ -16,7 +16,7 @@ export const run: RuleFunc = (
   let modified = false;
 
   if (!isDisabled(openapi, id)) {
-    const pathUrls = Array.from(openapi.paths.keys());
+    const pathUrls = Array.from(openapi.paths.pathItemUrls());
     const sortedPathUrls = pathUrls.slice();
     sortedPathUrls.sort();
 

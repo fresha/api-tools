@@ -4,7 +4,6 @@ import {
   RelationshipCardinality,
   setDataDocumentSchema,
 } from '@fresha/openapi-codegen-utils';
-import { SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
 
 import { createTestContext } from '../testHelpers';
 
@@ -16,7 +15,7 @@ test('parameter-less action, minimal implementation', () => {
   const context = createTestContext('awesome_web');
 
   const pathItem = context.openapi.setPathItem('/employees/:id/tasks');
-  const operation = pathItem.setOperation('post');
+  const operation = pathItem.addOperation('post');
   operation.operationId = 'createEmployee';
 
   const controller = new Controller(context, '/pracownicy', 'AwesoneWeb.EmployeesController');
@@ -46,10 +45,9 @@ test('ID parameter leads to generating parse_XXXX_param function, as well as err
   const context = createTestContext('awesome_web');
 
   const pathItem = context.openapi.setPathItem('/employees/:id/tasks');
-  const operation = pathItem.setOperation('get');
+  const operation = pathItem.addOperation('get');
   operation.operationId = 'readEmployee';
-  const idParam = operation.addParameter('id', 'path');
-  idParam.schema = SchemaFactory.create(idParam, 'string');
+  operation.addParameter('id', 'path').setSchema('string');
 
   const controller = new Controller(context, 'employees', 'EmployeeController');
   controller.collectData(pathItem);
@@ -97,9 +95,9 @@ test('request body leads to generating parse_XXXX_conn function, as well as erro
 
   const pathItem = context.openapi.setPathItem('/profile');
   const requestBodySchema = pathItem
-    .setOperation('put')
+    .addOperation('put')
     .setRequestBody()
-    .setContent(MEDIA_TYPE_JSON_API)
+    .setMediaType(MEDIA_TYPE_JSON_API)
     .setSchema('object');
   setDataDocumentSchema(requestBodySchema, 'profile-settings');
   const attributesSchema = requestBodySchema

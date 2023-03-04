@@ -6,18 +6,18 @@ import type { OpenAPIModel, SchemaModel } from '@fresha/openapi-model/build/3.0.
 export const jsonApiResourceSchemas = function* jsonApiResourceSchemas(
   openapi: OpenAPIModel,
 ): IterableIterator<[string, SchemaModel]> {
-  for (const [, pathItem] of openapi.paths) {
+  for (const [, pathItem] of openapi.paths.pathItems()) {
     for (const [, operation] of pathItem.operations()) {
       if (operation.responses.default) {
-        const responseSchema = operation.responses.default.getContent(
+        const responseSchema = operation.responses.default.getMediaType(
           'application/vnd.api+json',
         )?.schema;
         if (responseSchema) {
           yield [operation.operationId ?? '', responseSchema];
         }
       }
-      for (const [, response] of operation.responses.codes) {
-        const responseSchema = response.getContent('application/vnd.api+json')?.schema;
+      for (const [, response] of operation.responses.responses()) {
+        const responseSchema = response.getMediaType('application/vnd.api+json')?.schema;
         if (responseSchema) {
           yield [operation.operationId ?? '', responseSchema];
         }

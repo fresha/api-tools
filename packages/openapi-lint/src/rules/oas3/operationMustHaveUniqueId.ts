@@ -9,7 +9,7 @@ export const autoFixable = false;
 export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
   const operationIds = new Map<string, Set<OperationModel>>();
 
-  for (const [pathUrl, pathItem] of openapi.paths) {
+  for (const [pathUrl, pathItem] of openapi.paths.pathItems()) {
     for (const [httpMethod, operation] of pathItem.operations()) {
       if (!operation.operationId) {
         result.addError(`Operation ${httpMethod.toUpperCase()} '${pathUrl}' has empty ID`);

@@ -14,32 +14,25 @@ test('.pathUrl', () => {
 describe('operations()', () => {
   test('sparse', () => {
     const pathItem = openapi.setPathItem('/health');
-    pathItem.setOperation('get');
-    pathItem.setOperation('delete');
+    pathItem.addOperation('get');
+    pathItem.addOperation('delete');
 
     expect(Array.from(pathItem.operations(), ([key]) => key)).toStrictEqual(['get', 'delete']);
   });
 
   test('sorting', () => {
     const pathItem = openapi.setPathItem('/health');
-    pathItem.setOperation('trace');
-    pathItem.setOperation('options');
-    pathItem.setOperation('head');
-    pathItem.setOperation('delete');
-    pathItem.setOperation('patch');
-    pathItem.setOperation('get');
-    pathItem.setOperation('put');
-    pathItem.setOperation('post');
+    pathItem.addOperation('trace');
+    pathItem.addOperation('options');
+    pathItem.addOperation('head');
+    pathItem.addOperation('delete');
+    pathItem.addOperation('patch');
+    pathItem.addOperation('get');
+    pathItem.addOperation('put');
+    pathItem.addOperation('post');
 
-    expect(Array.from(pathItem.operations(), ([key]) => key)).toStrictEqual([
-      'get',
-      'post',
-      'put',
-      'patch',
-      'delete',
-      'options',
-      'head',
-      'trace',
-    ]);
+    expect(new Set<string>(pathItem.operationMethods())).toStrictEqual(
+      new Set<string>(['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace']),
+    );
   });
 });

@@ -15,8 +15,14 @@ export class DocumentType extends NamedType {
   primaryDataIsArray: boolean;
   includedResourceTypes: NamedType[];
 
-  constructor(context: ActionContext, name: string, schema: SchemaModel, isRequestBody: boolean) {
-    super(context, name, schema, isRequestBody);
+  constructor(
+    context: ActionContext,
+    name: string,
+    schema: SchemaModel,
+    isRequestBody: boolean,
+    isRequired: boolean,
+  ) {
+    super(context, name, schema, isRequestBody, isRequired);
     this.primaryResourceTypes = [];
     this.primaryDataIsArray = false;
     this.includedResourceTypes = [];
@@ -107,6 +113,7 @@ export class DocumentType extends NamedType {
         primaryDataSchemaName,
         primaryDataSchema,
         this.isRequestBody,
+        true,
       );
       namedTypes.set(primaryDataSchemaName, existingNamedType);
 
@@ -171,7 +178,13 @@ export class DocumentType extends NamedType {
     );
 
     if (!existingNamedType) {
-      existingNamedType = new ResourceType(this.context, schemaName, schema, this.isRequestBody);
+      existingNamedType = new ResourceType(
+        this.context,
+        schemaName,
+        schema,
+        this.isRequestBody,
+        true,
+      );
       namedTypes.set(schemaName, existingNamedType);
 
       existingNamedType.collectData(namedTypes);

@@ -5,7 +5,7 @@ import {
   MEDIA_TYPE_JSON_API,
   setResourceSchema,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OperationModel } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OperationModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 import { createActionTestContext } from '../testHelpers';
 
@@ -19,21 +19,21 @@ const createDocumentType = (operation: OperationModel, name: string): DocumentTy
   const context = createActionTestContext(operation, '/src/index.ts');
   const schema = getOperationDefaultResponseSchemaOrThrow(operation, true);
   assert(schema);
-  return new DocumentType(context, name, schema, false);
+  return new DocumentType(context, name, schema, false, true);
 };
 
-let operation = OpenAPIFactory.create().setPathItem('/hello').setOperation('get');
+let operation = OpenAPIFactory.create().setPathItem('/hello').addOperation('get');
 let namedTypes = new Map<string, NamedType>();
 let generatedTypes = new Set<string>();
 
 beforeEach(() => {
-  operation = OpenAPIFactory.create().setPathItem('/hello').setOperation('get');
+  operation = OpenAPIFactory.create().setPathItem('/hello').addOperation('get');
   namedTypes = new Map<string, NamedType>();
   generatedTypes = new Set<string>();
 });
 
 test('generic', () => {
-  operation.setDefaultResponse('test').setContent(MEDIA_TYPE_JSON_API).setSchema(null);
+  operation.setDefaultResponse('test').setMediaType(MEDIA_TYPE_JSON_API).setSchema(null);
 
   const documentType = createDocumentType(operation, 'SimpleResponseDocument');
 
@@ -54,13 +54,13 @@ test('generic', () => {
 describe('primary data', () => {
   let responseSchema = operation
     .setDefaultResponse('test')
-    .setContent(MEDIA_TYPE_JSON_API)
+    .setMediaType(MEDIA_TYPE_JSON_API)
     .setSchema('object');
 
   beforeEach(() => {
     responseSchema = operation
       .setDefaultResponse('test')
-      .setContent(MEDIA_TYPE_JSON_API)
+      .setMediaType(MEDIA_TYPE_JSON_API)
       .setSchema('object');
     responseSchema.setProperties({
       jsonapi: { type: 'object', required: true },
@@ -261,15 +261,12 @@ describe('primary data', () => {
 });
 
 describe('included', () => {
-  let responseSchema = operation
-    .setDefaultResponse('test')
-    .setContent(MEDIA_TYPE_JSON_API)
-    .setSchema('object');
+  let responseSchema: SchemaModel;
 
   beforeEach(() => {
     responseSchema = operation
       .setDefaultResponse('test')
-      .setContent(MEDIA_TYPE_JSON_API)
+      .setMediaType(MEDIA_TYPE_JSON_API)
       .setSchema('object');
     responseSchema.setProperties({
       jsonapi: { type: 'object', required: true },

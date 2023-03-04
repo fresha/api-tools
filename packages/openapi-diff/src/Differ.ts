@@ -141,13 +141,11 @@ export class Differ {
   }
 
   protected diffServers(): void {
-    const servers1 = this.#model1.servers;
-    const servers2 = this.#model2.servers;
-    const len = Math.max(servers1.length, servers2.length);
+    const len = Math.max(this.#model1.serverCount, this.#model2.serverCount);
 
     for (let i = 0; i < len; i += 1) {
-      const server1 = servers1[i];
-      const server2 = servers2[i];
+      const server1 = this.#model1.serverAt(i);
+      const server2 = this.#model2.serverAt(i);
 
       if (server1 == null && server2 != null) {
         this.#items.push(new DiffItem(`#/servers/${i}`, 'minor', `added`));
@@ -167,8 +165,8 @@ export class Differ {
   protected diffPaths(): void {
     const paths1 = this.#model1.paths;
     const paths2 = this.#model2.paths;
-    const urls1 = new Set<string>(paths1.keys());
-    const urls2 = new Set<string>(paths2.keys());
+    const urls1 = new Set<string>(paths1.pathItemUrls());
+    const urls2 = new Set<string>(paths2.pathItemUrls());
 
     const allUrls = new Set<string>([...urls1, ...urls2]);
     for (const url of allUrls) {
@@ -193,7 +191,11 @@ export class Differ {
       this.#items.push(new DiffItem(`#/paths${pathUrl}/description`, 'patch', `changed`));
     }
 
-    this.diffParameters(item1.parameters, item2.parameters, `#/paths${pathUrl}/parameters`);
+    this.diffParameters(
+      Array.from(item1.parameters()),
+      Array.from(item2.parameters()),
+      `#/paths${pathUrl}/parameters`,
+    );
 
     const httpMethods: PathItemOperationKey[] = [
       'get',
@@ -340,7 +342,10 @@ export class Differ {
           this.#items.push(new DiffItem(`${basePointer}/minProperties`, 'major', 'changed'));
         }
 
-        const [addedRequired, removedRequired] = diffStringSet(schema1.required, schema2.required);
+        const [addedRequired, removedRequired] = diffStringSet(
+          new Set<string>(schema1.requiredPropertyNames()),
+          new Set<string>(schema2.requiredPropertyNames()),
+        );
         for (const p of addedRequired) {
           this.#items.push(new DiffItem(`${basePointer}/required`, 'major', `added ${p}`));
         }
@@ -403,8 +408,8 @@ export class Differ {
     const operation2 = this.#model2.paths.getItemOrThrow(pathUrl).getOperationOrThrow(httpMethod);
 
     // tags
-    const tags1 = new Set<string>(operation1.tags);
-    const tags2 = new Set<string>(operation2.tags);
+    const tags1 = new Set<string>(operation1.tags());
+    const tags2 = new Set<string>(operation2.tags());
     const [added, removed] = diffStringSet(tags1, tags2);
     for (const t of added) {
       this.#items.push(new DiffItem(`#/paths${pathUrl}/${httpMethod}/tags`, 'patch', `added ${t}`));
@@ -435,8 +440,8 @@ export class Differ {
     // parameters
 
     this.diffParameters(
-      operation1.parameters,
-      operation2.parameters,
+      Array.from(operation1.parameters()),
+      Array.from(operation2.parameters()),
       `#/paths${pathUrl}/${httpMethod}/`,
     );
     // this.diffRequestBody();
@@ -456,23 +461,45 @@ export class Differ {
 
     // stable schemas (and other shared objects) should be compared inside other methods, like diffOperation
 
-    this.diffMapKeys(components1.schemas, components2.schemas, '#/components/schemas');
-    this.diffMapKeys(components1.responses, components2.responses, '#/components/responses');
-    this.diffMapKeys(components1.parameters, components2.parameters, '#/components/parameters');
-    this.diffMapKeys(components1.examples, components2.examples, '#/components/examples');
-    this.diffMapKeys(
-      components1.requestBodies,
-      components2.requestBodies,
+    this.diffKeys(components1.schemaKeys(), components2.schemaKeys(), '#/components/schemas');
+    this.diffKeys(components1.responseKeys(), components2.responseKeys(), '#/components/responses');
+    this.diffKeys(
+      components1.parameterKeys(),
+      components2.parameterKeys(),
+      '#/components/parameters',
+    );
+    this.diffKeys(components1.exampleKeys(), components2.exampleKeys(), '#/components/examples');
+    this.diffKeys(
+      components1.requestBodyKeys(),
+      components2.requestBodyKeys(),
       '#/components/requestBodies',
     );
-    this.diffMapKeys(components1.headers, components2.headers, '#/components/headers');
-    this.diffMapKeys(
-      components1.securitySchemes,
-      components2.securitySchemes,
+    this.diffKeys(components1.headerKeys(), components2.headerKeys(), '#/components/headers');
+    this.diffKeys(
+      components1.securitySchemaKeys(),
+      components2.securitySchemaKeys(),
       '#/components/securitySchemes',
     );
-    this.diffMapKeys(components1.links, components2.links, '#/components/links');
-    this.diffMapKeys(components1.callbacks, components2.callbacks, '#/components/callbacks');
+    this.diffKeys(components1.linkKeys(), components2.linkKeys(), '#/components/links');
+    this.diffKeys(components1.callbackKeys(), components2.callbackKeys(), '#/components/callbacks');
+  }
+
+  protected diffKeys(
+    keys1: IterableIterator<string>,
+    keys2: IterableIterator<string>,
+    basePointer: string,
+  ): [Set<string>, Set<string>, Set<string>] {
+    const keySet1 = new Set<string>(keys1);
+    const keySet2 = new Set<string>(keys2);
+
+    const [added, removed, stable] = diffStringSet(keySet1, keySet2);
+    for (const k of added) {
+      this.#items.push(new DiffItem(`${basePointer}/${k}`, 'minor', 'added'));
+    }
+    for (const k of removed) {
+      this.#items.push(new DiffItem(`${basePointer}/${k}`, 'minor', 'removed'));
+    }
+    return [added, removed, stable];
   }
 
   protected diffMapKeys<V>(
@@ -497,28 +524,28 @@ export class Differ {
     const aggregatedReqs1 = new Map<string, Set<string>>();
     const aggregatedReqs2 = new Map<string, Set<string>>();
 
-    for (const req of this.#model1.security) {
-      for (const [schemeName, scopes] of req.scopes) {
+    for (const req of this.#model1.securityRequirements()) {
+      for (const schemeName of req.schemaNames()) {
         const aggregatedScopes = aggregatedReqs1.get(schemeName);
         if (aggregatedScopes) {
-          for (const s of scopes) {
+          for (const s of req.getScopes(schemeName)) {
             aggregatedScopes.add(s);
           }
         } else {
-          aggregatedReqs1.set(schemeName, new Set<string>(scopes));
+          aggregatedReqs1.set(schemeName, new Set<string>(req.getScopes(schemeName)));
         }
       }
     }
 
-    for (const req of this.#model1.security) {
-      for (const [schemeName, scopes] of req.scopes) {
+    for (const req of this.#model1.securityRequirements()) {
+      for (const schemeName of req.schemaNames()) {
         const aggregatedScopes = aggregatedReqs2.get(schemeName);
         if (aggregatedScopes) {
-          for (const s of scopes) {
+          for (const s of req.getScopes(schemeName)) {
             aggregatedScopes.add(s);
           }
         } else {
-          aggregatedReqs2.set(schemeName, new Set<string>(scopes));
+          aggregatedReqs2.set(schemeName, new Set<string>(req.getScopes(schemeName)));
         }
       }
     }
@@ -547,10 +574,12 @@ export class Differ {
   }
 
   protected diffTags(): void {
-    const tags1 = this.#model1.tags;
-    const tags2 = this.#model2.tags;
-    const tags1ByName = new Map<string, [TagModel, number]>(tags1.map((t, i) => [t.name, [t, i]]));
-    const tags2ByName = new Map<string, [TagModel, number]>(tags2.map((t, i) => [t.name, [t, i]]));
+    const tags1ByName = new Map<string, [TagModel, number]>(
+      Array.from(this.#model1.tags(), (t, i) => [t.name, [t, i]]),
+    );
+    const tags2ByName = new Map<string, [TagModel, number]>(
+      Array.from(this.#model2.tags(), (t, i) => [t.name, [t, i]]),
+    );
 
     const [addedTags, removedTags, stableTags] = diffMapKeys(tags1ByName, tags2ByName);
     for (const name of addedTags) {

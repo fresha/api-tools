@@ -9,11 +9,11 @@ export const id = 'operation-success-response';
 export const autoFixable = false;
 
 export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
-  for (const [pathUrl, pathItem] of openapi.paths) {
+  for (const [pathUrl, pathItem] of openapi.paths.pathItems()) {
     for (const [httpMethod, operation] of pathItem.operations()) {
       if (!isDisabled(operation, id)) {
         let hasSuccessResponse = false;
-        for (const code of operation.responses.codes.keys()) {
+        for (const code of operation.responses.responseCodes()) {
           const codeNumber = Number(code);
           if (codeNumber >= 200 && codeNumber < 400) {
             hasSuccessResponse = true;

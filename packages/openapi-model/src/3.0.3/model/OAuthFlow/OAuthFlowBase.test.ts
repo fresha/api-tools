@@ -4,11 +4,16 @@ import { OAuthFlowBase } from './OAuthFlowBase';
 
 import type { OAuth2SecuritySchemaModel } from '../types';
 
-class TestFlow extends OAuthFlowBase {}
-
-let flow = {} as OAuthFlowBase;
+let flow: OAuthFlowBase;
 
 beforeEach(() => {
+  class TestFlow extends OAuthFlowBase {
+    // eslint-disable-next-line class-methods-use-this
+    get type(): 'authorizationCode' {
+      return 'authorizationCode';
+    }
+  }
+
   flow = new TestFlow(
     (
       OpenAPIFactory.create().components.setSecuritySchema(
@@ -16,28 +21,25 @@ beforeEach(() => {
         'oauth2',
       ) as OAuth2SecuritySchemaModel
     ).flows,
-    'authorizationCode',
   );
 });
 
 test('scopes collection', () => {
-  expect(flow.scopes.size).toBe(0);
+  expect(flow.scopeCount).toBe(0);
 
-  flow.setScope('x', '*');
-  flow.setScope('y', 'email');
+  flow.addScope('x', '*');
+  flow.addScope('y', 'email');
 
-  expect(Array.from(flow.scopes.keys())).toStrictEqual(['x', 'y']);
+  expect(Array.from(flow.scopeNames())).toStrictEqual(['x', 'y']);
 
-  expect(flow.getScope('y')).toBe('email');
-  expect(flow.getScope('z')).toBeUndefined();
-  expect(flow.getScopeOrThrow('x')).toBe('*');
-  expect(() => flow.getScopeOrThrow('t')).toThrow();
+  expect(flow.getScopeDescription('y')).toBe('email');
+  expect(() => flow.getScopeDescription('z')).toThrow();
 
   flow.deleteScope('y');
 
-  expect(flow.scopes.size).toBe(1);
+  expect(flow.scopeCount).toBe(1);
 
   flow.clearScopes();
 
-  expect(flow.scopes.size).toBe(0);
+  expect(flow.scopeCount).toBe(0);
 });

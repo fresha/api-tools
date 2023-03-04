@@ -16,7 +16,7 @@ export const run: RuleFunc = (
   let modified = false;
 
   if (!isDisabled(openapi, id)) {
-    const schemaKeys = Array.from(openapi.components.schemas.keys());
+    const schemaKeys = Array.from(openapi.components.schemaKeys());
     const sortedSchemaKeys = schemaKeys.slice();
     sortedSchemaKeys.sort();
 

@@ -85,7 +85,7 @@ export class Generator extends GeneratorBase<Context> {
   }
 
   protected collectControllers(): void {
-    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths.pathItems()) {
       const controllerModuleName = this.context.project.getControllerModuleName(pathUrl);
       let controller = this.controllers.get(controllerModuleName);
       if (!controller) {

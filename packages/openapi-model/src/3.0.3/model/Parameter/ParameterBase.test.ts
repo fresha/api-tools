@@ -2,9 +2,9 @@ import { OpenAPIFactory } from '../OpenAPI';
 
 import { ParameterBase } from './ParameterBase';
 
-class Param extends ParameterBase {}
+class Param extends ParameterBase<'path'> {}
 
-let param = {} as ParameterBase;
+let param: Param;
 
 beforeEach(() => {
   const openapi = OpenAPIFactory.create();
@@ -22,11 +22,11 @@ test('getExample + getExampleOrThrow', () => {
 });
 
 test('getContent + getContentOrThrow', () => {
-  param.setContent('application/json');
-  param.setContent('application/xml');
+  param.setMediaType('application/json');
+  param.setMediaType('application/xml');
 
-  expect(param.getContent('application/json')).not.toBeUndefined();
-  expect(param.getContent('wrong')).toBeUndefined();
-  expect(param.getContentOrThrow('application/xml')).not.toBeUndefined();
-  expect(() => param.getContentOrThrow('wrong')).toThrow();
+  expect(param.getMediaType('application/json')).not.toBeUndefined();
+  expect(param.getMediaType('wrong')).toBeUndefined();
+  expect(param.getMediaTypeOrThrow('application/xml')).not.toBeUndefined();
+  expect(() => param.getMediaTypeOrThrow('wrong')).toThrow();
 });

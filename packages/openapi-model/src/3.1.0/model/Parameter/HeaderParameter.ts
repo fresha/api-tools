@@ -1,6 +1,6 @@
 import { ParameterBase, ParameterParent } from './ParameterBase';
 
-import type { HeaderParameterSerializationStyle } from '../../../baseTypes';
+import type { HeaderParameterSerializationStyle } from '../../../shared/types';
 import type { HeaderParameterModel } from '../types';
 
 export class HeaderParameter extends ParameterBase implements HeaderParameterModel {

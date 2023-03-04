@@ -9,9 +9,9 @@ export const id = 'operation-params-unique';
 export const autoFixable = false;
 
 export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
-  for (const [pathUrl, pathItem] of openapi.paths) {
+  for (const [pathUrl, pathItem] of openapi.paths.pathItems()) {
     const pathItemParams = new Set<string>();
-    for (const param of pathItem.parameters) {
+    for (const param of pathItem.parameters()) {
       if (!isDisabled(pathItem, id)) {
         const key = `${param.in}:${param.name}`;
         if (pathItemParams.has(key)) {
@@ -25,7 +25,7 @@ export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): bool
     for (const [httpMethod, operation] of pathItem.operations()) {
       if (!isDisabled(operation, id)) {
         const operationParams = new Set<string>();
-        for (const param of operation.parameters) {
+        for (const param of operation.parameters()) {
           const key = `${param.in}:${param.name}`;
           if (pathItemParams.has(key)) {
             result.addError(

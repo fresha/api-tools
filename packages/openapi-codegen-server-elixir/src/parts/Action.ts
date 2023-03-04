@@ -40,7 +40,7 @@ export class Action {
     this.name = name;
     this.operationKey = operationKey;
     this.operation = operation;
-    this.usesParams = !!this.operation.parameters.length;
+    this.usesParams = !!this.operation.parameterCount;
     this.requestBodySchema = getOperationRequestBodySchema(this.operation, this.context.useJsonApi);
     this.needsDateTimeParser = false;
   }
@@ -68,7 +68,7 @@ export class Action {
       content: () => {
         const withClauses = [] as string[];
         if (this.usesParams) {
-          const paramNames = this.operation.parameters.map(p => snakeCase(p.name));
+          const paramNames = Array.from(this.operation.parameters(), p => snakeCase(p.name));
           withClauses.push(`{:ok, ${paramNames.join(', ')}} <- parse_${this.name}_params(params)`);
         }
         if (this.requestBodySchema) {
@@ -123,7 +123,7 @@ export class Action {
       content: () => {
         const params = ['params'];
 
-        for (const param of this.operation.parameters) {
+        for (const param of this.operation.parameters()) {
           const name = snakeCase(param.name);
 
           const parsers: string[] = [];
@@ -261,7 +261,7 @@ export class Action {
 
             for (const [relName] of relationshipsSchema.properties) {
               const elixirAtttName = snakeCase(relName);
-              const relParser = relationshipsSchema.required.has(relName)
+              const relParser = relationshipsSchema.isPropertyRequired(relName)
                 ? '[:resource_id, :required],'
                 : ':resource_id,';
               this.sourceFile.writeLine(`${elixirAtttName}: ${relParser}`);
@@ -277,7 +277,7 @@ export class Action {
   protected generateBooleanSurgexParsers(parentSchema: SchemaModel, propName: string): void {
     const elixirAtttName = snakeCase(propName);
     const parsers = [':boolean'];
-    if (parentSchema.required.has(propName)) {
+    if (parentSchema.isPropertyRequired(propName)) {
       parsers.push(':required');
     }
     const parsersStr = parsers.length > 1 ? `[${parsers.join(', ')}]` : parsers[0];
@@ -306,7 +306,7 @@ export class Action {
       parsers.push(`${parts.join(', ')}}`);
     }
 
-    if (parentSchema.required.has(propName)) {
+    if (parentSchema.isPropertyRequired(propName)) {
       parsers.push(':required');
     }
 
@@ -338,7 +338,7 @@ export class Action {
       parsers.push(`${parts.join(', ')}}`);
     }
 
-    if (parentSchema.required.has(propName)) {
+    if (parentSchema.isPropertyRequired(propName)) {
       parsers.push(':required');
     }
 
@@ -387,7 +387,7 @@ export class Action {
       parsers.push(propType);
     }
 
-    if (parentSchema.required.has(propName)) {
+    if (parentSchema.isPropertyRequired(propName)) {
       parsers.push(':required');
     }
 

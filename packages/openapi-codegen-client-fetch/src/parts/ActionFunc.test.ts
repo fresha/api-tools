@@ -6,7 +6,7 @@ import {
   RelationshipCardinality,
   setResourceSchema,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OperationModel, SchemaFactory } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OperationModel } from '@fresha/openapi-model/build/3.0.3';
 
 import '@fresha/openapi-codegen-test-utils/build/matchers';
 
@@ -28,7 +28,7 @@ test('simple test', () => {
 
   openapi.components.setSecuritySchema('the_auth', 'apiKey');
 
-  const operation = openapi.setPathItem('/employees').setOperation('get');
+  const operation = openapi.setPathItem('/employees').addOperation('get');
   operation.operationId = 'readEmployeeList';
   operation.summary = 'Reads employee list';
   operation.description = `
@@ -43,21 +43,21 @@ test('simple test', () => {
 
   const paramOffset = operation.addParameter('offset', 'query');
   paramOffset.required = true;
-  paramOffset.schema = SchemaFactory.create(paramOffset, 'number');
+  paramOffset.setSchema('number');
   paramOffset.description = 'Index of the first employee to retrieve';
 
   const paramLimit = operation.addParameter('limit', 'query');
   paramLimit.required = false;
-  paramLimit.schema = SchemaFactory.create(paramLimit, 'number');
+  paramLimit.setSchema('number');
   paramLimit.description = 'Maximal number of employee resources to retrieve';
 
   operation
     .setResponse(200, 'returns a list of employees')
-    .setContent(MEDIA_TYPE_JSON_API)
+    .setMediaType(MEDIA_TYPE_JSON_API)
     .setSchema('object')
     .setProperty('data', 'array')
     .setItems(openapi.components.getSchemaOrThrow('EmployeeResource'));
-  operation.addSecurityRequirement().addScopes('the_auth');
+  operation.addSecurityRequirement().addSchema('the_auth');
 
   const namedTypes = new Map<string, NamedType>();
 
@@ -197,16 +197,16 @@ test('specific naming convention for client library', () => {
 
   openapi.components.setSecuritySchema('the_auth', 'apiKey');
 
-  const operation = openapi.setPathItem('/employees').setOperation('patch');
+  const operation = openapi.setPathItem('/employees').addOperation('patch');
   operation.operationId = 'readEmployeeList';
 
   operation
     .setResponse(200, 'returns a list of employees')
-    .setContent(MEDIA_TYPE_JSON_API)
+    .setMediaType(MEDIA_TYPE_JSON_API)
     .setSchema('object')
     .setProperty('data', 'array')
     .setItems(openapi.components.getSchemaOrThrow('EmployeeResource'));
-  operation.addSecurityRequirement().addScopes('the_auth');
+  operation.addSecurityRequirement().addSchema('the_auth');
 
   const namedTypes = new Map<string, NamedType>();
 
@@ -322,11 +322,11 @@ test('action returns raw response', () => {
   const schema = openapi.components.setSchema('EmployeeResource');
   setResourceSchema(schema, 'employees');
 
-  const operation = openapi.setPathItem('/employees').setOperation('get');
+  const operation = openapi.setPathItem('/employees').addOperation('get');
   operation.operationId = 'readEmployeeList';
   operation
     .setResponse(200, 'returns a list of employees')
-    .setContent(MEDIA_TYPE_JSON_API)
+    .setMediaType(MEDIA_TYPE_JSON_API)
     .setSchema('object')
     .setProperty('data', 'array')
     .setItems(schema);

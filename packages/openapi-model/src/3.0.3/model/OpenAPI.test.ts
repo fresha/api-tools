@@ -55,15 +55,15 @@ describe('server collection', () => {
     openapi.addServer('http://www.example.com/4');
     expect(() => openapi.addServer('http://www.example.com')).toThrow();
 
-    openapi.removeServerAt(2);
-    expect(openapi.servers.map(s => s.url)).toStrictEqual([
+    openapi.deleteServerAt(2);
+    expect(Array.from(openapi.servers(), s => s.url)).toStrictEqual([
       'http://www.example.com',
       'http://www.example.com/2',
       'http://www.example.com/4',
     ]);
 
     openapi.clearServers();
-    expect(openapi.servers.map(s => s.url)).toStrictEqual([]);
+    expect(Array.from(openapi.servers(), s => s.url)).toStrictEqual([]);
   });
 });
 
@@ -86,7 +86,7 @@ describe('path items collection', () => {
 
     openapi.clearPathItems();
 
-    expect(openapi.paths.size).toBe(0);
+    expect(openapi.paths.pathItemCount).toBe(0);
   });
 });
 
@@ -96,13 +96,13 @@ describe('security requirements', () => {
     const req2 = openapi.addSecurityRequirement();
     const req3 = openapi.addSecurityRequirement();
 
-    expect(openapi.security).toStrictEqual([req1, req2, req3]);
+    expect(Array.from(openapi.securityRequirements())).toStrictEqual([req1, req2, req3]);
 
     openapi.deleteSecurityRequirementAt(1);
-    expect(openapi.security).toStrictEqual([req1, req3]);
+    expect(Array.from(openapi.securityRequirements())).toStrictEqual([req1, req3]);
 
     openapi.clearSecurityRequirements();
-    expect(openapi.security).toStrictEqual([]);
+    expect(Array.from(openapi.securityRequirements())).toStrictEqual([]);
   });
 });
 
@@ -126,12 +126,12 @@ describe('tags collection', () => {
     expect(() => openapi.addTag('t1')).toThrow();
 
     openapi.deleteTagAt(1);
-    expect(openapi.tags.map(t => t.name)).toStrictEqual(['t1', 't3']);
+    expect(Array.from(openapi.tagNames())).toStrictEqual(['t1', 't3']);
 
     openapi.deleteTag('t1');
-    expect(openapi.tags.map(t => t.name)).toStrictEqual(['t3']);
+    expect(Array.from(openapi.tagNames())).toStrictEqual(['t3']);
 
     openapi.clearTags();
-    expect(openapi.tags.map(t => t.name)).toStrictEqual([]);
+    expect(Array.from(openapi.tagNames())).toStrictEqual([]);
   });
 });

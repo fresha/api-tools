@@ -1,44 +1,65 @@
 import assert from 'assert';
 
 import { BasicNode } from '../BasicNode';
+import { assertValidUrlOrNull } from '../utils';
 
-import type { OAuthFlowModelParent, OAuthFlowType } from '../types';
+import type { OAuthFlowModelParent } from '../types';
 import type { URLString, Nullable } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#oauth-flow-object
  */
 export abstract class OAuthFlowBase extends BasicNode<OAuthFlowModelParent> {
-  readonly type: OAuthFlowType;
-  refreshUrl: Nullable<URLString>;
-  readonly scopes: Map<string, string>;
+  #refreshUrl: Nullable<URLString>;
+  readonly #scopes: Map<string, string>;
 
-  constructor(parent: OAuthFlowModelParent, type: OAuthFlowType) {
+  constructor(parent: OAuthFlowModelParent) {
     super(parent);
-    this.type = type;
-    this.refreshUrl = null;
-    this.scopes = new Map<string, string>();
+    this.#refreshUrl = null;
+    this.#scopes = new Map<string, string>();
   }
 
-  getScope(key: string): string | undefined {
-    return this.scopes.get(key);
+  get refreshUrl(): Nullable<URLString> {
+    return this.#refreshUrl;
   }
 
-  getScopeOrThrow(key: string): string {
-    const result = this.getScope(key);
-    assert(result !== undefined);
+  set refreshUrl(value: Nullable<URLString>) {
+    assertValidUrlOrNull(value);
+    this.#refreshUrl = value;
+  }
+
+  get scopeCount(): number {
+    return this.#scopes.size;
+  }
+
+  scopeNames(): IterableIterator<string> {
+    return this.#scopes.keys();
+  }
+
+  scopes(): IterableIterator<[string, string]> {
+    return this.#scopes.entries();
+  }
+
+  hasScope(name: string): boolean {
+    return this.#scopes.has(name);
+  }
+
+  getScopeDescription(name: string): string {
+    const result = this.#scopes.get(name);
+    assert(result != null, `Scope '${name}' does not exist`);
     return result;
   }
 
-  setScope(key: string, value: string): void {
-    this.scopes.set(key, value);
+  addScope(name: string, description: string): void {
+    assert(!this.#scopes.has(name), `Scope '${name}' already exists`);
+    this.#scopes.set(name, description);
   }
 
   deleteScope(key: string): void {
-    this.scopes.delete(key);
+    this.#scopes.delete(key);
   }
 
   clearScopes(): void {
-    this.scopes.clear();
+    this.#scopes.clear();
   }
 }
