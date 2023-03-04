@@ -76,14 +76,14 @@ export class Generator extends GeneratorBase<Context> {
     });
     routes.prependWhitespace('\n');
 
-    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths.pathItems()) {
       const urlExp = pathUrlToUrlExp(pathUrl);
 
       for (const [method, operation] of pathItem.operations()) {
         routes.addStatements((writer: CodeBlockWriter) => {
           writer.writeLine(`this.${method}('${urlExp}', (schema, request) => {`);
           writer.indent(() => {
-            for (const param of operation.parameters) {
+            for (const param of operation.parameters()) {
               if (param.in === 'path') {
                 writer.writeLine(`const ${param.name} = request.params.${param.name};`);
               } else if (param.in === 'query') {

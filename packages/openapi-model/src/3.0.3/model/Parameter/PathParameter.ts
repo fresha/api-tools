@@ -10,17 +10,25 @@ import type {
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#parameter-object
  */
-export class PathParameter extends ParameterBase implements PathParameterModel {
-  declare readonly in: 'path';
-  declare readonly required: true;
-  style: PathParameterSerializationStyle;
-  explode: boolean;
+export class PathParameter extends ParameterBase<'path'> implements PathParameterModel {
+  #style: PathParameterSerializationStyle;
 
   constructor(parent: ParameterModelParent, name: string) {
     super(parent, 'path', name);
-    this.required = true;
-    this.style = 'simple';
-    this.explode = defaultExplode[this.style];
-    this.required = true;
+    this.#style = 'simple';
+    this.explode = defaultExplode[this.#style];
+  }
+
+  get style(): PathParameterSerializationStyle {
+    return this.#style;
+  }
+
+  set style(value: PathParameterSerializationStyle) {
+    this.#style = value;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get required(): true {
+    return true;
   }
 }

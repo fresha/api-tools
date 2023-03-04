@@ -42,7 +42,7 @@ test('typed parameters', () => {
   const param = new ActionParam({} as Context, {
     in: 'path',
     name: 'id',
-    schema: openapi.components.schemas.get('BooleanParam')!,
+    schema: openapi.components.getSchema('BooleanParam')!,
   });
   param.generateCode(methodDecl);
 
@@ -59,7 +59,7 @@ test('does not support non-primitive parameter schema', () => {
   const param = new ActionParam({} as Context, {
     in: 'path',
     name: 'obj',
-    schema: openapi.components.schemas.get('ObjectParam')!,
+    schema: openapi.components.getSchema('ObjectParam')!,
   });
 
   expect(() => param.generateCode(methodDecl)).toThrow();

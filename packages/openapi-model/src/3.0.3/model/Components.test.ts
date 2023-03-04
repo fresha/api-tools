@@ -41,16 +41,16 @@ describe('schemas', () => {
     const other = SchemaFactory.create(components, 'binary');
     components.setSchemaModel('Other', other);
 
-    expect(components.schemas.get('Other')).toBe(other);
+    expect(components.getSchema('Other')).toBe(other);
   });
 
   test('setSchema', () => {
-    expect(components.schemas.size).toBe(2);
+    expect(components.schemaCount).toBe(2);
 
-    const integerSchema = components.schemas.get('Integer');
+    const integerSchema = components.getSchema('Integer');
     expect(integerSchema).toHaveProperty('parent', components);
 
-    const emptySchema = components.schemas.get('Empty');
+    const emptySchema = components.getSchema('Empty');
     expect(emptySchema).toHaveProperty('parent', components);
 
     const idStringSchema = components.setSchema('IDString', {
@@ -63,14 +63,14 @@ describe('schemas', () => {
     expect(idStringSchema).toHaveProperty('nullable', false);
   });
 
-  test('deleteSchema', () => {
+  test('removeSchema', () => {
     components.deleteSchema('Empty');
-    expect(Array.from(components.schemas.keys())).toStrictEqual(['Integer']);
+    expect(Array.from(components.schemaKeys())).toStrictEqual(['Integer']);
   });
 
   test('clearSchemas', () => {
     components.clearSchemas();
-    expect(components.schemas.size).toBe(0);
+    expect(components.schemaCount).toBe(0);
   });
 });
 
@@ -92,7 +92,7 @@ describe('responses', () => {
 
     const pathItemResponse = openapi
       .setPathItem('/')
-      .setOperation('get')
+      .addOperation('get')
       .setResponse(200, 'success');
 
     expect(() => components.setResponseModel('Parent', sharedResponse)).toThrow();
@@ -102,29 +102,29 @@ describe('responses', () => {
     const anotherSharedResponse = new Response(components, 'another');
     components.setResponseModel('Another', anotherSharedResponse);
 
-    expect(components.responses.get('Another')).toBe(anotherSharedResponse);
+    expect(components.getResponse('Another')).toBe(anotherSharedResponse);
   });
 
   test('setResponse', () => {
-    expect(components.responses.size).toBe(2);
+    expect(components.responseCount).toBe(2);
 
-    const successResponse = components.responses.get('Success');
+    const successResponse = components.getResponse('Success');
     expect(successResponse).toHaveProperty('parent', components);
 
-    const errorResponse = components.responses.get('Error500');
+    const errorResponse = components.getResponse('Error500');
     expect(errorResponse).toHaveProperty('parent', components);
   });
 
   test('deleteResponse', () => {
     components.deleteResponse('Success');
 
-    expect(Array.from(components.responses.keys())).toStrictEqual(['Error500']);
+    expect(Array.from(components.responseKeys())).toStrictEqual(['Error500']);
   });
 
   test('clearResponses', () => {
     components.clearResponses();
 
-    expect(components.responses.size).toBe(0);
+    expect(components.responseCount).toBe(0);
   });
 });
 
@@ -146,7 +146,7 @@ describe('parameters', () => {
   test('setParameterModel logic', () => {
     const sharedParam = components.setParameter('Parent', 'path', 'id');
 
-    const operationParam = openapi.setPathItem('/').setOperation('get').addParameter('ns', 'path');
+    const operationParam = openapi.setPathItem('/').addOperation('get').addParameter('ns', 'path');
 
     expect(() => components.setParameterModel('Parent', sharedParam)).toThrow();
     expect(() => components.setParameterModel('Child', sharedParam)).toThrow();
@@ -155,28 +155,28 @@ describe('parameters', () => {
     const anotherSharedParam = new PathParameter(components, 'another');
     components.setParameterModel('Another', anotherSharedParam);
 
-    expect(components.parameters.get('Another')).toBe(anotherSharedParam);
+    expect(components.getParameter('Another')).toBe(anotherSharedParam);
   });
 
   test('setParameter', () => {
-    expect(components.parameters.size).toBe(4);
+    expect(components.parameterCount).toBe(4);
 
-    const idParam = components.parameters.get('ID');
+    const idParam = components.getParameter('ID');
     expect(idParam).toHaveProperty('parent', components);
     expect(idParam).toHaveProperty('in', 'path');
     expect(idParam).toHaveProperty('name', 'id');
 
-    const offsetParam = components.parameters.get('Offset');
+    const offsetParam = components.getParameter('Offset');
     expect(offsetParam).toHaveProperty('parent', components);
     expect(offsetParam).toHaveProperty('in', 'query');
     expect(offsetParam).toHaveProperty('name', 'offset');
 
-    const languageParam = components.parameters.get('Language');
+    const languageParam = components.getParameter('Language');
     expect(languageParam).toHaveProperty('parent', components);
     expect(languageParam).toHaveProperty('in', 'header');
     expect(languageParam).toHaveProperty('name', 'Language');
 
-    const sessionParam = components.parameters.get('SessionID');
+    const sessionParam = components.getParameter('SessionID');
     expect(sessionParam).toHaveProperty('parent', components);
     expect(sessionParam).toHaveProperty('in', 'cookie');
     expect(sessionParam).toHaveProperty('name', 'session');
@@ -187,9 +187,9 @@ describe('parameters', () => {
   test('deleteParameter', () => {
     components.deleteParameter('ID');
 
-    expect(components.parameters.size).toBe(3);
+    expect(components.parameterCount).toBe(3);
 
-    expect(Array.from(components.parameters.keys())).toStrictEqual([
+    expect(Array.from(components.parameterKeys())).toStrictEqual([
       'Offset',
       'Language',
       'SessionID',
@@ -199,7 +199,7 @@ describe('parameters', () => {
   test('clearParameters', () => {
     components.clearParameters();
 
-    expect(components.parameters.size).toBe(0);
+    expect(components.parameterCount).toBe(0);
   });
 });
 
@@ -228,26 +228,26 @@ describe('examples', () => {
     const anotherSharedExample = new Example(components);
     components.setExampleModel('Another', anotherSharedExample);
 
-    expect(components.examples.get('Another')).toBe(anotherSharedExample);
+    expect(components.getExample('Another')).toBe(anotherSharedExample);
   });
 
   test('setExample', () => {
-    expect(components.examples.size).toBe(2);
-    expect(components.examples.get('Success')).toHaveProperty('parent', components);
-    expect(components.examples.get('Error')).toHaveProperty('parent', components);
+    expect(components.exampleCount).toBe(2);
+    expect(components.getExample('Success')).toHaveProperty('parent', components);
+    expect(components.getExample('Error')).toHaveProperty('parent', components);
   });
 
   test('deleteExample', () => {
     components.deleteExample('Success');
 
-    expect(components.examples.size).toBe(1);
-    expect(components.examples.get('Error')).toBeTruthy();
+    expect(components.exampleCount).toBe(1);
+    expect(components.getExample('Error')).toBeTruthy();
   });
 
   test('clearExamples', () => {
     components.clearExamples();
 
-    expect(components.examples.size).toBe(0);
+    expect(components.exampleCount).toBe(0);
   });
 });
 
@@ -267,7 +267,7 @@ describe('requestBodies', () => {
   test('setRequestBodyModel logic', () => {
     const sharedRequestBody = components.setRequestBody('Req');
 
-    const operation = openapi.setPathItem('/').setOperation('post');
+    const operation = openapi.setPathItem('/').addOperation('post');
     const operationRequestBody = new RequestBody(operation);
 
     expect(() => components.setRequestBodyModel('Parent', sharedRequestBody)).toThrow();
@@ -277,26 +277,26 @@ describe('requestBodies', () => {
     const anotherSharedRequestBody = new RequestBody(components);
     components.setRequestBodyModel('Another', anotherSharedRequestBody);
 
-    expect(components.requestBodies.get('Another')).toBe(anotherSharedRequestBody);
+    expect(components.getRequestBody('Another')).toBe(anotherSharedRequestBody);
   });
 
   test('setRequestBody', () => {
-    expect(components.requestBodies.size).toBe(2);
-    expect(components.requestBodies.get('Empty')).toHaveProperty('parent', components);
-    expect(components.requestBodies.get('List')).toHaveProperty('parent', components);
+    expect(components.requestBodyCount).toBe(2);
+    expect(components.getRequestBody('Empty')).toHaveProperty('parent', components);
+    expect(components.getRequestBody('List')).toHaveProperty('parent', components);
   });
 
   test('deleteRequestBody', () => {
     components.deleteRequestBody('Empty');
 
-    expect(components.requestBodies.size).toBe(1);
-    expect(components.requestBodies.get('List')).toBeTruthy();
+    expect(components.requestBodyCount).toBe(1);
+    expect(components.getRequestBody('List')).toBeTruthy();
   });
 
   test('clearRequestBodies', () => {
     components.clearRequestBodies();
 
-    expect(components.requestBodies.size).toBe(0);
+    expect(components.requestBodyCount).toBe(0);
   });
 });
 
@@ -318,7 +318,7 @@ describe('headers', () => {
 
     const operationHeader = openapi
       .setPathItem('/')
-      .setOperation('post')
+      .addOperation('post')
       .setResponse(200, 'success')
       .setHeader('Accept');
 
@@ -329,26 +329,26 @@ describe('headers', () => {
     const anotherSharedRequestBody = new RequestBody(components);
     components.setRequestBodyModel('Another', anotherSharedRequestBody);
 
-    expect(components.requestBodies.get('Another')).toBe(anotherSharedRequestBody);
+    expect(components.getRequestBody('Another')).toBe(anotherSharedRequestBody);
   });
 
   test('setHeader', () => {
-    expect(components.headers.size).toBe(2);
-    expect(components.headers.get('X-Language')).toHaveProperty('parent', components);
-    expect(components.headers.get('X-Fresha')).toHaveProperty('parent', components);
+    expect(components.headerCount).toBe(2);
+    expect(components.getHeader('X-Language')).toHaveProperty('parent', components);
+    expect(components.getHeader('X-Fresha')).toHaveProperty('parent', components);
   });
 
   test('deleteHeader', () => {
     components.deleteHeader('X-Language');
 
-    expect(components.headers.size).toBe(1);
-    expect(components.headers.get('X-Fresha')).toBeTruthy();
+    expect(components.headerCount).toBe(1);
+    expect(components.getHeader('X-Fresha')).toBeTruthy();
   });
 
   test('clearHeaders', () => {
     components.clearHeaders();
 
-    expect(components.headers.size).toBe(0);
+    expect(components.headerCount).toBe(0);
   });
 });
 
@@ -369,19 +369,19 @@ describe('securitySchemes', () => {
     components.setSecuritySchema('httpToken', 'http');
     components.setSecuritySchema('oid', 'openIdConnect');
 
-    expect(components.securitySchemes.size).toBe(4);
+    expect(components.securitySchemaCount).toBe(4);
 
-    expect(components.securitySchemes.get('local')).toHaveProperty('parent', components);
-    expect(components.securitySchemes.get('local')).toHaveProperty('type', 'apiKey');
+    expect(components.getSecuritySchema('local')).toHaveProperty('parent', components);
+    expect(components.getSecuritySchema('local')).toHaveProperty('type', 'apiKey');
 
-    expect(components.securitySchemes.get('google')).toHaveProperty('parent', components);
-    expect(components.securitySchemes.get('google')).toHaveProperty('type', 'oauth2');
+    expect(components.getSecuritySchema('google')).toHaveProperty('parent', components);
+    expect(components.getSecuritySchema('google')).toHaveProperty('type', 'oauth2');
 
-    expect(components.securitySchemes.get('httpToken')).toHaveProperty('parent', components);
-    expect(components.securitySchemes.get('httpToken')).toHaveProperty('type', 'http');
+    expect(components.getSecuritySchema('httpToken')).toHaveProperty('parent', components);
+    expect(components.getSecuritySchema('httpToken')).toHaveProperty('type', 'http');
 
-    expect(components.securitySchemes.get('oid')).toHaveProperty('parent', components);
-    expect(components.securitySchemes.get('oid')).toHaveProperty('type', 'openIdConnect');
+    expect(components.getSecuritySchema('oid')).toHaveProperty('parent', components);
+    expect(components.getSecuritySchema('oid')).toHaveProperty('type', 'openIdConnect');
 
     expect(() =>
       components.setSecuritySchema('schema', 'wrongType' as SecuritySchemeType),
@@ -391,15 +391,15 @@ describe('securitySchemes', () => {
   test('deleteSecuritySchema', () => {
     components.deleteSecuritySchema('local');
 
-    expect(components.securitySchemes.size).toBe(1);
-    expect(components.securitySchemes.get('google')).toBeTruthy();
-    expect(components.securitySchemes.get('google')).toHaveProperty('type', 'oauth2');
+    expect(components.securitySchemaCount).toBe(1);
+    expect(components.getSecuritySchema('google')).toBeTruthy();
+    expect(components.getSecuritySchema('google')).toHaveProperty('type', 'oauth2');
   });
 
   test('clearsecuritySchemes', () => {
     components.clearSecuritySchemes();
 
-    expect(components.securitySchemes.size).toBe(0);
+    expect(components.securitySchemaCount).toBe(0);
   });
 });
 
@@ -421,7 +421,7 @@ describe('links', () => {
 
     const responseLink = openapi
       .setPathItem('/')
-      .setOperation('post')
+      .addOperation('post')
       .setResponse(200, 'success')
       .setLink('ex1');
 
@@ -432,26 +432,26 @@ describe('links', () => {
     const anotherSharedLink = new Link(components);
     components.setLinkModel('Another', anotherSharedLink);
 
-    expect(components.links.get('Another')).toBe(anotherSharedLink);
+    expect(components.getLink('Another')).toBe(anotherSharedLink);
   });
 
   test('setLink', () => {
-    expect(components.links.size).toBe(2);
-    expect(components.links.get('Language')).toHaveProperty('parent', components);
-    expect(components.links.get('Fresha')).toHaveProperty('parent', components);
+    expect(components.linkCount).toBe(2);
+    expect(components.getLink('Language')).toHaveProperty('parent', components);
+    expect(components.getLink('Fresha')).toHaveProperty('parent', components);
   });
 
   test('deleteLink', () => {
     components.deleteLink('Language');
 
-    expect(components.links.size).toBe(1);
-    expect(components.links.get('Fresha')).toBeTruthy();
+    expect(components.linkCount).toBe(1);
+    expect(components.getLink('Fresha')).toBeTruthy();
   });
 
   test('clearLinks', () => {
     components.clearLinks();
 
-    expect(components.links.size).toBe(0);
+    expect(components.linkCount).toBe(0);
   });
 });
 
@@ -471,7 +471,7 @@ describe('callbacks', () => {
   test('setCallbackModel logic', () => {
     const sharedCallback = components.setCallback('CB');
 
-    const operationCallback = openapi.setPathItem('/').setOperation('post').setCallback('x');
+    const operationCallback = openapi.setPathItem('/').addOperation('post').setCallback('x');
 
     expect(() => components.setCallbackModel('Parent', sharedCallback)).toThrow();
     expect(() => components.setCallbackModel('Child', sharedCallback)).toThrow();
@@ -480,25 +480,25 @@ describe('callbacks', () => {
     const anotherSharedCallback = new Callback(components);
     components.setCallbackModel('Another', anotherSharedCallback);
 
-    expect(components.callbacks.get('Another')).toBe(anotherSharedCallback);
+    expect(components.getCallback('Another')).toBe(anotherSharedCallback);
   });
 
   test('setCallback', () => {
-    expect(components.callbacks.size).toBe(2);
-    expect(components.callbacks.get('Language')).toHaveProperty('parent', components);
-    expect(components.callbacks.get('Fresha')).toHaveProperty('parent', components);
+    expect(components.callbackCount).toBe(2);
+    expect(components.getCallback('Language')).toHaveProperty('parent', components);
+    expect(components.getCallback('Fresha')).toHaveProperty('parent', components);
   });
 
   test('deleteCallback', () => {
     components.deleteCallback('Language');
 
-    expect(components.callbacks.size).toBe(1);
-    expect(components.callbacks.get('Fresha')).toBeTruthy();
+    expect(components.callbackCount).toBe(1);
+    expect(components.getCallback('Fresha')).toBeTruthy();
   });
 
   test('clearCallbacks', () => {
     components.clearCallbacks();
 
-    expect(components.callbacks.size).toBe(0);
+    expect(components.callbackCount).toBe(0);
   });
 });

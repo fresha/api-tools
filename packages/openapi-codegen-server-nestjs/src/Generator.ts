@@ -43,7 +43,7 @@ export class Generator extends GeneratorBase<Context> {
   }
 
   protected collectData(): void {
-    for (const [pathUrl, pathItem] of this.context.openapi.paths) {
+    for (const [pathUrl, pathItem] of this.context.openapi.paths.pathItems()) {
       this.processPathItem(pathUrl, pathItem);
     }
     for (const controller of this.controllers.values()) {

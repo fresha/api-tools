@@ -20,7 +20,7 @@ describe('example collection', () => {
   test('setExample', () => {
     const example = header.setExample('1');
 
-    expect(header.examples.size).toBe(1);
+    expect(header.exampleCount).toBe(1);
     expect(header.getExample('1')).toBe(example);
   });
 
@@ -30,7 +30,7 @@ describe('example collection', () => {
 
     header.deleteExample('2');
 
-    expect(Array.from(header.examples.keys())).toStrictEqual(['1']);
+    expect(Array.from(header.exampleKeys())).toStrictEqual(['1']);
   });
 
   test('clearExamples', () => {
@@ -40,44 +40,44 @@ describe('example collection', () => {
 
     header.clearExamples();
 
-    expect(header.examples.size).toBe(0);
+    expect(header.exampleCount).toBe(0);
   });
 });
 
 describe('content collection', () => {
   test('getContent + getContentOrThrow', () => {
-    header.setContent('application/json');
-    header.setContent('application/xml');
+    header.setMediaType('application/json');
+    header.setMediaType('application/xml');
 
-    expect(header.getContent('application/json')).not.toBeUndefined();
-    expect(header.getContent('-')).toBeUndefined();
-    expect(header.getContentOrThrow('application/xml')).not.toBeUndefined();
-    expect(() => header.getContentOrThrow('-')).toThrow();
+    expect(header.getMediaType('application/json')).not.toBeUndefined();
+    expect(header.getMediaType('-')).toBeUndefined();
+    expect(header.getMediaTypeOrThrow('application/xml')).not.toBeUndefined();
+    expect(() => header.getMediaTypeOrThrow('-')).toThrow();
   });
 
   test('setContent', () => {
-    const mediaType = header.setContent('application/json');
+    const mediaType = header.setMediaType('application/json');
 
-    expect(header.content.size).toBe(1);
-    expect(header.getContent('1')).toBe(mediaType);
+    expect(header.mediaTypeCount).toBe(1);
+    expect(header.getMediaType('application/json')).toBe(mediaType);
   });
 
   test('deleteContent', () => {
-    header.setContent('application/json');
-    header.setContent('application/xml');
+    header.setMediaType('application/json');
+    header.setMediaType('application/xml');
 
-    header.deleteContent('application/xml');
+    header.deleteMediaType('application/xml');
 
-    expect(Array.from(header.content.keys())).toStrictEqual(['application/json']);
+    expect(Array.from(header.mediaTypeKeys())).toStrictEqual(['application/json']);
   });
 
   test('clearContent', () => {
-    header.setContent('application/json');
-    header.setContent('application/xml');
-    header.setContent('application/vnd.api+json');
+    header.setMediaType('application/json');
+    header.setMediaType('application/xml');
+    header.setMediaType('application/vnd.api+json');
 
-    header.clearContents();
+    header.clearMediaTypes();
 
-    expect(header.content.size).toBe(0);
+    expect(header.mediaTypeCount).toBe(0);
   });
 });

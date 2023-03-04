@@ -45,19 +45,19 @@ test('extensions', () => {
 
   const leaf = new Leaf(openapi);
 
-  expect(leaf.extensions.size).toBe(0);
+  expect(leaf.extensionCount).toBe(0);
 
   leaf.setExtension('key1', 1);
   leaf.setExtension('key2', null);
 
-  expect(Array.from(leaf.extensions.keys())).toStrictEqual(['key1', 'key2']);
+  expect(Array.from(leaf.extensionKeys())).toStrictEqual(['key1', 'key2']);
 
   leaf.deleteExtension('key1');
 
-  expect(leaf.extensions.size).toBe(1);
+  expect(leaf.extensionCount).toBe(1);
 
   leaf.setExtension('key3', {});
   leaf.clearExtensions();
 
-  expect(Array.from(leaf.extensions.keys())).toStrictEqual([]);
+  expect(Array.from(leaf.extensionKeys())).toStrictEqual([]);
 });

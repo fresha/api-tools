@@ -7,12 +7,12 @@ beforeEach(() => {
 });
 
 test('parameters collection', () => {
-  expect(link.parameters.size).toBe(0);
+  expect(link.parameterCount).toBe(0);
 
   link.setParameter('x', null);
   link.setParameter('y', 'monday');
 
-  expect(link.parameters.size).toBe(2);
+  expect(link.parameterCount).toBe(2);
   expect(link.getParameter('x')).toBe(null);
   expect(link.getParameter('z')).toBeUndefined();
   expect(link.getParameterOrThrow('y')).toBe('monday');
@@ -20,9 +20,9 @@ test('parameters collection', () => {
 
   link.deleteParameter('x');
 
-  expect(Array.from(link.parameters.keys())).toStrictEqual(['y']);
+  expect(Array.from(link.parameterNames())).toStrictEqual(['y']);
 
   link.clearParameters();
 
-  expect(link.parameters.size).toBe(0);
+  expect(link.parameterCount).toBe(0);
 });

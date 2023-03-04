@@ -19,10 +19,10 @@ import type {
   DiscriminatorObject,
   ExampleObject,
   LinkObject,
-} from '../baseTypes';
+} from '../shared/types';
 import type { CommonMarkString, ObjectOrRef, URLString } from '@fresha/api-tools-core';
 
-export type { InfoObject, ContactObject, LicenseObject } from '../baseTypes';
+export type { InfoObject, ContactObject, LicenseObject } from '../shared/types';
 
 /**
  * @see https://spec.openapis.org/oas/v3.1.0#openapi-object

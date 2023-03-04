@@ -89,7 +89,13 @@ export class ActionFunc {
         `Name collision for request type ${requestTypeName}`,
         this.context.operation,
       );
-      this.requestType = new DocumentType(this.context, requestTypeName, requestSchema, true);
+      this.requestType = new DocumentType(
+        this.context,
+        requestTypeName,
+        requestSchema,
+        true,
+        !!this.context.operation.requestBody?.required,
+      );
       this.requestType.collectData(namedTypes);
       namedTypes.set(requestTypeName, this.requestType);
     }
@@ -113,6 +119,7 @@ export class ActionFunc {
         responseTypeName,
         responseSchemas[0],
         false,
+        true,
       );
       this.responseType.collectData(namedTypes);
       namedTypes.set(responseTypeName, this.responseType);
@@ -340,7 +347,7 @@ export class ActionFunc {
         paramsType.addProperty({
           name: 'body',
           type: this.requestType.name,
-          hasQuestionToken: !this.requestType.schema.required,
+          hasQuestionToken: !this.requestType.isRequired,
         });
       }
 

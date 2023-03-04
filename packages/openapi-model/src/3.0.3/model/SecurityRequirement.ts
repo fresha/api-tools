@@ -11,49 +11,67 @@ export class SecurityRequirement
   extends BasicNode<SecurityRequirementModelParent>
   implements SecurityRequirementModel
 {
-  readonly scopes: Map<string, string[]>;
+  readonly #scopes: Map<string, Set<string>>;
 
   constructor(parent: SecurityRequirementModelParent) {
     super(parent);
-    this.scopes = new Map<string, string[]>();
+    this.#scopes = new Map<string, Set<string>>();
   }
 
-  getScopes(schemeName: string): string[] | undefined {
-    return this.scopes.get(schemeName);
+  get schemaCount(): number {
+    return this.#scopes.size;
   }
 
-  getScopesOrThrow(schemeName: string): string[] {
-    const result = this.getScopes(schemeName);
-    assert(result);
-    return result;
+  schemaNames(): IterableIterator<string> {
+    return this.#scopes.keys();
   }
 
-  addScopes(schemeName: string, ...scopes: string[]): void {
-    let schemeScopes = this.scopes.get(schemeName);
-    if (!schemeScopes) {
-      schemeScopes = [];
-      this.scopes.set(schemeName, schemeScopes);
-    }
+  hasSchema(schemaName: string): boolean {
+    return this.#scopes.has(schemaName);
+  }
+
+  addSchema(schemaName: string, ...scopes: string[]): void {
+    assert(!this.#scopes.has(schemaName), `Schema '${schemaName}' already exists`);
+    this.#scopes.set(schemaName, new Set<string>(scopes));
+  }
+
+  deleteSchema(schemaName: string): void {
+    this.#scopes.delete(schemaName);
+  }
+
+  clearSchemas(): void {
+    this.#scopes.clear();
+  }
+
+  scopeCount(schemaName: string): number {
+    return this.#scopes.get(schemaName)?.size ?? 0;
+  }
+
+  getScopes(schemaName: string): IterableIterator<string> {
+    const scopes = this.#scopes.get(schemaName);
+    assert(scopes !== undefined, `Security schema '${schemaName}' is not referenced`);
+    return scopes.values();
+  }
+
+  addScopes(schemaName: string, ...scopes: string[]): void {
+    const existingScopes = this.#scopes.get(schemaName);
+    assert(existingScopes !== undefined, `Security schema '${schemaName}' is not referenced`);
     for (const scope of scopes) {
-      if (!scopes.includes(scope)) {
-        scopes.push(scope);
-      }
+      existingScopes.add(scope);
     }
   }
 
-  deleteScopes(schemeName: string, ...scopes: string[]): void {
-    if (!scopes.length) {
-      this.scopes.delete(schemeName);
-    } else {
-      const schemeScopes = this.scopes.get(schemeName);
-      if (schemeScopes) {
-        const newSchemeScopes = schemeScopes.filter(s => !schemeScopes.includes(s));
-        schemeScopes.splice(0, schemeScopes.length, ...newSchemeScopes);
-      }
+  deleteScopes(schemaName: string, ...scopes: string[]): void {
+    const existingScopes = this.#scopes.get(schemaName);
+    assert(existingScopes !== undefined, `Security schema '${schemaName}' is not referenced`);
+    for (const scope of scopes) {
+      existingScopes.delete(scope);
     }
   }
 
-  clearScopes(): void {
-    this.scopes.clear();
+  clearScopes(schemaName: string): void {
+    const scopes = this.#scopes.get(schemaName);
+    assert(scopes !== undefined, `Security schema '${schemaName}' is not referenced`);
+    scopes.clear();
   }
 }

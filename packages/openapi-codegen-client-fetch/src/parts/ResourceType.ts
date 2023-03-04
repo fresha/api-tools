@@ -33,8 +33,14 @@ export class ResourceType extends NamedType {
   attributesSchema: Nullable<SchemaModel>;
   relationships: Map<string, RelationshipInfo>;
 
-  constructor(context: ActionContext, name: string, schema: SchemaModel, isRequestBody: boolean) {
-    super(context, name, schema, isRequestBody);
+  constructor(
+    context: ActionContext,
+    name: string,
+    schema: SchemaModel,
+    isRequestBody: boolean,
+    isRequired: boolean,
+  ) {
+    super(context, name, schema, isRequestBody, isRequired);
     this.resourceType = null;
     this.attributesSchema = null;
     this.relationships = new Map<string, RelationshipInfo>();
@@ -180,7 +186,7 @@ export class ResourceType extends NamedType {
       this.relationships.set(name, {
         resourceType: resType,
         cardinality,
-        required: relationshipsSchema.required.has(name),
+        required: relationshipsSchema.isPropertyRequired(name),
       });
     }
   }
@@ -214,7 +220,7 @@ export class ResourceType extends NamedType {
             kind: StructureKind.PropertySignature,
             name: `'${this.toClientName(name)}'`,
             type: typeName,
-            hasQuestionToken: !this.attributesSchema.required.has(name),
+            hasQuestionToken: !this.attributesSchema.isPropertyRequired(name),
           });
         }
       }

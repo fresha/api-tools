@@ -74,23 +74,21 @@ const buildBasicJSONAPI = (openapi: OpenAPIModel): void => {
     required: true,
   });
 
-  const requestBody = openapi.components.setRequestBody('JSONAPIRequest');
-  const requestMimeType = requestBody.setContent(MEDIA_TYPE_JSON_API);
-  requestMimeType.schema = dataDocumentSchema;
+  openapi.components
+    .setRequestBody('JSONAPIRequest')
+    .setMediaType(MEDIA_TYPE_JSON_API)
+    .setSchema(dataDocumentSchema);
 
-  const dataResponse = openapi.components.setResponse(
-    'JSONAPIDataResponse',
-    'Generic success response',
-  );
-  const responseMediaType = dataResponse.setContent(MEDIA_TYPE_JSON_API);
-  responseMediaType.schema = dataDocumentSchema;
+  openapi.components
+    .setResponse('JSONAPIDataResponse', 'Generic success response')
+    .setMediaType(MEDIA_TYPE_JSON_API)
+    .setSchema(dataDocumentSchema);
 
   const errorResponse = openapi.components.setResponse(
     'JSONAPIErrorResponse',
     'Generic error response',
   );
-  const errorResponseMediaType = errorResponse.setContent(MEDIA_TYPE_JSON_API);
-  errorResponseMediaType.schema = errorDocumentSchema;
+  errorResponse.setMediaType(MEDIA_TYPE_JSON_API).setSchema(errorDocumentSchema);
 };
 
 test('simple JSON:API schema', () => {
@@ -100,13 +98,13 @@ test('simple JSON:API schema', () => {
 
   const pathItem = generator.context.openapi.setPathItem('/api');
 
-  const postOperation = pathItem.setOperation('post');
+  const postOperation = pathItem.addOperation('post');
   postOperation.operationId = 'createEntity';
 
-  const postResponse = postOperation.setDefaultResponse('Success response');
-  const postResponseContent = postResponse.setContent(MEDIA_TYPE_JSON_API);
-  postResponseContent.schema =
-    generator.context.openapi.components.schemas.get('JSONAPIDataDocument')!;
+  postOperation
+    .setDefaultResponse('Success response')
+    .setMediaType(MEDIA_TYPE_JSON_API)
+    .setSchema(generator.context.openapi.components.getSchemaOrThrow('JSONAPIDataDocument'));
 
   generator.run();
 

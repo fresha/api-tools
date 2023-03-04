@@ -6,12 +6,20 @@ export abstract class NamedType {
   readonly name: string;
   readonly schema: SchemaModel;
   readonly isRequestBody: boolean;
+  readonly isRequired: boolean;
 
-  constructor(context: ActionContext, name: string, schema: SchemaModel, isRequestBody: boolean) {
+  constructor(
+    context: ActionContext,
+    name: string,
+    schema: SchemaModel,
+    isRequestBody: boolean,
+    isRequired: boolean,
+  ) {
     this.context = context;
     this.name = name;
     this.schema = schema;
     this.isRequestBody = isRequestBody;
+    this.isRequired = isRequired;
   }
 
   abstract collectData(namedTypes: Map<string, NamedType>): void;

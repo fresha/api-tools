@@ -10,15 +10,30 @@ import type {
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#parameter-object
  */
-export class CookieParameter extends ParameterBase implements CookieParameterModel {
-  declare readonly in: 'cookie';
-  style: CookieParameterSerializationStyle;
-  explode: boolean;
+export class CookieParameter extends ParameterBase<'cookie'> implements CookieParameterModel {
+  #required: boolean;
+  #style: CookieParameterSerializationStyle;
 
   constructor(parent: ParameterModelParent, name: string) {
     super(parent, 'cookie', name);
-    this.required = defaultRequired.cookie;
-    this.style = 'form';
-    this.explode = defaultExplode[this.style];
+    this.#required = defaultRequired.cookie;
+    this.#style = 'form';
+    this.explode = defaultExplode[this.#style];
+  }
+
+  get required(): boolean {
+    return this.#required;
+  }
+
+  set required(value: boolean) {
+    this.#required = value;
+  }
+
+  get style(): CookieParameterSerializationStyle {
+    return this.#style;
+  }
+
+  set style(value: CookieParameterSerializationStyle) {
+    this.#style = value;
   }
 }

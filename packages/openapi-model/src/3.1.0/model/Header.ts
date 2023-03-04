@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import { HeaderParameterSerializationStyle } from '../../baseTypes';
+import { HeaderParameterSerializationStyle } from '../../shared/types';
 
 import { Example } from './Example';
 import { MediaType } from './MediaType';

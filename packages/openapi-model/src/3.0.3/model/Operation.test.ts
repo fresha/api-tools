@@ -7,16 +7,16 @@ beforeEach(() => {
 });
 
 test('default properties', () => {
-  const operation = openapi.setPathItem('/').setOperation('post');
+  const operation = openapi.setPathItem('/').addOperation('post');
   expect(operation.tags).toHaveLength(0);
   expect(operation.summary).toBeNull();
   expect(operation.description).toBeNull();
   expect(operation.operationId).toBeNull();
-  expect(operation.parameters).toHaveLength(0);
+  expect(operation.parameterCount).toBe(0);
   expect(operation.requestBody).toBeNull();
   expect(operation.responses.default).toBeNull();
-  expect(operation.responses.codes.size).toBe(0);
-  expect(operation.callbacks.size).toBe(0);
+  expect(operation.responses.responseCount).toBe(0);
+  expect(operation.callbackCount).toBe(0);
   expect(operation.deprecated).toBeFalsy();
   expect(operation.security).toBeNull();
   expect(operation.servers).toHaveLength(0);
@@ -24,21 +24,21 @@ test('default properties', () => {
 
 test('httpMethod property', () => {
   const pathItem = openapi.setPathItem('/hello');
-  const op1 = pathItem.setOperation('post');
-  const op2 = pathItem.setOperation('delete');
+  const op1 = pathItem.addOperation('post');
+  const op2 = pathItem.addOperation('delete');
 
   expect(op1.httpMethod).toBe('post');
   expect(op2.httpMethod).toBe('delete');
 });
 
 test('tags collection', () => {
-  const operation = openapi.setPathItem('/').setOperation('head');
+  const operation = openapi.setPathItem('/').addOperation('head');
 
   openapi.addTag('tag1');
   openapi.addTag('tag2');
 
   operation.addTag('tag1');
-  expect(operation.tags).toStrictEqual(['tag1']);
+  expect(Array.from(operation.tags())).toStrictEqual(['tag1']);
 
   expect(() => operation.addTag('nonExistentTag')).toThrow();
 
@@ -48,21 +48,21 @@ test('tags collection', () => {
   operation.deleteTag('tag2');
   operation.deleteTag('tag2');
   operation.deleteTag('tag4');
-  expect(operation.tags).toStrictEqual(['tag1', 'tag3']);
+  expect(Array.from(operation.tags())).toStrictEqual(['tag1', 'tag3']);
 
   operation.deleteTag('tag3');
-  expect(operation.tags).toStrictEqual(['tag1']);
+  expect(Array.from(operation.tags())).toStrictEqual(['tag1']);
 
   operation.addTag('tag3');
   operation.deleteTagAt(0);
-  expect(operation.tags).toStrictEqual(['tag3']);
+  expect(Array.from(operation.tags())).toStrictEqual(['tag3']);
 
   operation.clearTags();
-  expect(operation.tags).toHaveLength(0);
+  expect(operation.tagCount).toBe(0);
 });
 
 test('parameters collection', () => {
-  const operation = openapi.setPathItem('/').setOperation('put');
+  const operation = openapi.setPathItem('/').addOperation('put');
 
   const p1 = operation.addParameter('p1', 'path');
   const p2 = operation.addParameter('p2', 'query');
@@ -71,7 +71,7 @@ test('parameters collection', () => {
 
   expect(() => operation.addParameter('p5', 'illegalLocation' as 'cookie')).toThrow();
 
-  expect(operation.parameters).toStrictEqual([p1, p2, p3, p4]);
+  expect(Array.from(operation.parameters())).toStrictEqual([p1, p2, p3, p4]);
 
   expect(operation.getParameter('p1', 'path')).not.toBeUndefined();
   expect(operation.getParameter('p1', 'query')).toBeUndefined();
@@ -84,14 +84,14 @@ test('parameters collection', () => {
   expect(() => operation.addParameter('p1', 'cookie')).toThrow();
 
   operation.deleteParameter('p3');
-  expect(operation.parameters).toStrictEqual([p1, p2, p4]);
+  expect(Array.from(operation.parameters())).toStrictEqual([p1, p2, p4]);
 
   operation.clearParameters();
-  expect(operation.parameters).toHaveLength(0);
+  expect(Array.from(operation.parameters())).toHaveLength(0);
 });
 
 test('request body', () => {
-  const operation = openapi.setPathItem('/').setOperation('head');
+  const operation = openapi.setPathItem('/').addOperation('head');
 
   const requestBody = operation.setRequestBody();
   expect(operation.requestBody).toBe(requestBody);
@@ -103,7 +103,7 @@ test('request body', () => {
 });
 
 test('delegated response methods', () => {
-  const operation = openapi.setPathItem('/').setOperation('head');
+  const operation = openapi.setPathItem('/').addOperation('head');
 
   const res1 = operation.setDefaultResponse('success');
   expect(operation.responses.default).toBe(res1);
@@ -113,9 +113,9 @@ test('delegated response methods', () => {
 
   const res200 = operation.setResponse(200, 'success');
   const res404 = operation.setResponse(404, 'not found');
-  expect(operation.responses.codes.size).toBe(2);
-  expect(operation.responses.codes.get(200)).toBe(res200);
-  expect(operation.responses.codes.get(404)).toBe(res404);
+  expect(operation.responses.responseCount).toBe(2);
+  expect(operation.responses.getResponse(200)).toBe(res200);
+  expect(operation.responses.getResponse(404)).toBe(res404);
 
   expect(operation.getResponse(200)).not.toBeUndefined();
   expect(operation.getResponse(418)).toBeUndefined();
@@ -123,19 +123,19 @@ test('delegated response methods', () => {
   expect(() => operation.getResponseOrThrow(501)).toThrow();
 
   operation.deleteResponse(404);
-  expect(operation.responses.codes.get(404)).toBeUndefined();
+  expect(operation.responses.getResponse(404)).toBeUndefined();
 
   operation.clearResponses();
-  expect(operation.responses.codes.size).toBe(0);
+  expect(operation.responses.responseCount).toBe(0);
 });
 
 test('callbacks collection', () => {
-  const operation = openapi.setPathItem('/').setOperation('delete');
+  const operation = openapi.setPathItem('/').addOperation('delete');
 
   operation.setCallback('cb1');
   operation.setCallback('cb2');
 
-  expect(operation.callbacks.size).toBe(2);
+  expect(operation.callbackCount).toBe(2);
 
   expect(operation.getCallback('cb1')).not.toBeUndefined();
   expect(operation.getCallback('-')).toBeUndefined();
@@ -144,15 +144,15 @@ test('callbacks collection', () => {
 
   operation.deleteCallback('cb1');
 
-  expect(operation.callbacks.get('cb1')).not.toBeDefined();
+  expect(operation.getCallback('cb1')).not.toBeDefined();
 
   operation.clearCallbacks();
 
-  expect(operation.callbacks.size).toBe(0);
+  expect(operation.callbackCount).toBe(0);
 });
 
 test('security requirement collection', () => {
-  const operation = openapi.setPathItem('/x').setOperation('patch');
+  const operation = openapi.setPathItem('/x').addOperation('patch');
 
   const s1 = operation.addSecurityRequirement();
   operation.addSecurityRequirement();
@@ -170,7 +170,7 @@ test('security requirement collection', () => {
 });
 
 test('servers collection', () => {
-  const operation = openapi.setPathItem('/').setOperation('post');
+  const operation = openapi.setPathItem('/').addOperation('post');
 
   const s1 = operation.addServer('http://first.example.com');
   const s2 = operation.addServer('http://second.example.com');
@@ -178,7 +178,7 @@ test('servers collection', () => {
 
   expect(() => operation.addServer('http://second.example.com')).toThrow();
 
-  expect(operation.servers.length).toBe(3);
+  expect(operation.serverCount).toBe(3);
 
   expect(operation.getServer('http://first.example.com')).not.toBeUndefined();
   expect(operation.getServer('-')).toBeUndefined();
@@ -186,13 +186,13 @@ test('servers collection', () => {
   expect(() => operation.getServerOrThrow('?')).toThrow();
 
   operation.deleteServer('http://third.example.com');
-  expect(operation.servers.length).toBe(2);
-  expect(operation.servers[0]).toBe(s1);
+  expect(operation.serverCount).toBe(2);
+  expect(operation.serverAt(0)).toBe(s1);
 
   operation.deleteServerAt(0);
-  expect(operation.servers.length).toBe(1);
-  expect(operation.servers[0]).toBe(s2);
+  expect(operation.serverCount).toBe(1);
+  expect(operation.serverAt(0)).toBe(s2);
 
   operation.clearServers();
-  expect(operation.servers).toHaveLength(0);
+  expect(operation.serverCount).toBe(0);
 });

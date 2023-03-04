@@ -22,13 +22,13 @@ describe('headers collection', () => {
 
 describe('content collection', () => {
   test('getContent + getContentOrThrow', () => {
-    response.setContent('application/json');
-    response.setContent('application/xml');
+    response.setMediaType('application/json');
+    response.setMediaType('application/xml');
 
-    expect(response.getContent('application/json')).not.toBeUndefined();
-    expect(response.getContent('-')).toBeUndefined();
-    expect(response.getContentOrThrow('application/xml')).not.toBeUndefined();
-    expect(() => response.getContentOrThrow('-')).toThrow();
+    expect(response.getMediaType('application/json')).not.toBeUndefined();
+    expect(response.getMediaType('-')).toBeUndefined();
+    expect(response.getMediaTypeOrThrow('application/xml')).not.toBeUndefined();
+    expect(() => response.getMediaTypeOrThrow('-')).toThrow();
   });
 });
 

@@ -1,15 +1,22 @@
 import assert from 'assert';
 import fs from 'fs';
 
-import { Nullable, JSONObject, ObjectOrRef, isJSONRef } from '@fresha/api-tools-core';
+import {
+  Nullable,
+  JSONObject,
+  ObjectOrRef,
+  isJSONRef,
+  ParametrisedURLString,
+} from '@fresha/api-tools-core';
 import yaml from 'yaml';
 
 import { Callback } from './Callback';
+import { Components } from './Components';
 import { Discriminator } from './Discriminator';
 import { Encoding } from './Encoding';
 import { Example } from './Example';
-import { ExternalDocumentation } from './ExternalDocumentation';
 import { Header } from './Header';
+import { Info } from './Info';
 import { Link } from './Link';
 import { MediaType } from './MediaType';
 import {
@@ -20,7 +27,13 @@ import {
 } from './OAuthFlow';
 import { OpenAPI } from './OpenAPI';
 import { Operation } from './Operation';
-import { QueryParameter, PathParameter, HeaderParameter, CookieParameter } from './Parameter';
+import {
+  QueryParameter,
+  PathParameter,
+  HeaderParameter,
+  CookieParameter,
+  Parameter,
+} from './Parameter';
 import { defaultExplode } from './Parameter/utils';
 import { PathItem } from './PathItem';
 import { RequestBody } from './RequestBody';
@@ -31,19 +44,19 @@ import {
   HTTPSecurityScheme,
   OAuth2SecurityScheme,
   OpenIdConnectSecurityScheme,
+  SecuritySchema,
 } from './SecurityScheme';
-import { Tag } from './Tag';
+import { Server } from './Server';
+import { ServerVariable } from './ServerVariable';
 import { XML } from './XML';
 
 import type {
   PathItemOperationKey,
   QueryParameterSerializationStyle,
   PathParameterSerializationStyle,
-  ExtensionFields,
   LicenseModelParent,
   ContactModelParent,
   CallbackModelParent,
-  EncodingModelParent,
   DiscriminatorModelParent,
   HeaderModelParent,
   ExampleModelParent,
@@ -58,41 +71,13 @@ import type {
   ServerModelParent,
   TagModelParent,
   XMLModelParent,
-  SchemaModel,
-  ResponseModel,
-  LinkModel,
-  RequestBodyModel,
   ResponseModelParent,
-  CallbackModel,
-  PathItemModel,
-  OpenAPIModel,
-  InfoModel,
-  ServerModel,
-  ServerVariableModel,
-  ComponentsModel,
-  XMLModel,
-  DiscriminatorModel,
-  TagModel,
-  ExternalDocumentationModel,
-  OperationModel,
-  OpenIDConnectSecuritySchemaModel,
-  SecuritySchemaModel,
-  HeaderModel,
-  ExampleModel,
-  MediaTypeModel,
-  EncodingModel,
-  ParameterModel,
-  PathParameterModel,
-  QueryParameterModel,
-  HeaderParameterModel,
-  CookieParameterModel,
-  APIKeySecuritySchemaModel,
-  HTTPSecuritySchemaModel,
-  OAuth2SecuritySchemaModel,
   ParameterModelParent,
   OAuthFlowModelParent,
   SecuritySchemaModelParent,
   EncodingSerializationStyle,
+  OpenAPIModel,
+  SpecificationExtensionsModel,
 } from './types';
 import type {
   APIKeySecuritySchemeObject,
@@ -201,7 +186,7 @@ const getNumericAttribute = (
 export class OpenAPIReader {
   private readonly schemaPointers: Map<string, unknown>;
 
-  private components?: ComponentsModel;
+  private components?: Components;
   private componentsSchemas?: Record<string, ObjectOrRef<SchemaObject>>;
   private componentsResponses?: Record<string, ObjectOrRef<ResponseObject>>;
   private componentsParameters?: Record<string, ObjectOrRef<ParameterObject>>;
@@ -238,8 +223,14 @@ export class OpenAPIReader {
     const result = new OpenAPI(json.info.title, json.info.version);
     this.schemaPointers.set('#/', result);
 
-    this.parseExtensionFields(result.extensions, json);
+    this.parseExtensionFields(result, json);
     this.parseInfo(json.info, result.info);
+
+    if (json.tags?.length) {
+      for (const tagJson of json.tags) {
+        this.parseTag(tagJson, result);
+      }
+    }
 
     if (json.servers?.length) {
       for (const serverObject of json.servers) {
@@ -249,11 +240,10 @@ export class OpenAPIReader {
 
     this.parseComponents(result.components, json.components);
 
-    this.parseExtensionFields(result.paths.extensions, json.paths);
+    this.parseExtensionFields(result.paths, json.paths);
     for (const [path, pathItemJson] of Object.entries(json.paths)) {
       if (!path.startsWith('x-')) {
-        const pathItem = this.parsePathItem(pathItemJson as JSONObject, result.paths);
-        result.paths.set(path, pathItem);
+        this.parsePathItem(pathItemJson as JSONObject, result.paths, path);
       }
     }
 
@@ -263,15 +253,8 @@ export class OpenAPIReader {
       }
     }
 
-    if (json.tags?.length) {
-      for (const tagJson of json.tags) {
-        const tag = this.parseTag(tagJson, result);
-        result.tags.push(tag);
-      }
-    }
-
     if (json.externalDocs) {
-      result.externalDocs = this.parseExternalDocumentation(json.externalDocs, result);
+      this.parseExternalDocumentation(json.externalDocs, result);
     }
 
     return result;
@@ -279,23 +262,23 @@ export class OpenAPIReader {
 
   // eslint-disable-next-line class-methods-use-this
   private parseExtensionFields(
-    extensionFields: ExtensionFields,
+    extensions: SpecificationExtensionsModel,
     json?: JSONObject,
     reset = false,
   ): void {
     if (reset) {
-      extensionFields.clear();
+      extensions.clearExtensions();
     }
     if (json != null) {
       for (const [key, value] of Object.entries(json)) {
         if (key.startsWith('x-')) {
-          extensionFields.set(key.slice(2), value);
+          extensions.setExtension(key.slice(2), value);
         }
       }
     }
   }
 
-  private parseInfo(json: InfoObject, result: InfoModel): InfoModel {
+  private parseInfo(json: InfoObject, result: Info): Info {
     assert(json != null);
     assert(typeof json.title === 'string');
     assert(typeof json.version === 'string');
@@ -304,7 +287,7 @@ export class OpenAPIReader {
     this.schemaPointers.set('#/info/contact', result.contact);
     this.schemaPointers.set('#/info/license', result.license);
 
-    this.parseExtensionFields(result.extensions, json);
+    this.parseExtensionFields(result, json);
     result.title = json.title;
     result.version = json.version;
     result.description = getStringAttribute(json, 'description', false);
@@ -317,7 +300,7 @@ export class OpenAPIReader {
   private parseContact(parent: ContactModelParent, json?: ContactObject): void {
     if (!isEmpty(json)) {
       const result = parent.contact;
-      this.parseExtensionFields(result.extensions, json);
+      this.parseExtensionFields(result, json);
       result.name = getStringAttribute(json, 'name', false);
       result.url = getStringAttribute(json, 'url', false);
       result.email = getStringAttribute(json, 'email', false);
@@ -327,37 +310,36 @@ export class OpenAPIReader {
   private parseLicense(parent: LicenseModelParent, json?: LicenseObject): void {
     if (json != null) {
       const result = parent.license;
-      this.parseExtensionFields(result.extensions, json);
+      this.parseExtensionFields(result, json);
       result.name = getStringAttribute(json, 'name') as string;
       result.url = getStringAttribute(json, 'url', false);
     }
   }
 
-  private parseServer(json: ServerObject, parent: ServerModelParent): ServerModel {
+  private parseServer(json: ServerObject, parent: ServerModelParent): Server {
     assert(typeof json.url === 'string');
-    const result = parent.addServer(json.url);
-    this.parseExtensionFields(result.extensions, json);
+    const result = parent.addServer(json.url) as Server;
+    this.parseExtensionFields(result, json);
     result.description = getStringAttribute(json, 'description', false);
     if (json.variables) {
       for (const [key, value] of Object.entries(json.variables)) {
-        const variable = result.variables.get(key);
-        assert(variable, `Missing server variable named ${key}`);
+        const variable = result.getVariableOrThrow(key);
         this.parseServerVariable(value, variable);
       }
     }
     return result;
   }
 
-  private parseServerVariable(json: ServerVariableObject, variable: ServerVariableModel): void {
-    this.parseExtensionFields(variable.extensions, json);
-    variable.default = getStringAttribute(json, 'default') as string;
+  private parseServerVariable(json: ServerVariableObject, variable: ServerVariable): void {
+    this.parseExtensionFields(variable, json);
+    variable.defaultValue = getStringAttribute(json, 'default') as string;
     if (json.enum?.length) {
-      variable.addEnum(...json.enum);
+      variable.addAllowedValues(...json.enum);
     }
     variable.description = getStringAttribute(json, 'description', false);
   }
 
-  private parseComponents(result: ComponentsModel, json?: ComponentsObject): ComponentsModel {
+  private parseComponents(result: Components, json?: ComponentsObject): Components {
     this.schemaPointers.set('#/components', result);
     this.components = result;
 
@@ -365,13 +347,13 @@ export class OpenAPIReader {
       return result;
     }
 
-    this.parseExtensionFields(result.extensions, json);
+    this.parseExtensionFields(result, json);
 
     if (json.schemas) {
       this.componentsSchemas = json.schemas;
 
       for (const [key, value] of Object.entries(json.schemas)) {
-        if (!result.schemas.has(key)) {
+        if (!result.hasSchema(key)) {
           const schema = result.setSchema(key);
           this.parseSchemaAttributes(value, schema);
           this.schemaPointers.set(`#/components/schemas/${key}`, schema);
@@ -418,7 +400,7 @@ export class OpenAPIReader {
       this.componentsHeaders = json.headers;
 
       for (const [key, headerJson] of Object.entries(json.headers)) {
-        const header = this.parseHeader(headerJson, result);
+        const header = this.parseHeader(headerJson, result, key);
         result.setHeaderModel(key, header);
         this.schemaPointers.set(`#/components/headers/${key}`, header);
       }
@@ -436,7 +418,7 @@ export class OpenAPIReader {
       this.componentsLinks = json.links;
 
       for (const [key, linkJson] of Object.entries(json.links)) {
-        if (!this.components.links.has(key)) {
+        if (!this.components.hasLink(key)) {
           const link = this.parseLink(linkJson, result);
           result.setLinkModel(key, link);
           this.schemaPointers.set(`#/components/links/${key}`, link);
@@ -456,8 +438,8 @@ export class OpenAPIReader {
     return result;
   }
 
-  private resolveSchemaFromRef(ref: string): SchemaModel {
-    let result = this.schemaPointers.get(ref) as SchemaModel | undefined;
+  private resolveSchemaFromRef(ref: string): Schema {
+    let result = this.schemaPointers.get(ref) as Schema | undefined;
     if (result) {
       assert(result instanceof Schema, `Resolved reference ${ref} is not a Schema instance`);
       return result;
@@ -477,8 +459,8 @@ export class OpenAPIReader {
     return result;
   }
 
-  private parseSchemaAttributes(json: SchemaObject, model: SchemaModel): void {
-    this.parseExtensionFields(model.extensions, json);
+  private parseSchemaAttributes(json: SchemaObject, model: Schema): void {
+    this.parseExtensionFields(model, json);
     model.title = getStringAttribute(json, 'title', false);
     model.multipleOf = getNumericAttribute(json, 'multipleOf', false);
     model.maximum = getNumericAttribute(json, 'maximum', false);
@@ -496,13 +478,25 @@ export class OpenAPIReader {
     model.enum = json.enum ?? null;
     model.type = getStringAttribute(json, 'type', false) as SchemaType;
     if (json.allOf) {
-      model.allOf = json.allOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model));
+      model.allOf.splice(
+        0,
+        model.allOf.length,
+        ...json.allOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model)),
+      );
     }
     if (json.oneOf) {
-      model.oneOf = json.oneOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model));
+      model.oneOf.splice(
+        0,
+        model.oneOf.length,
+        ...json.oneOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model)),
+      );
     }
     if (json.anyOf) {
-      model.anyOf = json.anyOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model));
+      model.anyOf.splice(
+        0,
+        model.anyOf.length,
+        ...json.anyOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model)),
+      );
     }
     if (json.not) {
       model.not = this.parseSchema(json.not, model);
@@ -540,7 +534,7 @@ export class OpenAPIReader {
       model.xml = this.parseXML(json.xml, model);
     }
     if (json.externalDocs) {
-      model.externalDocs = this.parseExternalDocumentation(json.externalDocs, model);
+      this.parseExternalDocumentation(json.externalDocs, model);
     }
     if ('example' in json) {
       model.example = json.example ?? null;
@@ -548,17 +542,17 @@ export class OpenAPIReader {
     model.deprecated = !!json.deprecated;
   }
 
-  private parseSchema(json: ObjectOrRef<SchemaObject>, parent: SchemaModelParent): SchemaModel {
+  private parseSchema(json: ObjectOrRef<SchemaObject>, parent: SchemaModelParent): Schema {
     if (isJSONRef(json)) {
       return this.resolveSchemaFromRef(json.$ref);
     }
-    const schema = SchemaFactory.create(parent, null);
+    const schema = SchemaFactory.create(parent, null) as Schema;
     this.parseSchemaAttributes(json, schema);
     return schema;
   }
 
-  private resolveResponseFromRef(ref: string): ResponseModel {
-    let result = this.schemaPointers.get(ref) as ResponseModel | undefined;
+  private resolveResponseFromRef(ref: string): Response {
+    let result = this.schemaPointers.get(ref) as Response | undefined;
     if (result) {
       assert(result instanceof Response, `Resolved reference ${ref} is not a Schema instance`);
       return result;
@@ -578,10 +572,7 @@ export class OpenAPIReader {
     return result;
   }
 
-  private parseResponse(
-    json: ObjectOrRef<ResponseObject>,
-    parent: ResponseModelParent,
-  ): ResponseModel {
+  private parseResponse(json: ObjectOrRef<ResponseObject>, parent: ResponseModelParent): Response {
     if (isJSONRef(json)) {
       return this.resolveResponseFromRef(json.$ref);
     }
@@ -593,32 +584,32 @@ export class OpenAPIReader {
     if (json.headers) {
       for (const [key, headerJson] of Object.entries(json.headers)) {
         const headerName = key.toLowerCase();
-        if (result.headers.has(headerName)) {
+        if (result.hasHeader(headerName)) {
           throw new Error(`Duplicate response header ${key}`);
         }
         if (headerName !== 'content-type') {
-          const header = this.parseHeader(headerJson, result);
-          result.headers.set(key.toLowerCase(), header);
+          const header = result.setHeader(headerName);
+          this.parseHeaderAttributes(headerJson, header);
         }
       }
     }
     if (json.content) {
       for (const [key, contentJson] of Object.entries(json.content)) {
-        const content = this.parseMediaType(contentJson, result);
-        result.content.set(key, content);
+        const content = result.setMediaType(key);
+        this.parseMediaTypeAttributes(contentJson, content);
       }
     }
     if (json.links) {
       for (const [linkId, linkJson] of Object.entries(json.links)) {
         const link = this.parseLink(linkJson, result);
-        result.links.set(linkId, link);
+        result.setLinkModel(linkId, link);
       }
     }
     return result;
   }
 
-  private resolveHeaderFromRef(ref: string): HeaderModel {
-    let result = this.schemaPointers.get(ref) as HeaderModel | undefined;
+  private resolveHeaderFromRef(ref: string): Header {
+    let result = this.schemaPointers.get(ref) as Header | undefined;
     if (result) {
       assert(result instanceof Header, `Resolved reference ${ref} is not a Header instance`);
       return result;
@@ -631,27 +622,15 @@ export class OpenAPIReader {
     assert(this.componentsHeaders);
     const json = this.componentsHeaders[key];
 
-    result = this.parseHeader(json, this.components);
+    result = this.parseHeader(json, this.components, key);
     this.components.setHeaderModel(key, result);
     this.schemaPointers.set(`#/components/headers/${key}`, result);
 
     return result;
   }
 
-  private parseHeader(json: ObjectOrRef<HeaderObject>, parent: HeaderModelParent): HeaderModel {
-    if (isJSONRef(json)) {
-      return this.resolveHeaderFromRef(json.$ref);
-    }
-
-    if ('schema' in json && 'content' in json) {
-      throw new Error(`Either schema or content should be present, but not both`);
-    }
-    if ('example' in json && 'examples' in json) {
-      throw new Error(`Either example or examples should be present, but not both`);
-    }
-
-    const result = new Header(parent);
-    this.parseExtensionFields(result.extensions, json);
+  private parseHeaderAttributes(json: HeaderObject, result: Header): void {
+    this.parseExtensionFields(result, json);
     if (json.description) {
       result.description = json.description;
     }
@@ -668,22 +647,42 @@ export class OpenAPIReader {
       result.explode = json.explode as boolean;
     }
     if (json.schema) {
-      result.schema = this.parseSchema(json.schema, result);
+      result.setSchema(this.parseSchema(json.schema, result));
     }
     if (json.example) {
       result.example = json.example;
     }
     if (json.examples) {
       for (const [key, value] of Object.entries(json.examples)) {
-        const example = this.parseExample(value, result);
-        result.examples.set(key, example);
+        const example = result.setExample(key);
+        this.parseExampleAttributes(value, example);
       }
     }
+  }
+
+  private parseHeader(
+    json: ObjectOrRef<HeaderObject>,
+    parent: HeaderModelParent,
+    name: string,
+  ): Header {
+    if (isJSONRef(json)) {
+      return this.resolveHeaderFromRef(json.$ref);
+    }
+
+    if ('schema' in json && 'content' in json) {
+      throw new Error(`Either schema or content should be present, but not both`);
+    }
+    if ('example' in json && 'examples' in json) {
+      throw new Error(`Either example or examples should be present, but not both`);
+    }
+
+    const result = parent.setHeader(name) as Header;
+    this.parseHeaderAttributes(json, result);
     return result;
   }
 
-  private resolveExampleFromRef(ref: string): ExampleModel {
-    let result = this.schemaPointers.get(ref) as ExampleModel | undefined;
+  private resolveExampleFromRef(ref: string): Example {
+    let result = this.schemaPointers.get(ref) as Example | undefined;
     if (result) {
       assert(result instanceof Example, `Resolved reference ${ref} is not a Example instance`);
       return result;
@@ -703,13 +702,8 @@ export class OpenAPIReader {
     return result;
   }
 
-  private parseExample(json: ObjectOrRef<ExampleObject>, parent: ExampleModelParent): ExampleModel {
-    if (isJSONRef(json)) {
-      return this.resolveExampleFromRef(json.$ref);
-    }
-
-    const result = new Example(parent);
-    this.parseExtensionFields(result.extensions, json);
+  private parseExampleAttributes(json: ExampleObject, result: Example): void {
+    this.parseExtensionFields(result, json);
     result.summary = getStringAttribute(json, 'summary', false);
     result.description = getStringAttribute(json, 'description', false);
     result.value = json.value ?? null;
@@ -718,42 +712,52 @@ export class OpenAPIReader {
       throw new Error(`Either Example.value or Example.externalValue can be supplied at a time`);
     }
     result.externalValue = externalValue;
+  }
+
+  private parseExample(json: ObjectOrRef<ExampleObject>, parent: ExampleModelParent): Example {
+    if (isJSONRef(json)) {
+      return this.resolveExampleFromRef(json.$ref);
+    }
+    const result = new Example(parent);
+    this.parseExampleAttributes(json, result);
     return result;
   }
 
-  private parseMediaType(json: MediaTypeObject, parent: MediaTypeModelParent): MediaTypeModel {
-    if (json.example && json.examples) {
-      throw new Error(`Either example or examples should be set, but not both`);
-    }
-    const result = new MediaType(parent);
+  private parseMediaTypeAttributes(json: MediaTypeObject, result: MediaType): void {
     if (json.schema) {
-      result.schema = this.parseSchema(json.schema, result);
+      result.setSchema(this.parseSchema(json.schema, result));
     }
     if (json.example) {
       result.example = json.example;
     }
     if (json.examples) {
       for (const [key, exampleJson] of Object.entries(json.examples)) {
-        const example = this.parseExample(exampleJson, result);
-        result.examples.set(key, example);
+        const example = result.setExample(key) as Example;
+        this.parseExampleAttributes(exampleJson, example);
       }
     }
     if (json.encoding) {
       for (const [mimeType, encodingJson] of Object.entries(json.encoding)) {
-        const encoding = this.parseEncoding(encodingJson, result);
-        result.encoding.set(mimeType, encoding);
+        const encoding = result.setEncoding(mimeType) as Encoding;
+        this.parseEncodingAttributes(encodingJson, encoding);
       }
     }
+  }
+
+  private parseMediaType(json: MediaTypeObject, parent: MediaTypeModelParent): MediaType {
+    if (json.example && json.examples) {
+      throw new Error(`Either example or examples should be set, but not both`);
+    }
+    const result = new MediaType(parent);
+    this.parseMediaTypeAttributes(json, result);
     return result;
   }
 
-  private parseEncoding(json: EncodingObject, parent: EncodingModelParent): EncodingModel {
-    const result = new Encoding(parent, getStringAttribute(json, 'contentType') as string);
+  private parseEncodingAttributes(json: EncodingObject, result: Encoding): void {
     if (json.headers) {
       for (const [key, headerJson] of Object.entries(json.headers)) {
         const headerName = key.toLowerCase();
-        const header = this.parseHeader(headerJson, result);
-        result.headers.set(headerName, header);
+        this.parseHeader(headerJson, result, headerName);
       }
     }
     if (json.style) {
@@ -765,11 +769,16 @@ export class OpenAPIReader {
     if (json.allowReserved) {
       result.allowReserved = json.allowReserved as boolean;
     }
-    return result;
   }
 
-  private resolveLinkFromRef(ref: string): LinkModel {
-    let result = this.schemaPointers.get(ref) as LinkModel | undefined;
+  // private parseEncoding(json: EncodingObject, parent: EncodingModelParent): Encoding {
+  //   const result = new Encoding(parent, getStringAttribute(json, 'contentType') as string);
+  //   this.parseEncodingAttributes(json, result);
+  //   return result;
+  // }
+
+  private resolveLinkFromRef(ref: string): Link {
+    let result = this.schemaPointers.get(ref) as Link | undefined;
     if (result) {
       assert(result instanceof Link, `Resolved reference ${ref} is not a Link instance`);
       return result;
@@ -789,26 +798,26 @@ export class OpenAPIReader {
     return result;
   }
 
-  private parseLink(json: ObjectOrRef<LinkObject>, parent: LinkModelParent): LinkModel {
+  private parseLink(json: ObjectOrRef<LinkObject>, parent: LinkModelParent): Link {
     if (isJSONRef(json)) {
       return this.resolveLinkFromRef(json.$ref);
     }
 
     const result = new Link(parent);
-    this.parseExtensionFields(result.extensions, json);
+    this.parseExtensionFields(result, json);
     if ('operationId' in json) {
       result.operationId = json.operationId as string;
     }
     if (!isEmpty(json.parameters)) {
       for (const [paramName, paramValue] of Object.entries(json.parameters as JSONObject)) {
-        result.parameters.set(paramName, paramValue);
+        result.setParameter(paramName, paramValue);
       }
     }
     return result;
   }
 
-  private resolveParameterFromRef(ref: string): ParameterModel {
-    let result = this.schemaPointers.get(ref) as ParameterModel | undefined;
+  private resolveParameterFromRef(ref: string): Parameter {
+    let result = this.schemaPointers.get(ref) as Parameter | undefined;
     if (result) {
       assert(
         [PathParameter, QueryParameter, HeaderParameter, CookieParameter].some(
@@ -837,7 +846,7 @@ export class OpenAPIReader {
   private parseParameter(
     json: ObjectOrRef<ParameterObject>,
     parent: ParameterModelParent,
-  ): ParameterModel {
+  ): Parameter {
     if (isJSONRef(json)) {
       return this.resolveParameterFromRef(json.$ref);
     }
@@ -856,8 +865,8 @@ export class OpenAPIReader {
     }
   }
 
-  private parseParameterCommon(json: ParameterObject, parameter: ParameterModel): void {
-    this.parseExtensionFields(parameter.extensions, json);
+  private parseParameterCommon(json: ParameterObject, parameter: Parameter): void {
+    this.parseExtensionFields(parameter, json);
     parameter.description = getStringAttribute(json, 'description', false);
     if (json.deprecated) {
       parameter.deprecated = json.deprecated as boolean;
@@ -866,12 +875,13 @@ export class OpenAPIReader {
       throw new Error(`Either schema or content should be present, but not both`);
     }
     if (json.schema) {
-      parameter.schema = this.parseSchema(json.schema, parameter);
+      const schema = this.parseSchema(json.schema, parameter);
+      parameter.setSchema(schema);
     }
     if ('content' in json) {
       for (const [mimeType, mediaTypeJson] of Object.entries(json.content as JSONObject)) {
         const mediaType = this.parseMediaType(mediaTypeJson as JSONObject, parameter);
-        parameter.setContentModel(mimeType, mediaType);
+        parameter.setMediaTypeModel(mimeType, mediaType);
       }
     }
     if ('example' in json && 'examples' in json) {
@@ -891,7 +901,7 @@ export class OpenAPIReader {
   private parsePathParameter(
     json: PathParameterObject,
     parent: ParameterModelParent,
-  ): PathParameterModel {
+  ): PathParameter {
     if (json.in !== 'path') {
       throw new Error(`Wrong in parameter for HeaderParameter ${String(json.in)}`);
     }
@@ -910,7 +920,7 @@ export class OpenAPIReader {
   private parseQueryParameter(
     json: QueryParameterObject,
     parent: ParameterModelParent,
-  ): QueryParameterModel {
+  ): QueryParameter {
     if (json.in !== 'query') {
       throw new Error(`Wrong in parameter for HeaderParameter ${String(json.in)}`);
     }
@@ -935,7 +945,7 @@ export class OpenAPIReader {
   private parseHeaderParameter(
     json: HeaderParameterObject,
     parent: ParameterModelParent,
-  ): HeaderParameterModel {
+  ): HeaderParameter {
     if (json.in !== 'header') {
       throw new Error(`Wrong in parameter for HeaderParameter ${String(json.in)}`);
     }
@@ -954,7 +964,7 @@ export class OpenAPIReader {
   private parseCookieParameter(
     json: CookieParameterObject,
     parent: ParameterModelParent,
-  ): CookieParameterModel {
+  ): CookieParameter {
     if (json.in !== 'cookie') {
       throw new Error(`Wrong in parameter for CookieParameter ${String(json.in)}`);
     }
@@ -970,8 +980,8 @@ export class OpenAPIReader {
     return result;
   }
 
-  private resolveRequestBodyFromRef(ref: string): RequestBodyModel {
-    let result = this.schemaPointers.get(ref) as RequestBodyModel | undefined;
+  private resolveRequestBodyFromRef(ref: string): RequestBody {
+    let result = this.schemaPointers.get(ref) as RequestBody | undefined;
     if (result) {
       assert(
         result instanceof RequestBody,
@@ -997,7 +1007,7 @@ export class OpenAPIReader {
   private parseRequestBody(
     json: ObjectOrRef<RequestBodyObject>,
     parent: RequestBodyModelParent,
-  ): RequestBodyModel {
+  ): RequestBody {
     if (isJSONRef(json)) {
       return this.resolveRequestBodyFromRef(json.$ref);
     }
@@ -1006,15 +1016,16 @@ export class OpenAPIReader {
     result.description = getStringAttribute(json, 'description', false) as string;
     if (json.content) {
       for (const [mediaTypeName, mediaTypeData] of Object.entries(json.content)) {
-        result.content.set(mediaTypeName, this.parseMediaType(mediaTypeData, result));
+        const mediaType = result.setMediaType(mediaTypeName);
+        this.parseMediaTypeAttributes(mediaTypeData, mediaType);
       }
     }
     result.required = json.required as boolean;
     return result;
   }
 
-  private resolveSecuritySchemeFromRef(ref: string): SecuritySchemaModel {
-    let result = this.schemaPointers.get(ref) as SecuritySchemaModel | undefined;
+  private resolveSecuritySchemeFromRef(ref: string): SecuritySchema {
+    let result = this.schemaPointers.get(ref) as SecuritySchema | undefined;
     if (result) {
       assert(
         [
@@ -1046,7 +1057,7 @@ export class OpenAPIReader {
   private parseSecurityScheme(
     json: ObjectOrRef<SecuritySchemeObject>,
     parent: SecuritySchemaModelParent,
-  ): SecuritySchemaModel {
+  ): SecuritySchema {
     if (isJSONRef(json)) {
       return this.resolveSecuritySchemeFromRef(json.$ref);
     }
@@ -1067,16 +1078,16 @@ export class OpenAPIReader {
 
   private parseSecuritySchemeCommon(
     json: SecuritySchemeObject,
-    securitySchema: SecuritySchemaModel,
+    securitySchema: SecuritySchema,
   ): void {
-    this.parseExtensionFields(securitySchema.extensions, json);
+    this.parseExtensionFields(securitySchema, json);
     securitySchema.description = getStringAttribute(json, 'description', false);
   }
 
   private parseApiKeySecurityScheme(
     json: APIKeySecuritySchemeObject,
     parent: SecuritySchemaModelParent,
-  ): APIKeySecuritySchemaModel {
+  ): APIKeySecurityScheme {
     if (json.type !== 'apiKey') {
       throw new Error(`Incorrent type value ${String(json.type)}`);
     }
@@ -1092,7 +1103,7 @@ export class OpenAPIReader {
   private parseHttpSecurityScheme(
     json: HTTPSecuritySchemeObject,
     parent: SecuritySchemaModelParent,
-  ): HTTPSecuritySchemaModel {
+  ): HTTPSecurityScheme {
     if (json.type !== 'http') {
       throw new Error(`Incorrent type value ${String(json.type)}`);
     }
@@ -1106,7 +1117,7 @@ export class OpenAPIReader {
   private parseOauth2SecurityScheme(
     json: OAuth2SecuritySchemeObject,
     parent: SecuritySchemaModelParent,
-  ): OAuth2SecuritySchemaModel {
+  ): OAuth2SecurityScheme {
     if (json.type !== 'oauth2') {
       throw new Error(`Incorrent type value ${String(json.type)}`);
     }
@@ -1116,22 +1127,16 @@ export class OpenAPIReader {
 
     const { authorizationCode, clientCredentials, implicit, password } = json.flows;
     if (authorizationCode) {
-      result.flows.authorizationCode = this.parseAuthorisationCodeOAuthFlow(
-        authorizationCode,
-        result.flows,
-      );
+      this.parseAuthorisationCodeOAuthFlow(authorizationCode, result.flows);
     }
     if (clientCredentials) {
-      result.flows.clientCredentials = this.parseClientCredentialsOAuthFlow(
-        clientCredentials,
-        result.flows,
-      );
+      this.parseClientCredentialsOAuthFlow(clientCredentials, result.flows);
     }
     if (implicit) {
-      result.flows.implicit = this.parseImplicitOAuthFlow(implicit, result.flows);
+      this.parseImplicitOAuthFlow(implicit, result.flows);
     }
     if (password) {
-      result.flows.password = this.parsePasswordOAuthFlow(password, result.flows);
+      this.parsePasswordOAuthFlow(password, result.flows);
     }
 
     return result;
@@ -1145,65 +1150,48 @@ export class OpenAPIReader {
       | OAuthImplicitFlow
       | OAuthPasswordFlow,
   ): void {
-    this.parseExtensionFields(flow.extensions, json);
+    this.parseExtensionFields(flow, json);
     flow.refreshUrl = getStringAttribute(json, 'refreshUrl', false);
     if (json.scopes) {
       for (const [key, value] of Object.entries(json.scopes as JSONObject)) {
-        flow.scopes.set(key, value as string);
+        flow.addScope(key, value as string);
       }
     }
   }
 
-  private parseAuthorisationCodeOAuthFlow(
-    json: JSONObject,
-    parent: OAuthFlowModelParent,
-  ): OAuthAuthorisationCodeFlow {
-    const result = new OAuthAuthorisationCodeFlow(
-      parent,
+  private parseAuthorisationCodeOAuthFlow(json: JSONObject, parent: OAuthFlowModelParent): void {
+    const result = parent.setAuthorizationCode(
       getStringAttribute(json, 'authorizationUrl') as string,
       getStringAttribute(json, 'tokenUrl') as string,
-    );
+    ) as OAuthAuthorisationCodeFlow;
     this.parseOAuthFlowCommon(json, result);
-    return result;
   }
 
-  private parseClientCredentialsOAuthFlow(
-    json: JSONObject,
-    parent: OAuthFlowModelParent,
-  ): OAuthClientCredentialsFlow {
-    const result = new OAuthClientCredentialsFlow(
-      parent,
+  private parseClientCredentialsOAuthFlow(json: JSONObject, parent: OAuthFlowModelParent): void {
+    const result = parent.setClientCredentials(
       getStringAttribute(json, 'tokenUrl') as string,
-    );
+    ) as OAuthClientCredentialsFlow;
     this.parseOAuthFlowCommon(json, result);
-    return result;
   }
 
-  private parseImplicitOAuthFlow(
-    json: JSONObject,
-    parent: OAuthFlowModelParent,
-  ): OAuthImplicitFlow {
-    const result = new OAuthImplicitFlow(
-      parent,
+  private parseImplicitOAuthFlow(json: JSONObject, parent: OAuthFlowModelParent): void {
+    const result = parent.setImplicit(
       getStringAttribute(json, 'authorizationUrl') as string,
-    );
+    ) as OAuthImplicitFlow;
     this.parseOAuthFlowCommon(json, result);
-    return result;
   }
 
-  private parsePasswordOAuthFlow(
-    json: JSONObject,
-    parent: OAuthFlowModelParent,
-  ): OAuthPasswordFlow {
-    const result = new OAuthPasswordFlow(parent, getStringAttribute(json, 'tokenUrl') as string);
+  private parsePasswordOAuthFlow(json: JSONObject, parent: OAuthFlowModelParent): void {
+    const result = parent.setPassword(
+      getStringAttribute(json, 'tokenUrl') as string,
+    ) as OAuthPasswordFlow;
     this.parseOAuthFlowCommon(json, result);
-    return result;
   }
 
   private parseOpenIdConnectScheme(
     json: OpenIdConnectSecuritySchemeObject,
     parent: SecuritySchemaModelParent,
-  ): OpenIDConnectSecuritySchemaModel {
+  ): OpenIdConnectSecurityScheme {
     if (json.type !== 'openIdConnect') {
       throw new Error(`Incorrent type value ${String(json.type)}`);
     }
@@ -1215,8 +1203,8 @@ export class OpenAPIReader {
     return result;
   }
 
-  private resolveCallbackFromRef(ref: string): CallbackModel {
-    let result = this.schemaPointers.get(ref) as CallbackModel | undefined;
+  private resolveCallbackFromRef(ref: string): Callback {
+    let result = this.schemaPointers.get(ref) as Callback | undefined;
     if (result) {
       assert(result instanceof Callback, `Resolved reference ${ref} is not a Callback instance`);
       return result;
@@ -1236,26 +1224,26 @@ export class OpenAPIReader {
     return result;
   }
 
-  private parseCallback(
-    json: ObjectOrRef<CallbackObject>,
-    parent: CallbackModelParent,
-  ): CallbackModel {
+  private parseCallback(json: ObjectOrRef<CallbackObject>, parent: CallbackModelParent): Callback {
     if (isJSONRef(json)) {
       return this.resolveCallbackFromRef(json.$ref);
     }
 
     const result = new Callback(parent);
-    this.parseExtensionFields(result.extensions, json);
+    this.parseExtensionFields(result, json);
     for (const [key, value] of Object.entries(json)) {
       if (!key.startsWith('x-')) {
-        const pathItem = this.parsePathItem(value as JSONObject, result);
-        result.paths.set(key, pathItem);
+        this.parsePathItem(value as JSONObject, result, key);
       }
     }
     return result;
   }
 
-  private parsePathItem(json: PathItemObject, parent: PathItemModelParent): PathItemModel {
+  private parsePathItem(
+    json: PathItemObject,
+    parent: PathItemModelParent,
+    key: ParametrisedURLString,
+  ): PathItem {
     const unknownMethods = Object.keys(json).filter(attr => {
       return (
         !attr.startsWith('x-') &&
@@ -1266,15 +1254,14 @@ export class OpenAPIReader {
       throw new Error(`Unsupported HTTP method(-s) ${unknownMethods.join(',')}`);
     }
 
-    const result = new PathItem(parent);
-    this.parseExtensionFields(result.extensions, json);
+    const result = parent.setPathItem(key) as PathItem;
+    this.parseExtensionFields(result, json);
     result.summary = getStringAttribute(json, 'summary', false);
     result.description = getStringAttribute(json, 'description', false);
 
     for (const method of operationMethods) {
       if (json[method]) {
-        const operation = this.parseOperation(json[method] as OperationObject, result);
-        result.operations2.set(method, operation);
+        this.parseOperation(json[method] as OperationObject, result, method);
       }
     }
     if (json.servers?.length) {
@@ -1291,25 +1278,26 @@ export class OpenAPIReader {
     return result;
   }
 
-  private parseOperation(json: OperationObject, parent: OperationModelParent): OperationModel {
+  private parseOperation(
+    json: OperationObject,
+    parent: OperationModelParent,
+    method: PathItemOperationKey,
+  ): Operation {
     if (json.responses && isEmpty(json.responses as JSONObject)) {
       throw new Error(`Operation responses field cannot be empty`);
     }
 
-    const result = new Operation(parent);
-    this.parseExtensionFields(result.extensions, json);
+    const result = parent.addOperation(method) as Operation;
+    this.parseExtensionFields(result, json);
     if (Array.isArray(json.tags)) {
-      json.tags.forEach(tag => result.tags.push(tag));
+      json.tags.forEach(tag => result.addTag(tag));
     }
     if (json.summary) {
       result.summary = json.summary;
     }
     result.description = json.description as string;
     if (json.externalDocumentation) {
-      result.externalDocumentation = this.parseExternalDocumentation(
-        json.externalDocumentation,
-        result,
-      );
+      this.parseExternalDocumentation(json.externalDocumentation, result);
     }
     if (json.operationId) {
       result.operationId = json.operationId;
@@ -1317,11 +1305,12 @@ export class OpenAPIReader {
     if (json.parameters?.length) {
       for (const parameterJson of json.parameters) {
         const parameter = this.parseParameter(parameterJson, result);
-        result.parameters.push(parameter);
+        result.addParameterModel(parameter);
       }
     }
     if (json.requestBody) {
-      result.requestBody = this.parseRequestBody(json.requestBody, result);
+      const requestBody = this.parseRequestBody(json.requestBody, result);
+      result.setRequestBodyModel(requestBody);
     }
 
     for (const [key, responseJson] of Object.entries(json.responses)) {
@@ -1330,16 +1319,16 @@ export class OpenAPIReader {
         result.responses,
       );
       if (key === 'default') {
-        result.responses.default = response;
+        result.responses.setDefaultResponseModel(response);
       } else {
-        result.responses.codes.set(key, response);
+        result.responses.setResponseModel(key, response);
       }
     }
 
     if (json.callbacks) {
       for (const [callbackId, callbackJson] of Object.entries(json.callbacks)) {
         const callback = this.parseCallback(callbackJson, result);
-        result.callbacks.set(callbackId, callback);
+        result.setCallbackModel(callbackId, callback);
       }
     }
     if (json.security) {
@@ -1354,11 +1343,10 @@ export class OpenAPIReader {
   private parseExternalDocumentation(
     json: ExternalDocumentationObject,
     parent: ExternalDocumentationModelParent,
-  ): ExternalDocumentationModel {
-    const result = new ExternalDocumentation(parent, getStringAttribute(json, 'url') as string);
-    this.parseExtensionFields(result.extensions, json);
+  ): void {
+    const result = parent.addExternalDocs(getStringAttribute(json, 'url') as string);
+    this.parseExtensionFields(result, json);
     result.description = getStringAttribute(json, 'description', false);
-    return result;
   }
 
   private parseSecurityRequirement(
@@ -1366,39 +1354,38 @@ export class OpenAPIReader {
     parent: SecurityRequirementModelParent,
   ): void {
     const item = parent.addSecurityRequirement();
-    this.parseExtensionFields(item.extensions, itemJson);
+    this.parseExtensionFields(item, itemJson);
     for (const [schemeName, requiredScopes] of Object.entries(itemJson)) {
       assert(
         !requiredScopes ||
           (Array.isArray(requiredScopes) && requiredScopes.every(s => typeof s === 'string')),
         'SeecurityRequirement scopes must be an array of strings',
       );
-      item.addScopes(schemeName, ...(requiredScopes as string[]));
+      item.addSchema(schemeName, ...(requiredScopes as string[]));
     }
   }
 
-  private parseTag(json: TagObject, parent: TagModelParent): TagModel {
-    const result = new Tag(parent, getStringAttribute(json, 'name') as string);
-    this.parseExtensionFields(result.extensions, json);
+  private parseTag(json: TagObject, parent: TagModelParent): void {
+    const result = parent.addTag(getStringAttribute(json, 'name') as string);
+    this.parseExtensionFields(result, json);
     result.description = getStringAttribute(json, 'description', false);
     if (json.externalDocs) {
-      result.externalDocs = this.parseExternalDocumentation(json.externalDocs, result);
+      this.parseExternalDocumentation(json.externalDocs, result);
     }
-    return result;
   }
 
   private parseDiscriminator(
     json: DiscriminatorObject,
     parent: DiscriminatorModelParent,
-  ): DiscriminatorModel {
+  ): Discriminator {
     const result = new Discriminator(parent, json.propertyName);
-    this.parseExtensionFields(result.extensions, json);
+    this.parseExtensionFields(result, json);
     return result;
   }
 
-  private parseXML(json: XMLObject, parent: XMLModelParent): XMLModel {
+  private parseXML(json: XMLObject, parent: XMLModelParent): XML {
     const result = new XML(parent);
-    this.parseExtensionFields(result.extensions, json);
+    this.parseExtensionFields(result, json);
     if (json.name) {
       result.name = json.name;
     }

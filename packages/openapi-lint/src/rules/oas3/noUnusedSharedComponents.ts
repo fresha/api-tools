@@ -43,38 +43,41 @@ const removeReferenceSchema = (schema: SchemaModel, sharedSchemas: Set<SchemaMod
 };
 
 const findUnusedSharedSchemas = (openapi: OpenAPIModel): Set<SchemaModel> => {
-  const sharedSchemas = new Set<SchemaModel>(openapi.components.schemas.values());
+  const sharedSchemas = new Set<SchemaModel>();
+  for (const [, schema] of openapi.components.schemas()) {
+    sharedSchemas.add(schema);
+  }
 
-  for (const pathItem of openapi.paths.values()) {
-    for (const param of pathItem.parameters) {
+  for (const [, pathItem] of openapi.paths.pathItems()) {
+    for (const param of pathItem.parameters()) {
       if (param.schema) {
         removeReferenceSchema(param.schema, sharedSchemas);
       }
     }
 
     for (const [, operation] of pathItem.operations()) {
-      for (const param of operation.parameters) {
+      for (const param of operation.parameters()) {
         if (param.schema) {
           removeReferenceSchema(param.schema, sharedSchemas);
         }
       }
 
       if (operation.requestBody) {
-        for (const content of operation.requestBody.content.values()) {
+        for (const [, content] of operation.requestBody.mediaTypes()) {
           if (content.schema) {
             removeReferenceSchema(content.schema, sharedSchemas);
           }
         }
       }
       if (operation.responses.default) {
-        for (const content of operation.responses.default.content.values()) {
+        for (const [, content] of operation.responses.default.mediaTypes()) {
           if (content.schema) {
             removeReferenceSchema(content.schema, sharedSchemas);
           }
         }
       }
-      for (const response of operation.responses.codes.values()) {
-        for (const content of response.content.values()) {
+      for (const [, response] of operation.responses.responses()) {
+        for (const [, content] of response.mediaTypes()) {
           if (content.schema) {
             removeReferenceSchema(content.schema, sharedSchemas);
           }
@@ -83,8 +86,8 @@ const findUnusedSharedSchemas = (openapi: OpenAPIModel): Set<SchemaModel> => {
     }
   }
 
-  for (const sharedResponse of openapi.components.responses.values()) {
-    for (const content of sharedResponse.content.values()) {
+  for (const [, sharedResponse] of openapi.components.responses()) {
+    for (const [, content] of sharedResponse.mediaTypes()) {
       if (content.schema) {
         removeReferenceSchema(content.schema, sharedSchemas);
       }

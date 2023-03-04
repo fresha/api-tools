@@ -49,7 +49,7 @@ export const schemaToType = (schema: Nullable<SchemaModel>): string => {
 export const determineSchemaName = (schema: SchemaModel): string => {
   let primaryDataSchemaName = schema.title;
   if (!primaryDataSchemaName && schema.root.components === schema.parent) {
-    for (const [title, sharedSchema] of schema.root.components.schemas) {
+    for (const [title, sharedSchema] of schema.root.components.schemas()) {
       if (schema === sharedSchema) {
         primaryDataSchemaName = title;
       }

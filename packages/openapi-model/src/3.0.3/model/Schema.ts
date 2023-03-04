@@ -1,10 +1,10 @@
 import assert from 'assert';
 
 import { BasicNode } from './BasicNode';
+import { Discriminator } from './Discriminator';
+import { ExternalDocumentation } from './ExternalDocumentation';
 
 import type {
-  DiscriminatorModel,
-  ExternalDocumentationModel,
   SchemaCreateArrayObject,
   SchemaCreateArrayOptions,
   CreateOrSetSchemaOptions,
@@ -18,7 +18,7 @@ import type {
   SchemaType,
   XMLModel,
 } from './types';
-import type { CommonMarkString, JSONValue, Nullable } from '@fresha/api-tools-core';
+import type { CommonMarkString, JSONValue, Nullable, URLString } from '@fresha/api-tools-core';
 
 export const isSchemaModel = (obj: unknown): obj is SchemaModel => {
   return !!(
@@ -37,23 +37,23 @@ export const isSchemaModelType = (obj: unknown): obj is { type: SchemaModel } =>
  * @see http://spec.openapis.org/oas/v3.0.3#schema-object
  */
 export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel {
-  title: Nullable<string>;
-  multipleOf: Nullable<number>;
-  maximum: Nullable<number>;
-  exclusiveMaximum: boolean;
-  minimum: Nullable<number>;
-  exclusiveMinimum: boolean;
-  maxLength: Nullable<number>;
-  minLength: Nullable<number>;
-  pattern: Nullable<string>;
-  maxItems: Nullable<number>;
-  minItems: Nullable<number>;
-  uniqueItems: boolean;
-  maxProperties: Nullable<number>;
-  minProperties: Nullable<number>;
-  required: Set<string>;
+  #title: Nullable<string>;
+  #multipleOf: Nullable<number>;
+  #maximum: Nullable<number>;
+  #exclusiveMaximum: boolean;
+  #minimum: Nullable<number>;
+  #exclusiveMinimum: boolean;
+  #maxLength: Nullable<number>;
+  #minLength: Nullable<number>;
+  #pattern: Nullable<string>;
+  #maxItems: Nullable<number>;
+  #minItems: Nullable<number>;
+  #uniqueItems: boolean;
+  #maxProperties: Nullable<number>;
+  #minProperties: Nullable<number>;
+  readonly #required: Set<string>;
   enum: Nullable<JSONValue[]>;
-  type: Nullable<SchemaType>;
+  #type: Nullable<SchemaType>;
   readonly allOf: SchemaModel[];
   readonly oneOf: SchemaModel[];
   readonly anyOf: SchemaModel[];
@@ -61,17 +61,17 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   items: Nullable<SchemaModel>;
   readonly properties: Map<string, SchemaModel>;
   additionalProperties: Nullable<SchemaModel | boolean>;
-  description: Nullable<CommonMarkString>;
-  format: Nullable<SchemaFormat>;
-  default: Nullable<JSONValue>;
-  nullable: boolean;
-  discriminator: Nullable<DiscriminatorModel>;
-  readOnly: boolean;
-  writeOnly: boolean;
+  #description: Nullable<CommonMarkString>;
+  #format: Nullable<SchemaFormat>;
+  #default: Nullable<JSONValue>;
+  #nullable: boolean;
+  discriminator: Nullable<Discriminator>;
+  #readOnly: boolean;
+  #writeOnly: boolean;
   xml: Nullable<XMLModel>;
-  externalDocs: Nullable<ExternalDocumentationModel>;
-  example: Nullable<JSONValue>;
-  deprecated: boolean;
+  #externalDocs: Nullable<ExternalDocumentation>;
+  #example: Nullable<JSONValue>;
+  #deprecated: boolean;
 
   static create(parent: SchemaModelParent, params: CreateSchemaOptions = null): Schema {
     const result = new Schema(parent);
@@ -86,16 +86,16 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
       case 'integer':
       case 'number':
       case 'string':
-        result.type = resolvedType;
+        result.#type = resolvedType;
         break;
       case 'int32':
       case 'int64':
-        result.type = 'integer';
+        result.#type = 'integer';
         result.format = resolvedType;
         break;
       case 'float':
       case 'double':
-        result.type = 'number';
+        result.#type = 'number';
         result.format = resolvedType;
         break;
       case 'byte':
@@ -105,7 +105,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
       case 'password':
       case 'email':
       case 'decimal':
-        result.type = 'string';
+        result.#type = 'string';
         result.format = resolvedType;
         break;
       default:
@@ -117,10 +117,10 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
         result.nullable = params.nullable;
       }
       if (params.readOnly != null) {
-        result.readOnly = params.readOnly;
+        result.#readOnly = params.readOnly;
       }
       if (params.writeOnly != null) {
-        result.writeOnly = params.writeOnly;
+        result.#writeOnly = params.writeOnly;
       }
 
       switch (params.type) {
@@ -264,23 +264,23 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   constructor(parent: SchemaModelParent) {
     super(parent);
-    this.title = null;
-    this.multipleOf = null;
-    this.maximum = null;
-    this.exclusiveMaximum = false;
-    this.minimum = null;
-    this.exclusiveMinimum = false;
-    this.minLength = null;
-    this.maxLength = null;
-    this.pattern = null;
-    this.minItems = null;
-    this.maxItems = null;
-    this.uniqueItems = false;
-    this.minProperties = null;
-    this.maxProperties = null;
-    this.required = new Set<string>();
+    this.#title = null;
+    this.#multipleOf = null;
+    this.#maximum = null;
+    this.#exclusiveMaximum = false;
+    this.#minimum = null;
+    this.#exclusiveMinimum = false;
+    this.#minLength = null;
+    this.#maxLength = null;
+    this.#pattern = null;
+    this.#minItems = null;
+    this.#maxItems = null;
+    this.#uniqueItems = false;
+    this.#minProperties = null;
+    this.#maxProperties = null;
+    this.#required = new Set<string>();
     this.enum = null;
-    this.type = null;
+    this.#type = null;
     this.allOf = [];
     this.oneOf = [];
     this.anyOf = [];
@@ -288,17 +288,207 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.items = null;
     this.properties = new Map<string, SchemaModel>();
     this.additionalProperties = true;
-    this.description = null;
-    this.format = null;
-    this.default = null;
-    this.nullable = false;
+    this.#description = null;
+    this.#format = null;
+    this.#default = null;
+    this.#nullable = false;
     this.discriminator = null;
-    this.readOnly = false;
-    this.writeOnly = false;
+    this.#readOnly = false;
+    this.#writeOnly = false;
     this.xml = null;
-    this.externalDocs = null;
-    this.example = null;
-    this.deprecated = false;
+    this.#externalDocs = null;
+    this.#example = null;
+    this.#deprecated = false;
+  }
+
+  get title(): Nullable<string> {
+    return this.#title;
+  }
+
+  set title(value: Nullable<string>) {
+    this.#title = value;
+  }
+
+  get multipleOf(): Nullable<number> {
+    return this.#multipleOf;
+  }
+
+  set multipleOf(value: Nullable<number>) {
+    this.#multipleOf = value;
+  }
+
+  get maximum(): Nullable<number> {
+    return this.#maximum;
+  }
+
+  set maximum(value: Nullable<number>) {
+    this.#maximum = value;
+  }
+
+  get exclusiveMaximum(): boolean {
+    return this.#exclusiveMaximum;
+  }
+
+  set exclusiveMaximum(value: boolean) {
+    this.#exclusiveMaximum = value;
+  }
+
+  get minimum(): Nullable<number> {
+    return this.#minimum;
+  }
+
+  set minimum(value: Nullable<number>) {
+    this.#minimum = value;
+  }
+
+  get exclusiveMinimum(): boolean {
+    return this.#exclusiveMinimum;
+  }
+
+  set exclusiveMinimum(value: boolean) {
+    this.#exclusiveMinimum = value;
+  }
+
+  get minLength(): Nullable<number> {
+    return this.#minLength;
+  }
+
+  set minLength(value: Nullable<number>) {
+    assert(value == null || value >= 0, 'minLength must be either null or a positive number');
+    this.#minLength = value;
+  }
+
+  get maxLength(): Nullable<number> {
+    return this.#maxLength;
+  }
+
+  set maxLength(value: Nullable<number>) {
+    assert(value == null || value >= 0, 'maxLength must be either null or a positive number');
+    this.#maxLength = value;
+  }
+
+  get pattern(): Nullable<string> {
+    return this.#pattern;
+  }
+
+  set pattern(value: Nullable<string>) {
+    this.#pattern = value;
+  }
+
+  get maxItems(): Nullable<number> {
+    return this.#maxItems;
+  }
+
+  set maxItems(value: Nullable<number>) {
+    assert(value == null || value >= 0, `maxItem must be either null or a positive number`);
+    this.#maxItems = value;
+  }
+
+  get minItems(): Nullable<number> {
+    return this.#minItems;
+  }
+
+  set minItems(value: Nullable<number>) {
+    assert(value == null || value >= 0, `minItems must be either null or a positive number`);
+    this.#minItems = value;
+  }
+
+  get uniqueItems(): boolean {
+    return this.#uniqueItems;
+  }
+
+  set uniqueItems(value: boolean) {
+    this.#uniqueItems = value;
+  }
+
+  get maxProperties(): Nullable<number> {
+    return this.#maxProperties;
+  }
+
+  set maxProperties(value: Nullable<number>) {
+    assert(value == null || value >= 0, `maxProperties must be either null or a positive number`);
+    this.#maxProperties = value;
+  }
+
+  get minProperties(): Nullable<number> {
+    return this.#minProperties;
+  }
+
+  set minProperties(value: Nullable<number>) {
+    assert(value == null || value >= 0, `minProperties must be either null or a positive number`);
+    this.#minProperties = value;
+  }
+
+  get type(): Nullable<SchemaType> {
+    return this.#type;
+  }
+
+  set type(value: Nullable<SchemaType>) {
+    this.#type = value;
+  }
+
+  get description(): Nullable<CommonMarkString> {
+    return this.#description;
+  }
+
+  set description(value: Nullable<CommonMarkString>) {
+    this.#description = value;
+  }
+
+  get format(): Nullable<SchemaFormat> {
+    return this.#format;
+  }
+
+  set format(value: Nullable<SchemaFormat>) {
+    this.#format = value;
+  }
+
+  get default(): Nullable<JSONValue> {
+    return this.#default;
+  }
+
+  set default(value: Nullable<JSONValue>) {
+    this.#default = value;
+  }
+
+  get nullable(): boolean {
+    return this.#nullable;
+  }
+
+  set nullable(value: boolean) {
+    this.#nullable = value;
+  }
+
+  get readOnly(): boolean {
+    return this.#readOnly;
+  }
+
+  set readOnly(value: boolean) {
+    this.#readOnly = value;
+  }
+
+  get writeOnly(): boolean {
+    return this.#writeOnly;
+  }
+
+  set writeOnly(value: boolean) {
+    this.#writeOnly = value;
+  }
+
+  get example(): Nullable<JSONValue> {
+    return this.#example;
+  }
+
+  set example(value: Nullable<JSONValue>) {
+    this.#example = value;
+  }
+
+  get deprecated(): boolean {
+    return this.#deprecated;
+  }
+
+  set deprecated(value: boolean) {
+    this.#deprecated = value;
   }
 
   isComposite(): boolean {
@@ -306,7 +496,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   }
 
   isNull(): boolean {
-    return !!(this.type === null && this.enum?.length === 1 && this.enum[0] === null);
+    return !!(this.#type === null && this.enum?.length === 1 && this.enum[0] === null);
   }
 
   isNullish(): boolean {
@@ -320,7 +510,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   }
 
   isTuple(): boolean {
-    return this.type === 'array' && Array.isArray(this.items);
+    return this.#type === 'array' && Array.isArray(this.items);
   }
 
   *getProperties(): IterableIterator<SchemaPropertyObject> {
@@ -356,7 +546,7 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   }
 
   getPropertyDeep(name: string): SchemaModel | undefined {
-    if (this.type === 'object') {
+    if (this.#type === 'object') {
       const prop = this.getProperty(name);
       if (prop) {
         return prop;
@@ -416,23 +606,40 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   deleteProperty(name: string): void {
     this.properties.delete(name);
-    this.required.delete(name);
+    this.#required.delete(name);
   }
 
   clearProperties(): void {
     this.properties.clear();
-    this.required.clear();
+    this.#required.clear();
+  }
+
+  get requiredPropertyCount(): number {
+    return this.#required.size;
+  }
+
+  requiredPropertyNames(): IterableIterator<string> {
+    return this.#required.keys();
+  }
+
+  *requiredProperties(): IterableIterator<[string, SchemaModel]> {
+    for (const name of this.#required.keys()) {
+      const prop = this.properties.get(name);
+      if (prop !== undefined) {
+        yield [name, prop];
+      }
+    }
   }
 
   isPropertyRequired(name: string): boolean {
-    return this.required.has(name);
+    return this.#required.has(name);
   }
 
   setPropertyRequired(name: string, value: boolean): void {
     if (value) {
-      this.required.add(name);
+      this.#required.add(name);
     } else {
-      this.required.delete(name);
+      this.#required.delete(name);
     }
   }
 
@@ -486,6 +693,21 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   arrayOf(parent: SchemaModelParent): SchemaModel {
     return Schema.createArray(parent, this);
+  }
+
+  get externalDocs(): Nullable<ExternalDocumentation> {
+    return this.#externalDocs;
+  }
+
+  addExternalDocs(url: URLString): ExternalDocumentation {
+    assert(!this.#externalDocs, 'External documentation is already set');
+    this.#externalDocs = new ExternalDocumentation(this, url);
+    return this.#externalDocs;
+  }
+
+  deleteExternalDocs(): void {
+    this.#externalDocs?.dispose();
+    this.#externalDocs = null;
   }
 }
 

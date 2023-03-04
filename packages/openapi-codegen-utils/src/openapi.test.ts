@@ -53,23 +53,23 @@ test('getOperations', () => {
 
   const pathItem1 = openapi.setPathItem('/hello');
 
-  const op1 = pathItem1.setOperation('get');
+  const op1 = pathItem1.addOperation('get');
   op1.operationId = 'readHello';
   op1.deprecated = true;
   op1.addTag('t1');
 
-  const op2 = pathItem1.setOperation('post');
+  const op2 = pathItem1.addOperation('post');
   op2.operationId = 'createGreeting';
   op2.addTag('t1');
   op2.addTag('t2');
 
   const pathItem2 = openapi.setPathItem('/world');
 
-  const op3 = pathItem2.setOperation('delete');
+  const op3 = pathItem2.addOperation('delete');
   op3.operationId = 'deleteWorldInfo';
   op3.deprecated = true;
 
-  const op4 = pathItem2.setOperation('get');
+  const op4 = pathItem2.addOperation('get');
   op4.operationId = 'fetchWorldInfo';
   op4.addTag('t2');
 
@@ -94,7 +94,7 @@ test('getOperations', () => {
 
 test('getOperationEntryKey', () => {
   const openapi = OpenAPIFactory.create();
-  const operation = openapi.setPathItem('/op').setOperation('get');
+  const operation = openapi.setPathItem('/op').addOperation('get');
 
   expect(getOperationEntryKey(operation)).toBeUndefined();
 
@@ -107,7 +107,7 @@ test('getOperationEntryKey', () => {
 
 test('getOperationEntryKeyOrThrow', () => {
   const openapi = OpenAPIFactory.create();
-  const operation = openapi.setPathItem('/op').setOperation('get');
+  const operation = openapi.setPathItem('/op').addOperation('get');
 
   expect(() => getOperationEntryKeyOrThrow(operation)).toThrow();
 
@@ -119,10 +119,10 @@ test('getOperationEntryKeyOrThrow', () => {
 });
 
 describe('getOperationId', () => {
-  let operation = OpenAPIFactory.create().setPathItem('/op1').setOperation('get');
+  let operation = OpenAPIFactory.create().setPathItem('/op1').addOperation('get');
 
   beforeEach(() => {
-    operation = OpenAPIFactory.create().setPathItem('/op1').setOperation('get');
+    operation = OpenAPIFactory.create().setPathItem('/op1').addOperation('get');
   });
 
   test('undefined', () => {
@@ -147,7 +147,7 @@ describe('getOperationId', () => {
 });
 
 test('getOperationIdOrThrow', () => {
-  const operation = OpenAPIFactory.create().setPathItem('/op1').setOperation('get');
+  const operation = OpenAPIFactory.create().setPathItem('/op1').addOperation('get');
 
   expect(() => getOperationIdOrThrow(operation)).toThrow();
 
@@ -157,7 +157,7 @@ test('getOperationIdOrThrow', () => {
 
 test('getOperationCacheOptions', () => {
   const openapi = OpenAPIFactory.create();
-  const operation = openapi.setPathItem('/op').setOperation('get');
+  const operation = openapi.setPathItem('/op').addOperation('get');
 
   expect(getOperationCacheOptions(operation)).toBeUndefined();
 
@@ -178,7 +178,7 @@ test('getOperationCacheOptions', () => {
 });
 
 test('getOperationCacheOptionsOrThrow', () => {
-  const operation = OpenAPIFactory.create().setPathItem('/op1').setOperation('get');
+  const operation = OpenAPIFactory.create().setPathItem('/op1').addOperation('get');
 
   expect(() => getOperationIdOrThrow(operation)).toThrow();
 

@@ -52,7 +52,7 @@ export class Generator extends GeneratorBase<Context> {
   }
 
   protected collectData(): void {
-    for (const [name, schema] of this.context.openapi.components.schemas) {
+    for (const [name, schema] of this.context.openapi.components.schemas()) {
       if (name.endsWith('Resource')) {
         const type = getResourceType(name, schema);
         this.schemaToName.set(schema, name);
@@ -74,8 +74,8 @@ export class Generator extends GeneratorBase<Context> {
       //   // }
       // }
 
-      for (const response of operation.responses.codes.values()) {
-        const responseDocumentSchema = response.content.get(mediaType)?.schema;
+      for (const [, response] of operation.responses.responses()) {
+        const responseDocumentSchema = response.getMediaType(mediaType)?.schema;
 
         const primarySubschemas: SchemaModel[] = [];
         const primaryDataSchemas = responseDocumentSchema?.getProperty('data') ?? null;

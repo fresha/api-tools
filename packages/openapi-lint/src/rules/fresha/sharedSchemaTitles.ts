@@ -16,7 +16,7 @@ export const run: RuleFunc = (
   let modified = false;
 
   if (!isDisabled(openapi, id)) {
-    for (const [key, schema] of openapi.components.schemas) {
+    for (const [key, schema] of openapi.components.schemas()) {
       if (!schema.title) {
         if (options.autoFix) {
           schema.title = key;

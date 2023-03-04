@@ -3,45 +3,77 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { MediaType } from './MediaType';
 
-import type { MediaTypeModel, RequestBodyModel, RequestBodyModelParent } from './types';
-import type { MIMETypeString, Nullable } from '@fresha/api-tools-core';
+import type { RequestBodyModel, RequestBodyModelParent } from './types';
+import type { CommonMarkString, MIMETypeString, Nullable } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#request-body-object
  */
 export class RequestBody extends BasicNode<RequestBodyModelParent> implements RequestBodyModel {
-  description: Nullable<string>;
-  readonly content: Map<MIMETypeString, MediaTypeModel>;
-  required: boolean;
+  #description: Nullable<CommonMarkString>;
+  readonly #content: Map<MIMETypeString, MediaType>;
+  #required: boolean;
 
   constructor(parent: RequestBodyModelParent) {
     super(parent);
-    this.description = null;
-    this.content = new Map<string, MediaTypeModel>();
-    this.required = false;
+    this.#description = null;
+    this.#content = new Map<string, MediaType>();
+    this.#required = false;
   }
 
-  getContent(mimeType: MIMETypeString): MediaTypeModel | undefined {
-    return this.content.get(mimeType);
+  get description(): Nullable<CommonMarkString> {
+    return this.#description;
   }
 
-  getContentOrThrow(mimeType: MIMETypeString): MediaTypeModel {
-    const result = this.getContent(mimeType);
-    assert(result);
+  set description(value: Nullable<CommonMarkString>) {
+    this.#description = value;
+  }
+
+  get required(): boolean {
+    return this.#required;
+  }
+
+  set required(value: boolean) {
+    this.#required = value;
+  }
+
+  get mediaTypeCount(): number {
+    return this.#content.size;
+  }
+
+  mediaTypeKeys(): IterableIterator<MIMETypeString> {
+    return this.#content.keys();
+  }
+
+  mediaTypes(): IterableIterator<[MIMETypeString, MediaType]> {
+    return this.#content.entries();
+  }
+
+  hasMediaType(mimeType: MIMETypeString): boolean {
+    return this.#content.has(mimeType);
+  }
+
+  getMediaType(mimeType: MIMETypeString): MediaType | undefined {
+    return this.#content.get(mimeType);
+  }
+
+  getMediaTypeOrThrow(mimeType: MIMETypeString): MediaType {
+    const result = this.getMediaType(mimeType);
+    assert(result, `Media type for '${mimeType}' is missing`);
     return result;
   }
 
-  setContent(mimeType: MIMETypeString): MediaType {
+  setMediaType(mimeType: MIMETypeString): MediaType {
     const result = new MediaType(this);
-    this.content.set(mimeType, result);
+    this.#content.set(mimeType, result);
     return result;
   }
 
-  deleteContent(mimeType: MIMETypeString): void {
-    this.content.delete(mimeType);
+  deleteMediaType(mimeType: MIMETypeString): void {
+    this.#content.delete(mimeType);
   }
 
-  clearContent(): void {
-    this.content.clear();
+  clearMediaTypes(): void {
+    this.#content.clear();
   }
 }

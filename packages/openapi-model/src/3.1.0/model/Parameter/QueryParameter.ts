@@ -1,6 +1,6 @@
 import { ParameterBase, ParameterParent } from './ParameterBase';
 
-import type { QueryParameterSerializationStyle } from '../../../baseTypes';
+import type { QueryParameterSerializationStyle } from '../../../shared/types';
 import type { QueryParameterModel } from '../types';
 
 export class QueryParameter extends ParameterBase implements QueryParameterModel {

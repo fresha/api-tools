@@ -1,4 +1,4 @@
-import { PathParameterSerializationStyle } from '../../../baseTypes';
+import { PathParameterSerializationStyle } from '../../../shared/types';
 
 import { ParameterBase, ParameterParent } from './ParameterBase';
 

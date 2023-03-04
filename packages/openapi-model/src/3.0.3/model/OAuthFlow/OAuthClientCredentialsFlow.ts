@@ -1,3 +1,5 @@
+import { assertValidUrl } from '../utils';
+
 import { OAuthFlowBase } from './OAuthFlowBase';
 
 import type { OAuthClientCredentialsFlowModel, OAuthFlowModelParent } from '../types';
@@ -10,11 +12,25 @@ export class OAuthClientCredentialsFlow
   extends OAuthFlowBase
   implements OAuthClientCredentialsFlowModel
 {
-  declare readonly type: 'clientCredentials';
-  tokenUrl: URLString;
+  #tokenUrl: URLString;
 
   constructor(parent: OAuthFlowModelParent, tokenUrl: URLString) {
-    super(parent, 'clientCredentials');
-    this.tokenUrl = tokenUrl;
+    super(parent);
+    assertValidUrl(tokenUrl);
+    this.#tokenUrl = tokenUrl;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  get type(): 'clientCredentials' {
+    return 'clientCredentials';
+  }
+
+  get tokenUrl(): URLString {
+    return this.#tokenUrl;
+  }
+
+  set tokenUrl(value: URLString) {
+    assertValidUrl(value);
+    this.#tokenUrl = value;
   }
 }

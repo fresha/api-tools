@@ -38,18 +38,18 @@ test('getPathItem + getPathItemOrThrow', () => {
 });
 
 test('mutation methods', () => {
-  expect(callback.paths.size).toBe(0);
+  expect(callback.pathItemCount).toBe(0);
 
   callback.setPathItem('warlock');
   callback.setPathItem('amazons');
 
-  expect(Array.from(callback.paths.keys())).toStrictEqual(['warlock', 'amazons']);
+  expect(Array.from(callback.pathItemUrls())).toStrictEqual(['warlock', 'amazons']);
 
   callback.deletePathItem('warlock');
 
-  expect(Array.from(callback.paths.keys())).toStrictEqual(['amazons']);
+  expect(Array.from(callback.pathItemUrls())).toStrictEqual(['amazons']);
 
   callback.clearPathItems();
 
-  expect(callback.paths.size).toBe(0);
+  expect(callback.pathItemCount).toBe(0);
 });

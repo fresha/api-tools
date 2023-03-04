@@ -3,7 +3,6 @@ import path from 'path';
 
 import yaml from 'yaml';
 
-import { ExternalDocumentation } from './ExternalDocumentation';
 import { OpenAPI, OpenAPIFactory } from './OpenAPI';
 import { OpenAPIReader } from './OpenAPIReader';
 import { OpenAPIWriter } from './OpenAPIWriter';
@@ -83,9 +82,9 @@ test('serialises operation with inline schemas', () => {
   const openapi = new OpenAPI('Operation test', '0.1.0');
 
   const pathItem = openapi.setPathItem('/employees');
-  const operation = pathItem.setOperation('post');
+  const operation = pathItem.addOperation('post');
   const response = operation.responses.setDefaultResponse('Error response');
-  const responseMediaType = response.setContent('application/json');
+  const responseMediaType = response.setMediaType('application/json');
   const responseSchema = responseMediaType.setSchema('object');
   responseSchema.setProperty('code', { type: 'integer', required: true });
 
@@ -125,11 +124,11 @@ test('serialises operation with shared schemas', () => {
 
   const employeesPathItem = openapi.setPathItem('/employees');
 
-  const createEmployeeOperation = employeesPathItem.setOperation('post');
-  const createEmployeeResponse =
-    createEmployeeOperation.responses.setDefaultResponse('Error response');
-  const createEmployeeResponseJson = createEmployeeResponse.setContent('application/json');
-  createEmployeeResponseJson.schema = errorListSchema;
+  employeesPathItem
+    .addOperation('post')
+    .responses.setDefaultResponse('Error response')
+    .setMediaType('application/json')
+    .setSchema(errorListSchema);
 
   const writer = new OpenAPIWriter();
   const openapiObject = writer.write(openapi);
@@ -173,8 +172,8 @@ test('serializes tags', () => {
 
   const t1 = openapi.addTag('t1');
   t1.description = 'The single tag';
-  t1.externalDocs = new ExternalDocumentation(t1, 'http://www.example.com/docs');
-  t1.externalDocs.description = '3rd party docs';
+  const externalDocs = t1.addExternalDocs('http://www.example.com/docs');
+  externalDocs.description = '3rd party docs';
   t1.setExtension('x', 'y');
 
   const writer = new OpenAPIWriter();

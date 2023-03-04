@@ -39,7 +39,7 @@ export class Action {
     this.pathUrl = pathUrl;
     this.httpMethod = httpMethod;
     this.methodName = operation.operationId ?? pathUrl;
-    this.params = Array.from(operation.parameters, param => new ActionParam(this.context, param));
+    this.params = Array.from(operation.parameters(), param => new ActionParam(this.context, param));
 
     if (operation.requestBody) {
       this.params.push(

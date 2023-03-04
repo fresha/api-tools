@@ -5,7 +5,7 @@ import type { ResponsesModel } from './types';
 let responses: ResponsesModel = {} as ResponsesModel;
 
 beforeEach(() => {
-  responses = OpenAPIFactory.create().setPathItem('/item').setOperation('get').responses;
+  responses = OpenAPIFactory.create().setPathItem('/item').addOperation('get').responses;
 });
 
 describe('responses collection', () => {

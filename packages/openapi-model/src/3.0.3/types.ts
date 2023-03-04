@@ -25,7 +25,7 @@ import type {
   SpecificationExtensions,
   TagObject,
   XMLObject,
-} from '../baseTypes';
+} from '../shared/types';
 import type { CommonMarkString, JSONValue, ObjectOrRef } from '@fresha/api-tools-core';
 
 export type {
@@ -48,7 +48,7 @@ export type {
   ServerVariableObject,
   TagObject,
   XMLObject,
-} from '../baseTypes';
+} from '../shared/types';
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#openapi-object

@@ -24,7 +24,7 @@ const openapiModel = SchemaFactory.create('My schema', '0.1.0');
 
 const findUserOperationModel = openapiModel
   .setPathItem('/users')
-  .setOperation('get');
+  .addOperation('get');
 
 const errorSchemaModel = openapiModel.components.setSchema('ErrorObject', 'object');
 errorSchemaModel.setProperties({
