@@ -1,6 +1,6 @@
 import { BasicNode } from './BasicNode';
 
-import type { DiscriminatorModel, DiscriminatorModelParent } from './types';
+import type { DiscriminatorModel, DiscriminatorModelParent, TreeNode } from './types';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#discriminator-object
@@ -16,5 +16,9 @@ export class Discriminator
     super(parent);
     this.propertyName = propertyName;
     this.mapping = new Map<string, string>();
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
   }
 }

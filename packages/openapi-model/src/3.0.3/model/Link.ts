@@ -3,7 +3,7 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 
 import type { Server } from './Server';
-import type { LinkModel, LinkModelParent } from './types';
+import type { LinkModel, LinkModelParent, TreeNode } from './types';
 import type { Nullable, JSONValue } from '@fresha/api-tools-core';
 
 /**
@@ -25,6 +25,9 @@ export class Link extends BasicNode<LinkModelParent> implements LinkModel {
     this.requestBody = null;
     this.description = null;
     this.server = null;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
   }
 
   getParameter(key: string): JSONValue | undefined {

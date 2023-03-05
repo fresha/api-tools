@@ -1,6 +1,6 @@
 import { BasicNode } from './BasicNode';
 
-import type { ServerVariableModel, ServerVariableModelParent } from './types';
+import type { ServerVariableModel, ServerVariableModelParent, TreeNode } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
 
 /**
@@ -19,6 +19,10 @@ export class ServerVariable
     this.enum = new Set<string>();
     this.default = defaultValue;
     this.description = null;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+
   }
 
   addEnum(...values: string[]): void {

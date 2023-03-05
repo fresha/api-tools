@@ -1,6 +1,6 @@
 import { BasicNode } from './BasicNode';
 
-import type { LicenseModel, LicenseModelParent } from './types';
+import type { LicenseModel, LicenseModelParent, TreeNode } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
 
 /**
@@ -14,5 +14,8 @@ export class License extends BasicNode<LicenseModelParent> implements LicenseMod
     super(parent);
     this.name = name;
     this.url = null;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
   }
 }

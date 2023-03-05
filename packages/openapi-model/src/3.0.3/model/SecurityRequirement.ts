@@ -2,7 +2,7 @@ import assert from 'assert';
 
 import { BasicNode } from './BasicNode';
 
-import type { SecurityRequirementModel, SecurityRequirementModelParent } from './types';
+import type { SecurityRequirementModel, SecurityRequirementModelParent, TreeNode } from './types';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#security-requirement-object
@@ -16,6 +16,9 @@ export class SecurityRequirement
   constructor(parent: SecurityRequirementModelParent) {
     super(parent);
     this.scopes = new Map<string, string[]>();
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
   }
 
   getScopes(schemeName: string): string[] | undefined {

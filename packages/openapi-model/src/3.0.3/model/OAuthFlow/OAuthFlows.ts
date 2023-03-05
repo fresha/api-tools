@@ -7,6 +7,7 @@ import type {
   OAuthFlowsModelParent,
   OAuthImplicitFlowModel,
   OAuthPasswordFlowModel,
+  TreeNode,
 } from '../types';
 import type { Nullable } from '@fresha/api-tools-core';
 
@@ -25,5 +26,20 @@ export class OAuthFlows extends BasicNode<OAuthFlowsModelParent> implements OAut
     this.password = null;
     this.clientCredentials = null;
     this.authorizationCode = null;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+      if (this.implicit) {
+        yield this.implicit;
+      }
+      if (this.password) {
+        yield this.password;
+      }
+      if (this.clientCredentials) {
+        yield this.clientCredentials;
+      }
+      if (this.authorizationCode) {
+        yield this.authorizationCode;
+      }
   }
 }

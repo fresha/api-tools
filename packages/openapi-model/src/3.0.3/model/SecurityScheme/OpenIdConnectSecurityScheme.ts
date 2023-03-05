@@ -1,6 +1,6 @@
 import { SecuritySchemeBase } from './SecuritySchemeBase';
 
-import type { OpenIDConnectSecuritySchemaModel, SecuritySchemaModelParent } from '../types';
+import type { OpenIDConnectSecuritySchemaModel, SecuritySchemaModelParent, TreeNode } from '../types';
 import type { URLString } from '@fresha/api-tools-core';
 
 /**
@@ -16,5 +16,10 @@ export class OpenIdConnectSecurityScheme
   constructor(parent: SecuritySchemaModelParent, openIdConnectUrl: URLString) {
     super(parent, 'openIdConnect');
     this.openIdConnectUrl = openIdConnectUrl;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
+
   }
 }

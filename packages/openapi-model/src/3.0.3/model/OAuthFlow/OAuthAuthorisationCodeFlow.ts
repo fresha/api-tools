@@ -1,6 +1,6 @@
 import { OAuthFlowBase } from './OAuthFlowBase';
 
-import type { OAuthAuthorizationCodeFlowModel, OAuthFlowModelParent } from '../types';
+import type { OAuthAuthorizationCodeFlowModel, OAuthFlowModelParent, TreeNode } from '../types';
 import type { URLString } from '@fresha/api-tools-core';
 
 /**
@@ -18,5 +18,10 @@ export class OAuthAuthorisationCodeFlow
     super(parent, 'authorizationCode');
     this.authorizationUrl = authorizationUrl;
     this.tokenUrl = tokenUrl;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
+
   }
 }

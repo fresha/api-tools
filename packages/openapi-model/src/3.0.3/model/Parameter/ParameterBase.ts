@@ -12,6 +12,7 @@ import type {
   ParameterLocation,
   ParameterModelParent,
   SchemaModel,
+  TreeNode,
 } from '../types';
 import type { JSONValue, MIMETypeString, Nullable } from '@fresha/api-tools-core';
 
@@ -40,6 +41,18 @@ export abstract class ParameterBase extends BasicNode<ParameterModelParent> {
     this.example = null;
     this.examples = new Map<string, ExampleModel>();
     this.required = false;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    if (this.schema) {
+      yield this.schema;
+    }
+    for (const mediaType of this.content.values()) {
+      yield mediaType;
+    }
+    for (const example of this.examples.values()) {
+      yield example;
+    }
   }
 
   getExample(name: string): ExampleModel | undefined {

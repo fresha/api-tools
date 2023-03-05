@@ -1,6 +1,6 @@
 import { OAuthFlowBase } from './OAuthFlowBase';
 
-import type { OAuthFlowModelParent, OAuthImplicitFlowModel } from '../types';
+import type { OAuthFlowModelParent, OAuthImplicitFlowModel, TreeNode } from '../types';
 import type { URLString } from '@fresha/api-tools-core';
 
 /**
@@ -13,5 +13,10 @@ export class OAuthImplicitFlow extends OAuthFlowBase implements OAuthImplicitFlo
   constructor(parent: OAuthFlowModelParent, authorizationUrl: string) {
     super(parent, 'implicit');
     this.authorizationUrl = authorizationUrl;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
+
   }
 }

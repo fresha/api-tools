@@ -3,7 +3,7 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { Response } from './Response';
 
-import type { HTTPStatusCode, ResponseModel, ResponsesModel, ResponsesModelParent } from './types';
+import type { HTTPStatusCode, ResponseModel, ResponsesModel, ResponsesModelParent, TreeNode } from './types';
 import type { CommonMarkString, Nullable } from '@fresha/api-tools-core';
 
 /**
@@ -17,6 +17,15 @@ export class Responses extends BasicNode<ResponsesModelParent> implements Respon
     super(parent);
     this.default = null;
     this.codes = new Map<HTTPStatusCode, ResponseModel>();
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+      if (this.default) {
+        yield this.default;
+      }
+      for (const response of this.codes.values()) {
+        yield response;
+      }
   }
 
   setDefaultResponse(description: string): ResponseModel {

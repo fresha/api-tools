@@ -1,6 +1,6 @@
 import { BasicNode } from './BasicNode';
 
-import type { ExampleModel, ExampleModelParent } from './types';
+import type { ExampleModel, ExampleModelParent, TreeNode } from './types';
 import type { Nullable, URLString, JSONValue } from '@fresha/api-tools-core';
 
 /**
@@ -18,5 +18,10 @@ export class Example extends BasicNode<ExampleModelParent> implements ExampleMod
     this.description = null;
     this.value = null;
     this.externalValue = null;
+  }
+
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
   }
 }

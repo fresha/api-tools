@@ -8,6 +8,7 @@ import type {
   EncodingModelParent,
   EncodingSerializationStyle,
   HeaderModel,
+  TreeNode,
 } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
 
@@ -28,6 +29,10 @@ export class Encoding extends BasicNode<EncodingModelParent> implements Encoding
     this.style = 'form';
     this.explode = false;
     this.allowReserved = false;
+  }
+
+  children(): IterableIterator<TreeNode<unknown>> {
+    return this.headers.values();
   }
 
   getHeader(name: string): HeaderModel | undefined {

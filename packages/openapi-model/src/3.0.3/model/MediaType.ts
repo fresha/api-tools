@@ -12,6 +12,7 @@ import type {
   MediaTypeModelParent,
   CreateOrSetSchemaOptions,
   SchemaModel,
+  TreeNode,
 } from './types';
 import type { Nullable, JSONValue } from '@fresha/api-tools-core';
 
@@ -30,6 +31,18 @@ export class MediaType extends BasicNode<MediaTypeModelParent> implements MediaT
     this.example = null;
     this.examples = new Map<string, ExampleModel>();
     this.encoding = new Map<string, EncodingModel>();
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    if (this.schema) {
+      yield this.schema;
+    }
+    for (const example of this.examples.values()) {
+      yield example;
+    }
+    for (const encoding of this.encoding.values()) {
+      yield encoding;
+    }
   }
 
   setSchema(options: CreateOrSetSchemaOptions): SchemaModel {

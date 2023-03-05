@@ -21,6 +21,7 @@ import type {
   ResponseModel,
   SecurityRequirementModel,
   ServerModel,
+  TreeNode,
 } from './types';
 import type { CommonMarkString, Nullable, ParametrisedURLString } from '@fresha/api-tools-core';
 
@@ -55,6 +56,30 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.deprecated = false;
     this.security = null;
     this.servers = [];
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    if (this.externalDocumentation) {
+      yield this.externalDocumentation;
+    }
+    for (const parameter of this.parameters) {
+      yield parameter;
+    }
+    if (this.requestBody) {
+      yield this.requestBody;
+    }
+    yield this.responses;
+    for (const callback of this.callbacks.values()) {
+      yield callback;
+    }
+    if (this.security) {
+      for (const security of this.security) {
+        yield security;
+      }
+    }
+    for (const server of this.servers) {
+      yield server;
+    }
   }
 
   get httpMethod(): PathItemOperationKey {

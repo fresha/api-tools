@@ -1,6 +1,6 @@
 import { BasicNode } from './BasicNode';
 
-import type { XMLModel, XMLModelParent } from './types';
+import type { TreeNode, XMLModel, XMLModelParent } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
 
 /**
@@ -20,5 +20,9 @@ export class XML extends BasicNode<XMLModelParent> implements XMLModel {
     this.prefix = null;
     this.attribute = false;
     this.wrapped = false;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+
   }
 }

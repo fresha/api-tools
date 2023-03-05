@@ -1,6 +1,6 @@
 import { BasicNode } from './BasicNode';
 
-import type { ExternalDocumentationModel, ExternalDocumentationModelParent } from './types';
+import type { ExternalDocumentationModel, ExternalDocumentationModelParent, TreeNode } from './types';
 import type { CommonMarkString, Nullable, URLString } from '@fresha/api-tools-core';
 
 /**
@@ -17,5 +17,9 @@ export class ExternalDocumentation
     super(parent);
     this.url = url;
     this.description = null;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
   }
 }
