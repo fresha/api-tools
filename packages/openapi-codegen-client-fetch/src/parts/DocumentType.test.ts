@@ -40,7 +40,7 @@ test('generic', () => {
   documentType.collectData(namedTypes);
   documentType.generateCode(generatedTypes);
 
-  expect(documentType.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
+  expect(documentType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
     import type { JSONAPIDataDocument } from '@fresha/api-tools-core';
 
     export type SimpleResponseDocument = JSONAPIDataDocument;
@@ -78,7 +78,7 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/index.ts'))
+    expect(documentType.context.project.getSourceFile('src/types.ts'))
       .toHaveFormattedTypeScriptText(`
       import type {
         JSONAPIServerResource,
@@ -104,7 +104,7 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/index.ts'))
+    expect(documentType.context.project.getSourceFile('src/types.ts'))
       .toHaveFormattedTypeScriptText(`
       import type {
         JSONAPIServerResource,
@@ -132,7 +132,7 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/index.ts'))
+    expect(documentType.context.project.getSourceFile('src/types.ts'))
       .toHaveFormattedTypeScriptText(`
       import type {
         JSONAPIServerResource,
@@ -164,7 +164,7 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/index.ts'))
+    expect(documentType.context.project.getSourceFile('src/types.ts'))
       .toHaveFormattedTypeScriptText(`
       import type {
         JSONAPIServerResource,
@@ -195,7 +195,7 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/index.ts'))
+    expect(documentType.context.project.getSourceFile('src/types.ts'))
       .toHaveFormattedTypeScriptText(`
       import type { JSONAPIDataDocument } from '@fresha/api-tools-core';
 
@@ -237,7 +237,7 @@ describe('included', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/index.ts'))
+    expect(documentType.context.project.getSourceFile('src/types.ts'))
       .toHaveFormattedTypeScriptText(`
       import type {
         JSONAPIServerResource,
@@ -280,7 +280,7 @@ describe('included', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/index.ts'))
+    expect(documentType.context.project.getSourceFile('src/types.ts'))
       .toHaveFormattedTypeScriptText(`
       import type {
         JSONAPIServerResource,

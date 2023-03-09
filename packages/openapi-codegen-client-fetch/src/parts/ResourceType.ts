@@ -196,9 +196,9 @@ export class ResourceType extends NamedType {
 
     const templateName = this.isRequestBody ? 'JSONAPIClientResource' : 'JSONAPIServerResource';
 
-    addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', `t:${templateName}`);
+    addImportDeclaration(this.context.typesFile, '@fresha/api-tools-core', `t:${templateName}`);
 
-    const typeAlias = addTypeAlias(this.context.sourceFile, this.name, templateName, true);
+    const typeAlias = addTypeAlias(this.context.typesFile, this.name, templateName, true);
     const typeAliasType = typeAlias.getNodeProperty('type').asKindOrThrow(SyntaxKind.TypeReference);
 
     if (this.resourceType) {
@@ -226,7 +226,7 @@ export class ResourceType extends NamedType {
       const typeLiteral = typeAliasType.addTypeArgument('{}').asKindOrThrow(SyntaxKind.TypeLiteral);
       for (const [name, info] of this.relationships) {
         const relName = `JSONAPIResourceRelationship${info.cardinality.toString()}`;
-        addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', `t:${relName}`);
+        addImportDeclaration(this.context.typesFile, '@fresha/api-tools-core', `t:${relName}`);
 
         typeLiteral.addProperty({
           kind: StructureKind.PropertySignature,

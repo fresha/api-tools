@@ -24,10 +24,12 @@ export const createActionTestContext = (
 ): ActionContext => {
   const base = createTestContext(operation.root);
   const sourceFile = base.project.createSourceFile(fileName, '');
+  const typesFile = base.project.createSourceFile('/src/types.ts', '');
 
   return {
     ...base,
     sourceFile,
+    typesFile,
     operation,
   };
 };

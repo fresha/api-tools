@@ -17,4 +17,5 @@ export interface Context extends TSProjectContext {
 export interface ActionContext extends Context {
   readonly operation: OperationModel;
   readonly sourceFile: SourceFile;
+  readonly typesFile: SourceFile;
 }

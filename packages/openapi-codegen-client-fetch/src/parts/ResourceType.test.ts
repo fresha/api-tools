@@ -47,7 +47,8 @@ test('simple, client resource', () => {
   resourceType.collectData(namedTypes);
   resourceType.generateCode(generatedTypes);
 
-  expect(resourceType.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
+  expect(resourceType.context.project.getSourceFileOrThrow('src/types.ts'))
+    .toHaveFormattedTypeScriptText(`
     import type { JSONAPIClientResource } from '@fresha/api-tools-core';
 
     export type SimpleResource = JSONAPIClientResource;
@@ -74,7 +75,7 @@ test('attributes', () => {
   resourceType.collectData(namedTypes);
   resourceType.generateCode(generatedTypes);
 
-  expect(resourceType.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
+  expect(resourceType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
     import type { JSONAPIServerResource } from '@fresha/api-tools-core';
 
     export type HelloResource = JSONAPIServerResource<
@@ -107,7 +108,7 @@ test('relationships', () => {
   resourceType.collectData(namedTypes);
   resourceType.generateCode(generatedTypes);
 
-  expect(resourceType.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
+  expect(resourceType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
     import type {
       JSONAPIServerResource,
       JSONAPIResourceRelationship1,
