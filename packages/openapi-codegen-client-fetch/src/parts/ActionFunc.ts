@@ -128,7 +128,7 @@ export class ActionFunc {
     this.usesAuthCookie = !!this.context.operation.getSecurityRequirements().length;
   }
 
-  generateCode(generatedTypes: Set<string>): void {
+  generateCode(): void {
     this.context.logger.info(`Generating code for action ${this.name}`);
 
     addImportDeclarations(this.context.sourceFile, {
@@ -144,10 +144,10 @@ export class ActionFunc {
     }
 
     if (this.requestType) {
-      this.requestType.generateCode(generatedTypes);
+      addImportDeclaration(this.context.sourceFile, './types', `t:${this.requestType.name}`);
     }
     if (this.responseType) {
-      this.responseType.generateCode(generatedTypes);
+      addImportDeclaration(this.context.sourceFile, './types', `t:${this.responseType.name}`);
     }
 
     let resultType = 'void';

@@ -179,8 +179,8 @@ export class DocumentType extends NamedType {
     }
 
     const typeBaseName = this.isRequestBody ? 'JSONAPIClientDocument' : 'JSONAPIDataDocument';
-    addImportDeclaration(this.context.sourceFile, '@fresha/api-tools-core', `t:${typeBaseName}`);
-    const typeAlias = addTypeAlias(this.context.sourceFile, this.name, typeBaseName, true);
+    addImportDeclaration(this.context.typesFile, '@fresha/api-tools-core', `t:${typeBaseName}`);
+    const typeAlias = addTypeAlias(this.context.typesFile, this.name, typeBaseName, true);
 
     const typeAliasArgs = [];
     if (this.primaryResourceTypes.length) {

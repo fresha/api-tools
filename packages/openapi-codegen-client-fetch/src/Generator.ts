@@ -8,6 +8,7 @@ import type { Context } from './context';
 export class Generator extends GeneratorBase<Context> {
   readonly context: Context;
   protected readonly sourceFile: SourceFile;
+  protected readonly typesFile: SourceFile;
   protected readonly actionFuncs: Map<string, ActionFunc>;
   protected readonly namedTypes: Map<string, NamedType>;
   protected readonly indexFile: IndexFile;
@@ -17,6 +18,7 @@ export class Generator extends GeneratorBase<Context> {
     super(context);
     this.context = context;
     this.sourceFile = this.context.createSourceFile('src/actions.ts');
+    this.typesFile = this.context.createSourceFile('src/types.ts');
     this.actionFuncs = new Map<string, ActionFunc>();
     this.namedTypes = new Map<string, NamedType>();
     this.indexFile = new IndexFile(this.context);
@@ -32,6 +34,7 @@ export class Generator extends GeneratorBase<Context> {
       const actionFunc = new ActionFunc({
         ...this.context,
         sourceFile: this.sourceFile,
+        typesFile: this.typesFile,
         operation,
       });
       actionFunc.collectData(this.namedTypes);
@@ -42,9 +45,12 @@ export class Generator extends GeneratorBase<Context> {
 
   generateCode(): void {
     const generatedTypes = new Set<string>();
+    for (const namedType of this.namedTypes.values()) {
+      namedType.generateCode(generatedTypes);
+    }
 
     for (const actionFunc of this.actionFuncs.values()) {
-      actionFunc.generateCode(generatedTypes);
+      actionFunc.generateCode();
     }
 
     this.indexFile.generateCode();

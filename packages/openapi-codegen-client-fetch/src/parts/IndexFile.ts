@@ -16,7 +16,8 @@ export class IndexFile {
   generateCode(): void {
     this.sourceFile.insertText(
       0,
-      `export * from './actions';
+      `export * from './types';
+      export * from './actions';
       export { init, setAuthCookie, APIClientErrorKind, APIClientError } from './utils';
       `,
     );

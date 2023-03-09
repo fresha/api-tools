@@ -48,24 +48,17 @@ test('simple test', () => {
   operation.addSecurityRequirement().addScopes('the_auth');
 
   const namedTypes = new Map<string, NamedType>();
-  const generatedTypes = new Set<string>();
 
   const action = createAction(operation);
   action.collectData(namedTypes);
-  action.generateCode(generatedTypes);
+  action.generateCode();
 
-  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
-    import {
-      COMMON_HEADERS,
-      makeUrl,
-      callJsonApi,
-      addQueryParam,
-      authorizeRequest,
-      ExtraCallParams,
-      applyExtraParams,
-      dispatchSuccess,
-      transformResponse,
-    } from './utils';
+  const generatedTypes = new Set<string>();
+  for (const namedType of namedTypes.values()) {
+    namedType.generateCode(generatedTypes);
+  }
+
+  expect(action.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
     import type {
       JSONAPIServerResource,
       JSONAPIResourceRelationship1,
@@ -90,6 +83,21 @@ test('simple test', () => {
     >;
 
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
+  `);
+
+  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
+    import {
+      COMMON_HEADERS,
+      makeUrl,
+      callJsonApi,
+      addQueryParam,
+      authorizeRequest,
+      ExtraCallParams,
+      applyExtraParams,
+      dispatchSuccess,
+      transformResponse,
+    } from './utils';
+    import type { ReadEmployeeListResponse } from './types';
 
     export async function readEmployeeList(
       params: {
@@ -149,7 +157,6 @@ test('specific naming convention for client library', () => {
   operation.addSecurityRequirement().addScopes('the_auth');
 
   const namedTypes = new Map<string, NamedType>();
-  const generatedTypes = new Set<string>();
 
   // override default values for api/client naming conventions
   const context: ActionContext = {
@@ -160,24 +167,18 @@ test('specific naming convention for client library', () => {
   const action = new ActionFunc(context);
 
   action.collectData(namedTypes);
-  action.generateCode(generatedTypes);
+  action.generateCode();
 
-  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
-    import {
-      COMMON_HEADERS,
-      makeUrl,
-      callJsonApi,
-      authorizeRequest,
-      ExtraCallParams,
-      applyExtraParams,
-      dispatchSuccess,
-      transformResponse,
-    } from './utils';
-    import {
+  const generatedTypes = new Set<string>();
+  for (const namedType of namedTypes.values()) {
+    namedType.generateCode(generatedTypes);
+  }
+
+  expect(action.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
+    import type {
       JSONAPIServerResource,
       JSONAPIResourceRelationship1,
       JSONAPIDataDocument,
-      camelCaseDeep,
     } from "@fresha/api-tools-core";
 
     export type EmployeeResource = JSONAPIServerResource<
@@ -194,6 +195,21 @@ test('specific naming convention for client library', () => {
     >;
 
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
+  `);
+
+  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
+    import {
+      COMMON_HEADERS,
+      makeUrl,
+      callJsonApi,
+      authorizeRequest,
+      ExtraCallParams,
+      applyExtraParams,
+      dispatchSuccess,
+      transformResponse,
+    } from './utils';
+    import type { ReadEmployeeListResponse } from './types';
+    import { camelCaseDeep } from '@fresha/api-tools-core';
 
     export async function readEmployeeList(
       extraParams?: ExtraCallParams,
@@ -241,11 +257,26 @@ test('action returns raw response', () => {
   });
 
   const namedTypes = new Map<string, NamedType>();
-  const generatedTypes = new Set<string>();
 
   const action = createAction(operation);
   action.collectData(namedTypes);
-  action.generateCode(generatedTypes);
+  action.generateCode();
+
+  const generatedTypes = new Set<string>();
+  for (const namedType of namedTypes.values()) {
+    namedType.generateCode(generatedTypes);
+  }
+
+  expect(action.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
+    import type {
+      JSONAPIServerResource,
+      JSONAPIDataDocument,
+    } from "@fresha/api-tools-core";
+
+    export type EmployeeResource = JSONAPIServerResource<'employees'>;
+
+    export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
+  `);
 
   expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
     import {
@@ -255,14 +286,7 @@ test('action returns raw response', () => {
       ExtraCallParams,
       applyExtraParams
     } from './utils';
-    import type {
-      JSONAPIServerResource,
-      JSONAPIDataDocument,
-    } from "@fresha/api-tools-core";
-
-    export type EmployeeResource = JSONAPIServerResource<'employees'>;
-
-    export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
+    import type { ReadEmployeeListResponse } from './types';
 
     export async function readEmployeeList(
       extraParams?: ExtraCallParams,
