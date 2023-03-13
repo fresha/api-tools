@@ -11,17 +11,33 @@ import type { ActionContext } from '../context';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 export class DocumentType extends NamedType {
-  protected isRequestBody: boolean;
-  protected primaryResourceTypes: NamedType[];
-  protected primaryDataIsArray: boolean;
-  protected includedResourceTypes: NamedType[];
+  primaryResourceTypes: NamedType[];
+  primaryDataIsArray: boolean;
+  includedResourceTypes: NamedType[];
 
   constructor(context: ActionContext, name: string, schema: SchemaModel, isRequestBody: boolean) {
-    super(context, name, schema);
-    this.isRequestBody = isRequestBody;
+    super(context, name, schema, isRequestBody);
     this.primaryResourceTypes = [];
     this.primaryDataIsArray = false;
     this.includedResourceTypes = [];
+  }
+
+  get primaryResourceTypeCount(): number {
+    return this.primaryResourceTypes.length;
+  }
+
+  primaryResourceType(): ResourceType {
+    assert(!this.primaryDataIsArray, 'This is an array type', this.context.operation);
+    assert(
+      this.primaryResourceTypes[0] instanceof ResourceType,
+      'Primary data type is not a resource',
+      this.context.operation,
+    );
+    return this.primaryResourceTypes[0];
+  }
+
+  get includedResourceTypeCount(): number {
+    return this.includedResourceTypes.length;
   }
 
   collectData(namedTypes: Map<string, NamedType>): void {

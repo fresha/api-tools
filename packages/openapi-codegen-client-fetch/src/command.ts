@@ -18,6 +18,7 @@ type Params = BaseParams & {
   withInternal?: boolean;
   withTags?: string[];
   withoutTags?: string[];
+  withFormatters?: boolean;
   apiNaming?: NamingConvention;
   clientNaming?: NamingConvention;
 };
@@ -34,6 +35,8 @@ export const builder = (args: Argv): Argv<Params> =>
     .describe('with-tags', 'Generate only operation with tags')
     .array('without-tags')
     .describe('without-tags', 'Generates operations not assigned with this tags')
+    .boolean('with-formatters')
+    .describe('with-formatters', 'Generate request formatters')
     .choices('api-naming', ['camel', 'kebab', 'snake', 'title'])
     .describe('api-naming', 'Naming convention in OpenAPI schema')
     .choices('client-naming', ['camel', 'kebab', 'snake', 'title'])
@@ -48,6 +51,7 @@ export const handler = (args: ArgumentsCamelCase<Params>): void => {
     includeInternal: !!args.withInternal,
     includedTags: new Set<string>(args.withTags),
     excludedTags: new Set<string>(args.withoutTags),
+    withFormatters: !!args.withFormatters,
     apiNaming: args.apiNaming ?? null,
     clientNaming: args.clientNaming ?? null,
   });

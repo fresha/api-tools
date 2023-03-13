@@ -339,6 +339,10 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     return result;
   }
 
+  hasPropertiesDeep(): boolean {
+    return !!this.allOf.reduce((accum, elem) => accum + elem.properties.size, this.properties.size);
+  }
+
   *getPropertiesDeep(): IterableIterator<SchemaPropertyObject> {
     // here we should iterate over any kind of schemas
     for (const prop of this.getProperties()) {

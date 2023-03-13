@@ -13,6 +13,7 @@ export const createTestContext = (openapi: OpenAPIModel): Context => {
     includeInternal: false,
     includedTags: new Set<string>(),
     excludedTags: new Set<string>(),
+    withFormatters: true,
     apiNaming: null,
     clientNaming: null,
   };
@@ -24,11 +25,13 @@ export const createActionTestContext = (
 ): ActionContext => {
   const base = createTestContext(operation.root);
   const sourceFile = base.project.createSourceFile(fileName, '');
+  const formattersFile = base.project.createSourceFile('/src/formatters.ts', '');
   const typesFile = base.project.createSourceFile('/src/types.ts', '');
 
   return {
     ...base,
     sourceFile,
+    formattersFile,
     typesFile,
     operation,
   };
