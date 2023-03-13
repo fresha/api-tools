@@ -78,6 +78,16 @@ test('attributes', () => {
   expect(resourceType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
     import type { JSONAPIServerResource } from '@fresha/api-tools-core';
 
+    /**
+     * HelloResource
+     *
+     * Attributes:
+     * -  name
+     * -  age
+     * -  gender
+     * -  active
+     *
+     */
     export type HelloResource = JSONAPIServerResource<
       'hello',
       {
@@ -94,6 +104,15 @@ test('relationships', () => {
   buildEmployeeSchemasForTesting(operation.root);
 
   const employee = operation.root.components.getSchemaOrThrow('EmployeeResource');
+  employee.title = 'Employee resource';
+  employee.description = `
+    This resource contains information about a single employee.
+    It also links to other related resources.
+  `
+    .split(/\n/)
+    .map(line => line.trim())
+    .filter(line => !!line.length)
+    .join('\n');
 
   // remove attributes to unclutter output
   employee.getPropertyDeepOrThrow('attributes').clearProperties();
@@ -116,6 +135,18 @@ test('relationships', () => {
       JSONAPIResourceRelationshipN,
     } from '@fresha/api-tools-core';
 
+    /**
+     * Employee resource
+     *
+     * This resource contains information about a single employee.
+     * It also links to other related resources.
+     *
+     * Relationships:
+     * -  manager relationship to the 'employees' resource
+     * -  buddy relationship to the 'employees' resource
+     * -  subordinates relationship to the 'employees' resource
+     *
+     */
     export type HelloResource = JSONAPIServerResource<
       'employees',
       {},

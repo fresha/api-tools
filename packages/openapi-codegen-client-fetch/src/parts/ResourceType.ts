@@ -8,7 +8,7 @@ import {
 } from '@fresha/api-tools-core';
 import { addImportDeclaration, addTypeAlias } from '@fresha/code-morph-ts';
 import { assert, getSchemaMultiProperty } from '@fresha/openapi-codegen-utils';
-import { StructureKind, SyntaxKind } from 'ts-morph';
+import { StructureKind, SyntaxKind, TypeAliasDeclaration } from 'ts-morph';
 
 import { NamedType } from './NamedType';
 import { schemaToType } from './utils';
@@ -201,6 +201,8 @@ export class ResourceType extends NamedType {
     const typeAlias = addTypeAlias(this.context.typesFile, this.name, templateName, true);
     const typeAliasType = typeAlias.getNodeProperty('type').asKindOrThrow(SyntaxKind.TypeReference);
 
+    this.generateJsDocs(typeAlias);
+
     if (this.resourceType) {
       typeAliasType.addTypeArgument(`'${this.resourceType}'`);
     }
@@ -236,6 +238,62 @@ export class ResourceType extends NamedType {
         });
       }
     }
+  }
+
+  protected generateJsDocs(typeAlias: TypeAliasDeclaration): void {
+    if (
+      !(
+        this.schema.title ||
+        this.schema.description ||
+        this.attributesSchema?.properties.size ||
+        this.relationships.size
+      )
+    ) {
+      return;
+    }
+
+    typeAlias.addJsDoc(writer => {
+      if (this.schema.title) {
+        writer.writeLine(this.schema.title);
+      }
+      if (this.schema.description) {
+        if (this.schema.title) {
+          writer.newLine();
+        }
+        writer.writeLine(this.schema.description);
+      }
+
+      if (this.attributesSchema?.properties.size) {
+        if (this.schema.title || this.schema.description) {
+          writer.newLine();
+        }
+        writer.writeLine('Attributes:');
+        for (const [attrName, attrSchema] of this.attributesSchema.properties) {
+          writer.writeLine(
+            ['- ', attrName, attrSchema.description || ''].filter(part => !!part.length).join(' '),
+          );
+        }
+      }
+
+      if (this.relationships.size) {
+        if (
+          this.schema.title ||
+          this.schema.description ||
+          this.attributesSchema?.properties.size
+        ) {
+          writer.newLine();
+        }
+        writer.writeLine('Relationships:');
+
+        for (const [relName, relDef] of this.relationships) {
+          writer.writeLine(
+            ['- ', relName, `relationship to the '${relDef.resourceType}' resource`]
+              .filter(part => !!part.length)
+              .join(' '),
+          );
+        }
+      }
+    });
   }
 
   protected toClientName(name: string): string {

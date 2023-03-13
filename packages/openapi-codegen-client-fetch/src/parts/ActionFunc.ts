@@ -161,7 +161,7 @@ export class ActionFunc {
       './utils': ['t:ExtraCallParams', 'applyExtraParams'],
     });
 
-    const actionFuncHasParams = this.parameterVars.size || this.requestType;
+    const actionFuncHasParams = !!(this.parameterVars.size || this.requestType);
     const actionFunc = addFunction(
       this.context.sourceFile,
       this.name,
@@ -173,6 +173,7 @@ export class ActionFunc {
     );
     actionFunc.setIsAsync(true);
 
+    this.generateJsDocs(actionFunc, actionFuncHasParams);
     this.generateParameters(actionFunc);
 
     actionFunc.addStatements((writer: CodeBlockWriter) => {
@@ -264,6 +265,65 @@ export class ActionFunc {
         writer.newLine();
         writer.writeLine(`return response;`);
       }
+    });
+  }
+
+  protected generateJsDocs(actionFunc: FunctionDeclaration, actionFuncHasParams: boolean): void {
+    actionFunc.addJsDoc(writer => {
+      let addNL = false;
+      if (this.context.operation.summary) {
+        writer.write(this.context.operation.summary);
+        addNL = true;
+      }
+      if (this.context.operation.description) {
+        if (addNL) {
+          writer.newLine();
+          writer.newLine();
+        }
+        writer.write(this.context.operation.description);
+        addNL = true;
+      }
+      if (addNL) {
+        writer.newLine();
+      }
+
+      if (actionFuncHasParams) {
+        writer.newLine();
+        writer.writeLine('@param params call parameters');
+        if (this.requestType) {
+          writer.writeLine('@param params.body request body');
+        }
+        for (const [paramName, { parameter }] of this.parameterVars) {
+          writer.writeLine(
+            [
+              '@param',
+              parameter.required ? `params.${paramName}` : `[params.${paramName}]`,
+              parameter.deprecated ? '(deprecated)' : '',
+              parameter.description || '',
+            ]
+              .filter(part => !!part.length)
+              .join(' '),
+          );
+        }
+      }
+
+      writer.newLine();
+      writer.writeLine('@param [extraParams] additional parameters');
+      writer.writeLine(
+        '@param [extraParams.authCookieName] name of the authorization cookie for this request',
+      );
+      writer.writeLine(
+        '@param [extraParams.authCookie] value of the authorization cookie for this request',
+      );
+      writer.writeLine(
+        '@param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value',
+      );
+      writer.writeLine(
+        '@param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value',
+      );
+      writer.write(
+        '@param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value',
+      );
     });
   }
 
