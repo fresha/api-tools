@@ -10,6 +10,7 @@ export interface Context extends TSProjectContext {
   readonly includeInternal: boolean;
   readonly includedTags: Set<string>;
   readonly excludedTags: Set<string>;
+  readonly withFormatters: boolean;
   readonly apiNaming: Nullable<NamingConvention>;
   readonly clientNaming: Nullable<NamingConvention>;
 }
@@ -17,5 +18,6 @@ export interface Context extends TSProjectContext {
 export interface ActionContext extends Context {
   readonly operation: OperationModel;
   readonly sourceFile: SourceFile;
+  readonly formattersFile: SourceFile;
   readonly typesFile: SourceFile;
 }

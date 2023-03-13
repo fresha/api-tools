@@ -231,6 +231,12 @@ export interface SchemaModel extends TreeNode<SchemaModelParent>, SpecificationE
   clearProperties(): void;
 
   /**
+   * Returns true if this schema of any of its allOf subschemas define any properties.
+   * Returns false otherwise.
+   */
+  hasPropertiesDeep(): boolean;
+
+  /**
    * Iterates over properties of this schema. Includes nested properties
    * from allOf clause. Goes 1 level deep.
    */

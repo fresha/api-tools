@@ -29,14 +29,12 @@ type RelationshipInfo = {
 };
 
 export class ResourceType extends NamedType {
-  protected isRequestBody: boolean;
-  protected resourceType: Nullable<string>;
-  protected attributesSchema: Nullable<SchemaModel>;
-  protected relationships: Map<string, RelationshipInfo>;
+  resourceType: Nullable<string>;
+  attributesSchema: Nullable<SchemaModel>;
+  relationships: Map<string, RelationshipInfo>;
 
   constructor(context: ActionContext, name: string, schema: SchemaModel, isRequestBody: boolean) {
-    super(context, name, schema);
-    this.isRequestBody = isRequestBody;
+    super(context, name, schema, isRequestBody);
     this.resourceType = null;
     this.attributesSchema = null;
     this.relationships = new Map<string, RelationshipInfo>();
@@ -206,9 +204,10 @@ export class ResourceType extends NamedType {
     if (this.resourceType) {
       typeAliasType.addTypeArgument(`'${this.resourceType}'`);
     }
-    if (this.attributesSchema?.properties.size) {
+
+    if (this.attributesSchema?.hasPropertiesDeep()) {
       const typeLiteral = typeAliasType.addTypeArgument('{}').asKindOrThrow(SyntaxKind.TypeLiteral);
-      for (const [name, schema] of this.attributesSchema.properties) {
+      for (const { name, schema } of this.attributesSchema.getPropertiesDeep()) {
         const typeName = schemaToType(schema);
         if (!typeName.startsWith('Unknown')) {
           typeLiteral.addProperty({
@@ -221,7 +220,7 @@ export class ResourceType extends NamedType {
       }
     }
     if (this.relationships.size) {
-      if (!this.attributesSchema?.properties.size) {
+      if (!this.attributesSchema?.hasPropertiesDeep()) {
         typeAliasType.addTypeArgument('{}');
       }
 
@@ -245,7 +244,7 @@ export class ResourceType extends NamedType {
       !(
         this.schema.title ||
         this.schema.description ||
-        this.attributesSchema?.properties.size ||
+        this.attributesSchema?.hasPropertiesDeep() ||
         this.relationships.size
       )
     ) {
@@ -263,14 +262,14 @@ export class ResourceType extends NamedType {
         writer.writeLine(this.schema.description);
       }
 
-      if (this.attributesSchema?.properties.size) {
+      if (this.attributesSchema?.hasPropertiesDeep()) {
         if (this.schema.title || this.schema.description) {
           writer.newLine();
         }
         writer.writeLine('Attributes:');
-        for (const [attrName, attrSchema] of this.attributesSchema.properties) {
+        for (const { name, schema } of this.attributesSchema.getPropertiesDeep()) {
           writer.writeLine(
-            ['- ', attrName, attrSchema.description || ''].filter(part => !!part.length).join(' '),
+            ['- ', name, schema.description || ''].filter(part => !!part.length).join(' '),
           );
         }
       }
@@ -279,7 +278,7 @@ export class ResourceType extends NamedType {
         if (
           this.schema.title ||
           this.schema.description ||
-          this.attributesSchema?.properties.size
+          this.attributesSchema?.hasPropertiesDeep()
         ) {
           writer.newLine();
         }

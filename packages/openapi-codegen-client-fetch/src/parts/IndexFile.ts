@@ -14,12 +14,13 @@ export class IndexFile {
   collectData(): void {}
 
   generateCode(): void {
-    this.sourceFile.insertText(
-      0,
-      `export * from './types';
-      export * from './actions';
-      export { init, setAuthCookie, APIClientErrorKind, APIClientError } from './utils';
-      `,
+    this.sourceFile.addStatements(`export * from './types';`);
+    this.sourceFile.addStatements(`export * from './actions';`);
+    if (this.context.withFormatters) {
+      this.sourceFile.addStatements(`export * from './fromatters';`);
+    }
+    this.sourceFile.addStatements(
+      `export { init, setAuthCookie, APIClientErrorKind, APIClientError } from './utils';`,
     );
   }
 }
