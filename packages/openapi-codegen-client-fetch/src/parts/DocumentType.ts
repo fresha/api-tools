@@ -1,7 +1,7 @@
 import { Nullable } from '@fresha/api-tools-core';
 import { addImportDeclaration, addTypeAlias } from '@fresha/code-morph-ts';
 import { assert } from '@fresha/openapi-codegen-utils';
-import { SyntaxKind } from 'ts-morph';
+import { SyntaxKind, TypeAliasDeclaration } from 'ts-morph';
 
 import { NamedType } from './NamedType';
 import { ResourceType } from './ResourceType';
@@ -182,6 +182,8 @@ export class DocumentType extends NamedType {
     addImportDeclaration(this.context.typesFile, '@fresha/api-tools-core', `t:${typeBaseName}`);
     const typeAlias = addTypeAlias(this.context.typesFile, this.name, typeBaseName, true);
 
+    this.generateJsDocs(typeAlias);
+
     const typeAliasArgs = [];
     if (this.primaryResourceTypes.length) {
       const typeName = this.primaryResourceTypes.map(t => t.name).join(' | ');
@@ -200,5 +202,51 @@ export class DocumentType extends NamedType {
       .addTypeArguments(typeAliasArgs);
 
     generatedTypes.delete(this.name);
+  }
+
+  protected generateJsDocs(typeAlias: TypeAliasDeclaration): void {
+    typeAlias.addJsDoc(writer => {
+      let addNL = false;
+
+      if (this.schema.title) {
+        writer.writeLine(this.schema.title);
+        addNL = true;
+      }
+      if (this.schema.description) {
+        if (addNL) {
+          writer.newLine();
+        }
+        writer.writeLine(this.schema.description);
+        addNL = true;
+      }
+
+      if (addNL) {
+        writer.newLine();
+      }
+      writer.writeLine(`This is a ${this.isRequestBody ? 'request' : 'response'} resource`);
+      addNL = true;
+
+      if (this.primaryResourceTypes.length) {
+        if (addNL) {
+          writer.newLine();
+        }
+        writer.writeLine('Primary data resources:');
+        for (const t of this.primaryResourceTypes) {
+          writer.writeLine(` - ${t.name}`);
+        }
+        addNL = true;
+      }
+
+      if (this.includedResourceTypes.length) {
+        if (addNL) {
+          writer.newLine();
+          addNL = true;
+        }
+        writer.writeLine('Included resources:');
+        for (const t of this.includedResourceTypes) {
+          writer.writeLine(` - ${t.name}`);
+        }
+      }
+    });
   }
 }

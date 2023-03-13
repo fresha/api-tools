@@ -30,14 +30,26 @@ test('simple test', () => {
 
   const operation = openapi.setPathItem('/employees').setOperation('get');
   operation.operationId = 'readEmployeeList';
+  operation.summary = 'Reads employee list';
+  operation.description = `
+    This operation reads a list of employee resources, and returns them as a JSON:API
+    document. Besides employees, it includes resources associated with employees, like
+    addresses and **departments**.
+  `
+    .split(/\n/)
+    .map(line => line.trim())
+    .filter(line => !!line.length)
+    .join('\n');
 
   const paramOffset = operation.addParameter('offset', 'query');
   paramOffset.required = true;
   paramOffset.schema = SchemaFactory.create(paramOffset, 'number');
+  paramOffset.description = 'Index of the first employee to retrieve';
 
   const paramLimit = operation.addParameter('limit', 'query');
   paramLimit.required = false;
   paramLimit.schema = SchemaFactory.create(paramLimit, 'number');
+  paramLimit.description = 'Maximal number of employee resources to retrieve';
 
   operation
     .setResponse(200, 'returns a list of employees')
@@ -67,6 +79,21 @@ test('simple test', () => {
       JSONAPIDataDocument,
     } from "@fresha/api-tools-core";
 
+    /**
+     * EmployeeResource
+     *
+     * Attributes:
+     * -  name
+     * -  age
+     * -  gender
+     * -  active
+     *
+     * Relationships:
+     * -  manager relationship to the 'employees' resource
+     * -  buddy relationship to the 'employees' resource
+     * -  subordinates relationship to the 'employees' resource
+     *
+     */
     export type EmployeeResource = JSONAPIServerResource<
       'employees',
       {
@@ -82,6 +109,13 @@ test('simple test', () => {
       }
     >;
 
+    /**
+     * This is a response resource
+     *
+     * Primary data resources:
+     *  - EmployeeResource
+     *
+     */
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
   `);
 
@@ -99,6 +133,24 @@ test('simple test', () => {
     } from './utils';
     import type { ReadEmployeeListResponse } from './types';
 
+    /**
+     * Reads employee list
+     *
+     * This operation reads a list of employee resources, and returns them as a JSON:API
+     * document. Besides employees, it includes resources associated with employees, like
+     * addresses and **departments**.
+     *
+     * @param params call parameters
+     * @param params.offset Index of the first employee to retrieve
+     * @param [params.limit] Maximal number of employee resources to retrieve
+     *
+     * @param [extraParams] additional parameters
+     * @param [extraParams.authCookieName] name of the authorization cookie for this request
+     * @param [extraParams.authCookie] value of the authorization cookie for this request
+     * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+     * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+     * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+     */
     export async function readEmployeeList(
       params: {
         offset: number,
@@ -181,6 +233,19 @@ test('specific naming convention for client library', () => {
       JSONAPIDataDocument,
     } from "@fresha/api-tools-core";
 
+    /**
+     * EmployeeResource
+     *
+     * Attributes:
+     * -  old-name
+     * -  new-name
+     * -  age
+     * -  is-active
+     *
+     * Relationships:
+     * -  direct-manager relationship to the 'employees' resource
+     *
+     */
     export type EmployeeResource = JSONAPIServerResource<
       'employees',
       {
@@ -194,6 +259,13 @@ test('specific naming convention for client library', () => {
       }
     >;
 
+    /**
+     * This is a response resource
+     *
+     * Primary data resources:
+     *  - EmployeeResource
+     *
+     */
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
   `);
 
@@ -211,6 +283,14 @@ test('specific naming convention for client library', () => {
     import type { ReadEmployeeListResponse } from './types';
     import { camelCaseDeep } from '@fresha/api-tools-core';
 
+    /**
+     * @param [extraParams] additional parameters
+     * @param [extraParams.authCookieName] name of the authorization cookie for this request
+     * @param [extraParams.authCookie] value of the authorization cookie for this request
+     * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+     * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+     * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+     */
     export async function readEmployeeList(
       extraParams?: ExtraCallParams,
     ): Promise<ReadEmployeeListResponse> {
@@ -273,8 +353,19 @@ test('action returns raw response', () => {
       JSONAPIDataDocument,
     } from "@fresha/api-tools-core";
 
+    /**
+     * EmployeeResource
+     *
+     */
     export type EmployeeResource = JSONAPIServerResource<'employees'>;
 
+    /**
+     * This is a response resource
+     *
+     * Primary data resources:
+     *  - EmployeeResource
+     *
+     */
     export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
   `);
 
@@ -288,6 +379,14 @@ test('action returns raw response', () => {
     } from './utils';
     import type { ReadEmployeeListResponse } from './types';
 
+    /**
+     * @param [extraParams] additional parameters
+     * @param [extraParams.authCookieName] name of the authorization cookie for this request
+     * @param [extraParams.authCookie] value of the authorization cookie for this request
+     * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+     * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+     * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+     */
     export async function readEmployeeList(
       extraParams?: ExtraCallParams,
     ): Promise<Response> {

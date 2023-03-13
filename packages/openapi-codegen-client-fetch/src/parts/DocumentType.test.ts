@@ -43,6 +43,10 @@ test('generic', () => {
   expect(documentType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
     import type { JSONAPIDataDocument } from '@fresha/api-tools-core';
 
+    /**
+     * This is a response resource
+     *
+     */
     export type SimpleResponseDocument = JSONAPIDataDocument;
   `);
 });
@@ -85,8 +89,19 @@ describe('primary data', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
+      /**
+       * Employee
+       *
+       */
       export type Employee = JSONAPIServerResource<'employees'>;
 
+      /**
+       * This is a response resource
+       *
+       * Primary data resources:
+       *  - Employee
+       *
+       */
       export type SimpleResponseDocument = JSONAPIDataDocument<Employee>;
     `);
   });
@@ -113,6 +128,13 @@ describe('primary data', () => {
 
       export type Unknown1 = JSONAPIServerResource<'employees'>;
 
+      /**
+       * This is a response resource
+       *
+       * Primary data resources:
+       *  - Unknown1
+       *
+       */
       export type SimpleResponseDocument = JSONAPIDataDocument<Unknown1>;
     `);
   });
@@ -139,10 +161,26 @@ describe('primary data', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
+      /**
+       * EmployeeResource
+       *
+       */
       export type EmployeeResource = JSONAPIServerResource<'employees'>;
 
+      /**
+       * OrganizationResource
+       *
+       */
       export type OrganizationResource = JSONAPIServerResource<'organizations'>;
 
+      /**
+       * This is a response resource
+       *
+       * Primary data resources:
+       *  - EmployeeResource
+       *  - OrganizationResource
+       *
+       */
       export type ResponseDocumentWithUnionTypes = JSONAPIDataDocument<EmployeeResource | OrganizationResource>;
     `);
   });
@@ -171,8 +209,19 @@ describe('primary data', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
+      /**
+       * Employee
+       *
+       */
       export type Employee = JSONAPIServerResource<'employees'>;
 
+      /**
+       * This is a response resource
+       *
+       * Primary data resources:
+       *  - Employee
+       *
+       */
       export type SimpleResponseDocument = JSONAPIDataDocument<Employee[]>;
     `);
   });
@@ -199,6 +248,13 @@ describe('primary data', () => {
       .toHaveFormattedTypeScriptText(`
       import type { JSONAPIDataDocument } from '@fresha/api-tools-core';
 
+      /**
+       * This is a response resource
+       *
+       * Primary data resources:
+       *  - Employee
+       *
+       */
       export type SimpleResponseDocument = JSONAPIDataDocument<Employee[]>;
     `);
   });
@@ -244,8 +300,22 @@ describe('included', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
+      /**
+       * Employee
+       *
+       */
       export type Employee = JSONAPIServerResource<'employees'>;
 
+      /**
+       * This is a response resource
+       *
+       * Primary data resources:
+       *  - Employee
+       *
+       * Included resources:
+       *  - Employee
+       *
+       */
       export type DocumentWithIncludedResources = JSONAPIDataDocument<
         Employee,
         Employee
@@ -287,10 +357,29 @@ describe('included', () => {
         JSONAPIDataDocument,
       } from '@fresha/api-tools-core';
 
+      /**
+       * Employee
+       *
+       */
       export type Employee = JSONAPIServerResource<'employees'>;
 
+      /**
+       * Organization
+       *
+       */
       export type Organization = JSONAPIServerResource<'organizations'>;
 
+      /**
+       * This is a response resource
+       *
+       * Primary data resources:
+       *  - Employee
+       *
+       * Included resources:
+       *  - Organization
+       *  - Employee
+       *
+       */
       export type DocumentWithIncludedResources = JSONAPIDataDocument<
         Employee,
         Organization | Employee
