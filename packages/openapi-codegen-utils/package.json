@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-utils",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Shared utilites for OpenAPI codegens",
   "main": "build/index.js",
   "publishConfig": {
@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@fresha/api-tools-core": "^0.5.0",
-    "@fresha/openapi-model": "^0.7.0",
+    "@fresha/openapi-model": "^0.7.1",
     "pluralize": "^8.0.0",
     "ts-morph": "^16.0.0",
     "winston": "^3.8.2"
