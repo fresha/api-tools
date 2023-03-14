@@ -5,7 +5,7 @@ import { BidiMap } from '../../BidiMap';
 import { BasicNode } from './BasicNode';
 import { PathItem } from './PathItem';
 
-import type { CallbackModel, CallbackModelParent, PathItemModel } from './types';
+import type { CallbackModel, CallbackModelParent, PathItemModel, TreeNode } from './types';
 import type { ParametrisedURLString } from '@fresha/api-tools-core';
 
 /**
@@ -17,6 +17,10 @@ export class Callback extends BasicNode<CallbackModelParent> implements Callback
   constructor(parent: CallbackModelParent) {
     super(parent);
     this.paths = new BidiMap<ParametrisedURLString, PathItemModel>();
+  }
+
+  children(): IterableIterator<TreeNode<unknown>> {
+    return this.paths.values();
   }
 
   getItemUrl(pathItem: PathItemModel): string | undefined {

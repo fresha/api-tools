@@ -3,7 +3,7 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { ServerVariable } from './ServerVariable';
 
-import type { ServerModel, ServerModelParent, ServerVariableModel } from './types';
+import type { ServerModel, ServerModelParent, ServerVariableModel, TreeNode } from './types';
 import type { Nullable } from '@fresha/api-tools-core';
 
 const isValidVariableName = (str: string): boolean => !!str;
@@ -29,6 +29,10 @@ export class Server extends BasicNode<ServerModelParent> implements ServerModel 
         }
       }
     }
+  }
+
+  children(): IterableIterator<TreeNode<unknown>> {
+    return this.mVariables.values();
   }
 
   get url(): string {

@@ -29,6 +29,7 @@ import type {
   CreateSchemaOptions,
   SchemaModel,
   SecuritySchemaModel,
+  TreeNode,
 } from './types';
 import type { CommonMarkString } from '@fresha/api-tools-core';
 
@@ -57,6 +58,36 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.securitySchemes = new Map<string, SecuritySchemaModel>();
     this.links = new Map<string, LinkModel>();
     this.callbacks = new Map<string, CallbackModel>();
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    for (const schema of this.schemas.values()) {
+      yield schema;
+    }
+    for (const response of this.responses.values()) {
+      yield response;
+    }
+    for (const parameter of this.parameters.values()) {
+      yield parameter;
+    }
+    for (const example of this.examples.values()) {
+      yield example;
+    }
+    for (const requestBody of this.requestBodies.values()) {
+      yield requestBody;
+    }
+    for (const header of this.headers.values()) {
+      yield header;
+    }
+    for (const securitySchema of this.securitySchemes.values()) {
+      yield securitySchema;
+    }
+    for (const link of this.links.values()) {
+      yield link;
+    }
+    for (const callback of this.callbacks.values()) {
+      yield callback;
+    }
   }
 
   isEmpty(): boolean {

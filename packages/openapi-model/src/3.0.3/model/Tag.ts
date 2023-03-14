@@ -2,7 +2,7 @@ import { CommonMarkString, Nullable } from '@fresha/api-tools-core';
 
 import { BasicNode } from './BasicNode';
 
-import type { ExternalDocumentationModel, TagModel, TagModelParent } from './types';
+import type { ExternalDocumentationModel, TagModel, TagModelParent, TreeNode } from './types';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#tag-object
@@ -17,5 +17,11 @@ export class Tag extends BasicNode<TagModelParent> implements TagModel {
     this.name = name;
     this.description = null;
     this.externalDocs = null;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    if (this.externalDocs) {
+      yield this.externalDocs;
+    }
   }
 }

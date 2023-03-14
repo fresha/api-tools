@@ -4,7 +4,7 @@ import { BidiMap } from '../../BidiMap';
 
 import { BasicNode } from './BasicNode';
 
-import type { PathItemModel, PathsModel, PathsModelParent } from './types';
+import type { PathItemModel, PathsModel, PathsModelParent, TreeNode } from './types';
 import type { ParametrisedURLString } from '@fresha/api-tools-core';
 
 /**
@@ -16,6 +16,10 @@ export class Paths extends BasicNode<PathsModelParent> implements PathsModel {
   constructor(parent: PathsModelParent) {
     super(parent);
     this.items = new BidiMap<ParametrisedURLString, PathItemModel>();
+  }
+
+  children(): IterableIterator<TreeNode<unknown>> {
+    return this.items.values();
   }
 
   getItem(url: ParametrisedURLString): PathItemModel | undefined {

@@ -1,6 +1,6 @@
 import { OAuthFlowBase } from './OAuthFlowBase';
 
-import type { OAuthFlowModelParent, OAuthPasswordFlowModel } from '../types';
+import type { OAuthFlowModelParent, OAuthPasswordFlowModel, TreeNode } from '../types';
 import type { URLString } from '@fresha/api-tools-core';
 
 /**
@@ -13,5 +13,10 @@ export class OAuthPasswordFlow extends OAuthFlowBase implements OAuthPasswordFlo
   constructor(parent: OAuthFlowModelParent, tokenUrl: URLString) {
     super(parent, 'password');
     this.tokenUrl = tokenUrl;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
+
   }
 }

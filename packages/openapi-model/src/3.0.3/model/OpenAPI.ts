@@ -18,6 +18,7 @@ import type {
   SpecificationExtensionsModel,
   OpenAPIModelFactory,
   SecurityRequirementModel,
+  TreeNode,
 } from './types';
 import type {
   CommonMarkString,
@@ -57,6 +58,24 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     this.tags = [];
     this.externalDocs = null;
     this.extensions = new Map<string, JSONValue>();
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    yield this.info;
+    for (const server of this.servers) {
+      yield server;
+    }
+    yield this.paths;
+    yield this.components;
+    for (const security of this.security) {
+      yield security;
+    }
+    for (const tag of this.tags) {
+      yield tag;
+    }
+    if (this.externalDocs) {
+      yield this.externalDocs;
+    }
   }
 
   get root(): OpenAPIModel {

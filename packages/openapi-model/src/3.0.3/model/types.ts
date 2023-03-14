@@ -35,6 +35,8 @@ export type ExtensionFields = Map<string, JSONValue>;
 export interface TreeNode<TParent> extends Disposable {
   readonly root: OpenAPIModel;
   readonly parent: TParent;
+
+  children(): IterableIterator<TreeNode<unknown>>;
 }
 
 /**
@@ -1150,6 +1152,8 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
   readonly security: ReadonlyArray<SecurityRequirementModel>;
   readonly tags: ReadonlyArray<TagModel>;
   readonly externalDocs: Nullable<ExternalDocumentationModel>;
+
+  children(): IterableIterator<TreeNode<unknown>>;
 
   getServer(url: ParametrisedURLString): ServerModel | undefined;
   getServerOrThrow(url: ParametrisedURLString): ServerModel;

@@ -3,7 +3,7 @@ import assert from 'assert';
 import { BasicNode } from './BasicNode';
 import { MediaType } from './MediaType';
 
-import type { MediaTypeModel, RequestBodyModel, RequestBodyModelParent } from './types';
+import type { MediaTypeModel, RequestBodyModel, RequestBodyModelParent, TreeNode } from './types';
 import type { MIMETypeString, Nullable } from '@fresha/api-tools-core';
 
 /**
@@ -19,6 +19,10 @@ export class RequestBody extends BasicNode<RequestBodyModelParent> implements Re
     this.description = null;
     this.content = new Map<string, MediaTypeModel>();
     this.required = false;
+  }
+
+  children(): IterableIterator<TreeNode<unknown>> {
+      return this.content.values();
   }
 
   getContent(mimeType: MIMETypeString): MediaTypeModel | undefined {

@@ -17,6 +17,7 @@ import type {
   SchemaPropertyObject,
   SchemaType,
   XMLModel,
+  TreeNode,
 } from './types';
 import type { CommonMarkString, JSONValue, Nullable } from '@fresha/api-tools-core';
 
@@ -299,6 +300,39 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.externalDocs = null;
     this.example = null;
     this.deprecated = false;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    for (const alt of this.allOf) {
+      yield alt;
+    }
+    for (const alt of this.oneOf) {
+      yield alt;
+    }
+    for (const alt of this.anyOf) {
+      yield alt;
+    }
+    if (this.not) {
+      yield this.not;
+    }
+    if (this.items) {
+      yield this.items;
+    }
+    for (const prop of this.properties.values()) {
+      yield prop;
+    }
+    if (this.additionalProperties && typeof this.additionalProperties !== 'boolean') {
+      yield this.additionalProperties;
+    }
+    if (this.discriminator) {
+      yield this.discriminator;
+    }
+    if (this.xml) {
+      yield this.xml;
+    }
+    if (this.externalDocs) {
+      yield this.externalDocs;
+    }
   }
 
   isComposite(): boolean {

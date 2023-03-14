@@ -2,7 +2,7 @@ import { BasicNode } from './BasicNode';
 import { Contact } from './Contact';
 import { License } from './License';
 
-import type { InfoModel, InfoModelParent } from './types';
+import type { InfoModel, InfoModelParent, TreeNode } from './types';
 import type { CommonMarkString, Nullable, URLString, VersionString } from '@fresha/api-tools-core';
 
 /**
@@ -24,5 +24,10 @@ export class Info extends BasicNode<InfoModelParent> implements InfoModel {
     this.contact = new Contact(this);
     this.license = new License(this, 'UNLICENSED');
     this.version = version;
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    yield this.contact;
+    yield this.license;
   }
 }

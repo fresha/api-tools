@@ -1,6 +1,6 @@
 import { BasicNode } from './BasicNode';
 
-import type { ContactModel, ContactModelParent } from './types';
+import type { ContactModel, ContactModelParent, TreeNode } from './types';
 import type { Nullable, URLString, EmailString } from '@fresha/api-tools-core';
 
 /**
@@ -16,5 +16,9 @@ export class Contact extends BasicNode<ContactModelParent> implements ContactMod
     this.name = null;
     this.url = null;
     this.email = null;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  *children(): IterableIterator<TreeNode<unknown>> {
   }
 }

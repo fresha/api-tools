@@ -13,6 +13,7 @@ import type {
   PathItemModelParent,
   ParameterModel,
   ServerModel,
+  TreeNode,
 } from './types';
 import type { Nullable, ParametrisedURLString } from '@fresha/api-tools-core';
 
@@ -33,6 +34,12 @@ export class PathItem extends BasicNode<PathItemModelParent> implements PathItem
     this.operations2 = new BidiMap<PathItemOperationKey, OperationModel>();
     this.servers = [];
     this.parameters = [];
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    for (const [, operation] of this.operations()) {
+      yield operation;
+    }
   }
 
   get pathUrl(): ParametrisedURLString {

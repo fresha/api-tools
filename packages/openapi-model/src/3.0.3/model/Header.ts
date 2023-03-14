@@ -11,6 +11,7 @@ import type {
   HeaderParameterSerializationStyle,
   MediaTypeModel,
   SchemaModel,
+  TreeNode,
 } from './types';
 import type { Nullable, JSONValue, MIMETypeString, CommonMarkString } from '@fresha/api-tools-core';
 
@@ -39,6 +40,18 @@ export class Header extends BasicNode<HeaderModelParent> implements HeaderModel 
     this.example = null;
     this.examples = new Map<string, ExampleModel>();
     this.content = new Map<MIMETypeString, MediaTypeModel>();
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+    if (this.schema) {
+      yield this.schema;
+    }
+    for (const example of this.examples.values()) {
+      yield example;
+    }
+    for (const mediaType of this.content.values()) {
+      yield mediaType;
+    }
   }
 
   getExample(name: string): ExampleModel | undefined {

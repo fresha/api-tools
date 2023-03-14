@@ -12,7 +12,7 @@ export interface TreeParent {
   readonly root: OpenAPIModel;
 }
 
-export class BasicNode<TParent extends TreeParent>
+export abstract class BasicNode<TParent extends TreeParent>
   implements TreeNode<TParent>, Disposable, SpecificationExtensionsModel
 {
   readonly root: OpenAPIModel;
@@ -24,6 +24,8 @@ export class BasicNode<TParent extends TreeParent>
     this.root = parent.root;
     this.extensions = new Map<string, JSONValue>();
   }
+
+  abstract children(): IterableIterator<TreeNode<unknown>>;
 
   // eslint-disable-next-line class-methods-use-this
   dispose(): void {}

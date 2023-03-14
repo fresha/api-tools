@@ -11,6 +11,7 @@ import type {
   MediaTypeModel,
   ResponseModel,
   ResponseModelParent,
+  TreeNode,
 } from './types';
 import type { MIMETypeString } from '@fresha/api-tools-core';
 
@@ -29,6 +30,18 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
     this.headers = new Map<string, HeaderModel>();
     this.content = new Map<string, MediaTypeModel>();
     this.links = new Map<string, LinkModel>();
+  }
+
+  *children(): IterableIterator<TreeNode<unknown>> {
+      for (const header of this.headers.values()) {
+        yield header
+      }
+      for (const content of this.content.values()) {
+        yield content;
+      }
+      for (const link of this.links.values()) {
+        yield link;
+      }
   }
 
   getHeader(name: string): HeaderModel | undefined {
