@@ -1,29 +1,18 @@
 import {
-  builder as baseBuilder,
-  createTSProjectContext,
-  Params as BaseParams,
-} from '@fresha/openapi-codegen-utils';
+  Generator,
+  createContext,
+  CreateContextParams,
+} from '@fresha/openapi-codegen-client-fetch';
 
-import { Generator } from './Generator';
+import { builder as baseBuilder } from './common';
 
-import type { NamingConvention } from './context';
 import type { Argv, ArgumentsCamelCase } from 'yargs';
 
 export const command = 'client-fetch';
 
 export const description = 'generates code for fetch() API clients';
 
-type Params = BaseParams & {
-  withDeprecated?: boolean;
-  withInternal?: boolean;
-  withTags?: string[];
-  withoutTags?: string[];
-  withFormatters?: boolean;
-  apiNaming?: NamingConvention;
-  clientNaming?: NamingConvention;
-};
-
-export const builder = (args: Argv): Argv<Params> =>
+export const builder = (args: Argv): Argv<CreateContextParams> =>
   baseBuilder(args)
     .boolean('with-deprecated')
     .describe('with-deprecated', 'Generated code for deprecated operations')
@@ -42,19 +31,8 @@ export const builder = (args: Argv): Argv<Params> =>
     .choices('client-naming', ['camel', 'kebab', 'snake', 'title'])
     .describe('client-naming', 'Naming convention on a client');
 
-export const handler = (args: ArgumentsCamelCase<Params>): void => {
-  const baseContext = createTSProjectContext(args);
-
-  const generator = new Generator({
-    ...baseContext,
-    includeDeprecated: !!args.withDeprecated,
-    includeInternal: !!args.withInternal,
-    includedTags: new Set<string>(args.withTags),
-    excludedTags: new Set<string>(args.withoutTags),
-    withFormatters: !!args.withFormatters,
-    apiNaming: args.apiNaming ?? null,
-    clientNaming: args.clientNaming ?? null,
-  });
-
+export const handler = (args: ArgumentsCamelCase<CreateContextParams>): void => {
+  const context = createContext(args);
+  const generator = new Generator(context);
   generator.run();
 };

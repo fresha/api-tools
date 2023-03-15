@@ -1,10 +1,11 @@
-import * as fetchClientCommand from '@fresha/openapi-codegen-client-fetch/build/command';
-import * as jsonApiDocgenCommand from '@fresha/openapi-codegen-docs-json-api/build/command';
-import * as elixirCodegenCommand from '@fresha/openapi-codegen-server-elixir/build/command';
-import * as mockServerCommand from '@fresha/openapi-codegen-server-mock/build/command';
-import * as nestJsServerCommand from '@fresha/openapi-codegen-server-nestjs/build/command';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+
+import * as fetchClientCommand from './commands/client-fetch';
+import * as jsonApiDocgenCommand from './commands/docs-json-api';
+import * as elixirServerCommand from './commands/server-elixir';
+import * as mockServerCommand from './commands/server-mock';
+import * as nestJsServerCommand from './commands/server-nestjs';
 
 const argv = yargs(hideBin(process.argv))
   .epilog(
@@ -16,7 +17,7 @@ const argv = yargs(hideBin(process.argv))
 type CommandModule = yargs.CommandModule<Record<string, unknown>, unknown>;
 
 argv.command(fetchClientCommand as unknown as CommandModule);
-argv.command(elixirCodegenCommand as unknown as CommandModule);
+argv.command(elixirServerCommand as unknown as CommandModule);
 argv.command(jsonApiDocgenCommand as unknown as CommandModule);
 argv.command(mockServerCommand as unknown as CommandModule);
 argv.command(nestJsServerCommand as unknown as CommandModule);
