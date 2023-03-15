@@ -5,8 +5,13 @@ import { Project, SourceFile } from 'ts-morph';
 
 import { createConsole, createLogger, Logger } from './logging';
 
-import type { Params } from './yargs';
-import type { ArgumentsCamelCase } from 'yargs';
+type CreateContextParams = {
+  input: string;
+  output: string;
+  jsonApi?: boolean;
+  verbose?: boolean;
+  dryRun?: boolean;
+};
 
 export interface Context {
   readonly openapi: OpenAPIModel;
@@ -17,13 +22,7 @@ export interface Context {
   readonly console: Console;
 }
 
-export interface TSProjectContext extends Context {
-  readonly project: Project;
-
-  createSourceFile(relPath: string, text?: string): SourceFile;
-}
-
-export const createContext = (args: ArgumentsCamelCase<Params>): Context => {
+export const createContext = (args: CreateContextParams): Context => {
   const openapiReader = new OpenAPIReader();
   const openapi = openapiReader.parseFromFile(args.input);
 
@@ -37,7 +36,13 @@ export const createContext = (args: ArgumentsCamelCase<Params>): Context => {
   };
 };
 
-export const createTSProjectContext = (args: ArgumentsCamelCase<Params>): TSProjectContext => {
+export interface TSProjectContext extends Context {
+  readonly project: Project;
+
+  createSourceFile(relPath: string, text?: string): SourceFile;
+}
+
+export const createTSProjectContext = (args: CreateContextParams): TSProjectContext => {
   return {
     ...createContext(args),
     project: new Project({
