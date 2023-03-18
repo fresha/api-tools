@@ -61,7 +61,7 @@
     "@fresha/jest-config": "^0.2.0",
     "@fresha/typescript-config": "^0.2.0",
     "@types/pluralize": "^0.0.29",
-    "typescript": "^4.7.2"
+    "typescript": "^5.0.2"
   },
   "gitHead": "5830273395fc060b19d06814b9396ce07eea778d"
 }

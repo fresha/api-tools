@@ -55,9 +55,9 @@
     "@fresha/eslint-config": "^0.2.0",
     "@fresha/jest-config": "^0.2.0",
     "@fresha/typescript-config": "^0.2.0",
-    "typescript": "^4.7.2"
+    "typescript": "^5.0.2"
   },
   "dependencies": {
-    "ts-morph": "^16.0.0"
+    "ts-morph": "^17.0.1"
   }
 }
