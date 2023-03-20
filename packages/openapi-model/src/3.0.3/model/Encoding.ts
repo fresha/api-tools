@@ -37,7 +37,7 @@ export class Encoding extends BasicNode<EncodingModelParent> implements Encoding
     return this.#headers.size;
   }
 
-  headerNames(): IterableIterator<string> {
+  headerKeys(): IterableIterator<string> {
     return this.#headers.keys();
   }
 

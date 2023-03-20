@@ -23,7 +23,7 @@ export const parseRelationshipSchema = (relSchema: SchemaModel): RelationshipInf
   } else if (relDataSchema.isNullish()) {
     cardinality = 'zero-or-one';
 
-    const alternatives = [...(relDataSchema.oneOf ?? []), ...(relDataSchema.anyOf ?? [])].filter(
+    const alternatives = [...relDataSchema.oneOf(), ...relDataSchema.anyOf()].filter(
       s => !s.isNullish(),
     );
     assert(
@@ -35,7 +35,7 @@ export const parseRelationshipSchema = (relSchema: SchemaModel): RelationshipInf
     cardinality = 'one';
   }
 
-  const resourceType = relDataSchema.getPropertyDeepOrThrow('type').enum?.at(0);
+  const resourceType = relDataSchema.getPropertyDeepOrThrow('type').allowedValueAt(0);
   assert(
     resourceType && typeof resourceType === 'string',
     `'data.type' property is missing or empty in JSON:API relationship schema`,

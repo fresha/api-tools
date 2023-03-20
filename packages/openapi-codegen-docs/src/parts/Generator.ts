@@ -22,8 +22,13 @@ type ResourceUsage = {
 const getResourceType = (name: string, schema: SchemaModel): string => {
   let typeSchema: SchemaModel | undefined;
 
-  if (schema.allOf?.length) {
-    typeSchema = schema.allOf?.find(item => item.getProperty('type'));
+  if (schema.allOfCount) {
+    for (const item of schema.allOf()) {
+      typeSchema = item.getProperty('type');
+      if (typeSchema != null) {
+        break;
+      }
+    }
     if (typeSchema) {
       typeSchema = typeSchema.getProperty('type');
     }
@@ -33,7 +38,7 @@ const getResourceType = (name: string, schema: SchemaModel): string => {
   }
   assert(typeSchema, `Cannot determine JSON:API resource type for schema name ${name}`);
 
-  const result = typeSchema.enum?.at(0);
+  const result = typeSchema.allowedValueAt(0);
   assert(typeof result === 'string', `JSON:API resource type must be a string (name=${name})`);
 
   return result;
@@ -89,8 +94,8 @@ export class Generator extends GeneratorBase<Context> {
           primarySubschemas.push(primaryDataSchemas);
         }
         for (const subschema of primarySubschemas) {
-          if (subschema.anyOf?.length) {
-            for (const subschemaAlt of subschema.anyOf) {
+          if (subschema.anyOfCount) {
+            for (const subschemaAlt of subschema.anyOf()) {
               this.addUsage(
                 subschemaAlt,
                 operation.parent.pathUrl,
@@ -118,13 +123,7 @@ export class Generator extends GeneratorBase<Context> {
           includedSchemaArray.push(includedSchemaRaw);
         }
         for (const includedSchema of includedSchemaArray) {
-          const subschemas: SchemaModel[] = [];
-          if (includedSchema?.anyOf?.length) {
-            subschemas.push(...includedSchema.anyOf);
-          }
-          if (includedSchema?.oneOf?.length) {
-            subschemas.push(...includedSchema.oneOf);
-          }
+          const subschemas = [...includedSchema.anyOf(), ...includedSchema.oneOf()];
           if (subschemas.length) {
             for (const subschema of subschemas) {
               this.addUsage(

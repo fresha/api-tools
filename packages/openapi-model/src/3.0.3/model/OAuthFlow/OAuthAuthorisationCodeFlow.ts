@@ -9,23 +9,18 @@ import type { URLString } from '@fresha/api-tools-core';
  * @see http://spec.openapis.org/oas/v3.0.3#oauth-flow-object
  */
 export class OAuthAuthorisationCodeFlow
-  extends OAuthFlowBase
+  extends OAuthFlowBase<'authorizationCode'>
   implements OAuthAuthorizationCodeFlowModel
 {
   #authorizationUrl: URLString;
   #tokenUrl: URLString;
 
   constructor(parent: OAuthFlowModelParent, authorizationUrl: URLString, tokenUrl: URLString) {
-    super(parent);
+    super(parent, 'authorizationCode');
     assertValidUrl(authorizationUrl);
     this.#authorizationUrl = authorizationUrl;
     assertValidUrl(tokenUrl);
     this.#tokenUrl = tokenUrl;
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  get type(): 'authorizationCode' {
-    return 'authorizationCode';
   }
 
   get authorizationUrl(): URLString {

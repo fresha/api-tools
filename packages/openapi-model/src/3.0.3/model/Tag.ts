@@ -1,5 +1,7 @@
 import assert from 'assert';
 
+import isURL from 'validator/lib/isURL';
+
 import { BasicNode } from './BasicNode';
 import { ExternalDocumentation } from './ExternalDocumentation';
 
@@ -42,8 +44,9 @@ export class Tag extends BasicNode<TagModelParent> implements TagModel {
     return this.#externalDocs;
   }
 
-  addExternalDocs(url: URLString): ExternalDocumentation {
+  setExternalDocs(url: URLString): ExternalDocumentation {
     assert(!this.#externalDocs, 'External documentation is already set');
+    assert(isURL(url), `'${url}' is not a valid URL`);
     this.#externalDocs = new ExternalDocumentation(this, url);
     return this.#externalDocs;
   }

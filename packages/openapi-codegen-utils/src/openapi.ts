@@ -277,12 +277,7 @@ export const pathUrlToUrlExp = (pathItemUrl: string): string => {
  */
 export const getSchemaMultiProperty = (schema: SchemaModel, name: string): SchemaModel[] => {
   const result: SchemaModel[] = [];
-  for (const subschema of [
-    schema,
-    ...(schema.allOf ?? []),
-    ...(schema.oneOf ?? []),
-    ...(schema.anyOf ?? []),
-  ]) {
+  for (const subschema of [schema, ...schema.allOf(), ...schema.oneOf(), ...schema.anyOf()]) {
     if (subschema.type === 'object') {
       const propertySchema = subschema.getProperty(name);
       if (propertySchema) {
@@ -304,13 +299,13 @@ export const getSchemaProperties = function* getSchemaProperties(
   schema: SchemaModel,
 ): IterableIterator<[string, SchemaModel]> {
   const visited = new Set<string>();
-  for (const [name, subschema] of schema.properties) {
+  for (const [name, subschema] of schema.properties()) {
     visited.add(name);
     yield [name, subschema];
   }
-  if (schema.allOf?.length) {
-    for (const subschema of schema.allOf) {
-      for (const [subname, subsubschema] of subschema.properties) {
+  if (schema.allOfCount) {
+    for (const subschema of schema.allOf()) {
+      for (const [subname, subsubschema] of subschema.properties()) {
         if (!visited.has(subname)) {
           visited.add(subname);
           yield [subname, subsubschema];

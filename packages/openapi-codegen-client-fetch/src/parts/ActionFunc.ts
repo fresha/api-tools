@@ -132,7 +132,7 @@ export class ActionFunc {
   }
 
   protected collectAuthData(): void {
-    this.usesAuthCookie = !!this.context.operation.getSecurityRequirements().length;
+    this.usesAuthCookie = !!this.context.operation.effectiveSecurityRequirementCount;
   }
 
   generateCode(): void {

@@ -1,5 +1,7 @@
 import assert from 'assert';
 
+import isURL from 'validator/lib/isURL';
+
 import { Components } from './Components';
 import { ExternalDocumentation } from './ExternalDocumentation';
 import { Info } from './Info';
@@ -286,8 +288,9 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
     return this.#externalDocs;
   }
 
-  addExternalDocs(url: URLString): ExternalDocumentation {
+  setExternalDocs(url: URLString): ExternalDocumentation {
     assert(!this.#externalDocs, 'External documentation is already set');
+    assert(isURL(url), `'${url}' is not a valid URL`);
     this.#externalDocs = new ExternalDocumentation(this, url);
     return this.#externalDocs;
   }

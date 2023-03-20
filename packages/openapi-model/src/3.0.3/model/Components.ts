@@ -23,7 +23,12 @@ import {
   SecuritySchema,
 } from './SecurityScheme';
 
-import type { ComponentsModel, ComponentsModelParent, CreateSchemaOptions } from './types';
+import type {
+  ComponentsModel,
+  ComponentsModelParent,
+  CreateSchemaOptions,
+  SecuritySchemeType,
+} from './types';
 import type { CommonMarkString } from '@fresha/api-tools-core';
 
 /**
@@ -411,7 +416,11 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.#securitySchemes.set(name, model);
   }
 
-  setSecuritySchema(name: string, kind: SecuritySchema['type']): SecuritySchema {
+  setSecuritySchema(name: string, kind: 'http'): HTTPSecurityScheme;
+  setSecuritySchema(name: string, kind: 'apiKey'): APIKeySecurityScheme;
+  setSecuritySchema(name: string, kind: 'oauth2'): OAuth2SecurityScheme;
+  setSecuritySchema(name: string, kind: 'openIdConnect'): OpenIdConnectSecurityScheme;
+  setSecuritySchema(name: string, kind: SecuritySchemeType): SecuritySchema {
     let result: SecuritySchema;
     switch (kind) {
       case 'apiKey':

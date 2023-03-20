@@ -1,5 +1,7 @@
 import assert from 'assert';
 
+import isURL from 'validator/lib/isURL';
+
 import { BasicNode } from './BasicNode';
 import { Callback } from './Callback';
 import { ExternalDocumentation } from './ExternalDocumentation';
@@ -45,7 +47,7 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
   readonly #responses: Responses;
   readonly #callbacks: Map<string, Callback>;
   #deprecated: boolean;
-  security: Nullable<SecurityRequirement[]>;
+  #security: Nullable<SecurityRequirement[]>;
   readonly #servers: Server[];
 
   constructor(parent: OperationModelParent) {
@@ -60,7 +62,7 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.#responses = new Responses(this);
     this.#callbacks = new Map<string, Callback>();
     this.#deprecated = false;
-    this.security = null;
+    this.#security = null;
     this.#servers = [];
   }
 
@@ -133,8 +135,9 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     return this.#externalDocs;
   }
 
-  addExternalDocs(url: URLString): ExternalDocumentation {
+  setExternalDocs(url: URLString): ExternalDocumentation {
     assert(!this.#externalDocs, 'External documentation is already set');
+    assert(isURL(url), `'${url}' is not a valid URL`);
     this.#externalDocs = new ExternalDocumentation(this, url);
     return this.#externalDocs;
   }
@@ -344,40 +347,56 @@ export class Operation extends BasicNode<OperationModelParent> implements Operat
     this.#deprecated = value;
   }
 
-  getSecurityRequirements(): readonly SecurityRequirement[] {
-    return (
-      this.security ??
-      Array.from(this.root.securityRequirements() as IterableIterator<SecurityRequirement>)
-    );
+  get effectiveSecurityRequirementCount(): number {
+    return this.#security ? this.#security.length : this.root.securityRequirementCount;
+  }
+
+  effectiveSecurityRequirements(): IterableIterator<SecurityRequirement> {
+    return this.#security
+      ? this.#security.values()
+      : (this.root.securityRequirements() as IterableIterator<SecurityRequirement>);
+  }
+
+  get securityRequirementCount(): number | undefined {
+    return this.#security?.length ?? undefined;
+  }
+
+  securityRequirements(): IterableIterator<SecurityRequirement> | undefined {
+    return this.#security ? this.#security.values() : undefined;
+  }
+
+  securityRequirementAt(index: number): SecurityRequirement | undefined {
+    return this.#security ? this.#security[index] : undefined;
   }
 
   addSecurityRequirement(): SecurityRequirement {
     const result = new SecurityRequirement(this);
-    if (!this.security) {
-      this.security = [];
+    if (!this.#security) {
+      this.#security = [];
     }
-    this.security.push(result);
+    this.#security.push(result);
     return result;
   }
 
   deleteSecurityRequirementAt(index: number): void {
-    if (this.security) {
-      this.security.splice(index, 1);
+    if (this.#security) {
+      this.#security[index].dispose();
+      this.#security.splice(index, 1);
     }
   }
 
   clearSecurityRequirements(): void {
-    if (this.security) {
-      this.security.splice(0, this.security.length);
+    if (this.#security) {
+      this.#security.forEach(r => r.dispose());
+      this.#security.splice(0, this.#security.length);
+    } else {
+      this.#security = [];
     }
   }
 
-  setOwnSecurityRequirements(doUse: boolean): void {
-    if (!doUse) {
-      this.security = null;
-    } else if (!this.security) {
-      this.security = [];
-    }
+  deleteSecurityRequirements(): void {
+    this.#security?.forEach(req => req.dispose());
+    this.#security = null;
   }
 
   get serverCount(): number {

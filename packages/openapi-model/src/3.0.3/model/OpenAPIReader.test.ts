@@ -54,15 +54,17 @@ describe('SchemaModel', () => {
     expect(emptySchema).toHaveProperty('uniqueItems', false);
     expect(emptySchema).toHaveProperty('minProperties', null);
     expect(emptySchema).toHaveProperty('maxProperties', null);
-    expect(Array.from(emptySchema.requiredPropertyNames())).toEqual([]);
-    expect(emptySchema).toHaveProperty('enum', null);
+    expect(emptySchema).toHaveProperty('requiredPropertyCount', 0);
+    expect(emptySchema).toHaveProperty('allowedValueCount', 0);
     expect(emptySchema).toHaveProperty('type', null);
-    expect(emptySchema).toHaveProperty('allOf', []);
-    expect(emptySchema).toHaveProperty('oneOf', []);
-    expect(emptySchema).toHaveProperty('anyOf', []);
+    expect(emptySchema).toHaveProperty('allOfCount', 0);
+    expect(emptySchema).toHaveProperty('oneOfCount', 0);
+    expect(emptySchema).toHaveProperty('anyOfCount', 0);
     expect(emptySchema).toHaveProperty('not', null);
     expect(emptySchema).toHaveProperty('items', null);
-    expect(emptySchema).toHaveProperty('properties', new Map<string, SchemaModel>());
+    expect(new Map<string, SchemaModel>(emptySchema.properties())).toEqual(
+      new Map<string, SchemaModel>(),
+    );
     expect(emptySchema).toHaveProperty('additionalProperties', true);
     expect(emptySchema).toHaveProperty('description', null);
     expect(emptySchema).toHaveProperty('format', null);
@@ -160,22 +162,22 @@ describe('SchemaModel', () => {
     expect(errorMessageSchema).toHaveProperty('minProperties', 2);
     expect(errorMessageSchema).toHaveProperty('maxProperties', 4);
     expect(Array.from(errorMessageSchema.requiredPropertyNames())).toEqual(['x', 'y']);
-    expect(errorMessageSchema).toHaveProperty('enum', [1, '12', false]);
+    expect(Array.from(errorMessageSchema.allowedValues())).toEqual([1, '12', false]);
     expect(errorMessageSchema).toHaveProperty('type', 'string');
 
-    const allOfSchemas = errorMessageSchema?.allOf;
-    expect(allOfSchemas?.length).toBe(2);
+    const allOfSchemas = Array.from(errorMessageSchema?.allOf());
+    expect(allOfSchemas.length).toBe(2);
     expect(allOfSchemas?.[0]).toHaveProperty('root', openapi);
     expect(allOfSchemas?.[0]).toHaveProperty('parent', errorMessageSchema);
     expect(allOfSchemas?.[0]).toHaveProperty('type', 'object');
     expect(allOfSchemas?.[1]).toHaveProperty('type', 'integer');
 
-    const oneOfSchemas = errorMessageSchema?.oneOf;
+    const oneOfSchemas = Array.from(errorMessageSchema?.oneOf());
     expect(oneOfSchemas).toHaveProperty('length', 2);
     expect(oneOfSchemas?.[0]).toHaveProperty('type', 'object');
     expect(oneOfSchemas?.[1]).toHaveProperty('type', 'boolean');
 
-    const anyOfSchemas = errorMessageSchema?.anyOf;
+    const anyOfSchemas = Array.from(errorMessageSchema?.anyOf());
     expect(anyOfSchemas?.length).toBe(1);
     expect(anyOfSchemas?.[0]).toHaveProperty('type', 'number');
 
@@ -186,18 +188,18 @@ describe('SchemaModel', () => {
     expect(errorMessageItems).toHaveProperty('parent', errorMessageSchema);
     expect(errorMessageItems).toHaveProperty('type', 'integer');
 
-    expect(errorMessageSchema?.properties.size).toBe(3);
+    expect(errorMessageSchema?.propertyCount).toBe(3);
 
-    const errorMessagePropertyX = errorMessageSchema?.properties.get('x');
+    const errorMessagePropertyX = errorMessageSchema?.getProperty('x');
     expect(errorMessagePropertyX).toHaveProperty('root', openapi);
     expect(errorMessagePropertyX).toHaveProperty('parent', errorMessageSchema);
     expect(errorMessagePropertyX).toHaveProperty('type', 'boolean');
 
-    const errorMessagePropertyY = errorMessageSchema?.properties.get('y');
+    const errorMessagePropertyY = errorMessageSchema?.getProperty('y');
     expect(errorMessagePropertyY).toHaveProperty('root', openapi);
     expect(errorMessagePropertyY).toHaveProperty('parent', errorMessageSchema);
 
-    const errorMessagePropertyZ = errorMessageSchema?.properties.get('z');
+    const errorMessagePropertyZ = errorMessageSchema?.getProperty('z');
     expect(errorMessagePropertyZ).toHaveProperty('root', openapi);
     expect(errorMessagePropertyZ).toHaveProperty('parent', errorMessageSchema);
 
@@ -270,9 +272,9 @@ describe('ComponentsModel', () => {
     const errorSchema = openapi.components.getSchema('Error');
     expect(errorSchema).toHaveProperty('root', openapi);
     expect(errorSchema).toHaveProperty('parent', openapi.components);
-    expect(errorSchema?.properties.get('message')).toBe(errorMessageSchema);
+    expect(errorSchema?.getProperty('message')).toBe(errorMessageSchema);
 
-    const errorCodeSchema = errorSchema?.properties.get('code');
+    const errorCodeSchema = errorSchema?.getProperty('code');
     expect(errorCodeSchema).toBeTruthy();
     expect(errorCodeSchema).toHaveProperty('root', openapi);
     expect(errorCodeSchema).toHaveProperty('parent', errorSchema);

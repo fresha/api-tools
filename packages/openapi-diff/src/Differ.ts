@@ -360,8 +360,8 @@ export class Differ {
 
         this.diffSchema(schema1.items, schema2.items, `${basePointer}/items`);
 
-        const propNames1 = new Set<string>(schema1.properties.keys());
-        const propNames2 = new Set<string>(schema2.properties.keys());
+        const propNames1 = new Set<string>(schema1.propertyNames());
+        const propNames2 = new Set<string>(schema2.propertyNames());
         const [addedProps, removedProps, stableProps] = diffStringSet(propNames1, propNames2);
         for (const p of addedProps) {
           this.#items.push(new DiffItem(`${basePointer}/properties/${p}`, 'minor', 'added'));

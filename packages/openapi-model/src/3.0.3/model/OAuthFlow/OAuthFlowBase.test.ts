@@ -2,26 +2,18 @@ import { OpenAPIFactory } from '../OpenAPI';
 
 import { OAuthFlowBase } from './OAuthFlowBase';
 
-import type { OAuth2SecuritySchemaModel } from '../types';
+import type { OAuthFlowModelParent } from '../types';
 
-let flow: OAuthFlowBase;
+let flow: OAuthFlowBase<'authorizationCode'>;
 
 beforeEach(() => {
-  class TestFlow extends OAuthFlowBase {
-    // eslint-disable-next-line class-methods-use-this
-    get type(): 'authorizationCode' {
-      return 'authorizationCode';
+  class TestFlow extends OAuthFlowBase<'authorizationCode'> {
+    constructor(parent: OAuthFlowModelParent) {
+      super(parent, 'authorizationCode');
     }
   }
 
-  flow = new TestFlow(
-    (
-      OpenAPIFactory.create().components.setSecuritySchema(
-        'test',
-        'oauth2',
-      ) as OAuth2SecuritySchemaModel
-    ).flows,
-  );
+  flow = new TestFlow(OpenAPIFactory.create().components.setSecuritySchema('test', 'oauth2').flows);
 });
 
 test('scopes collection', () => {

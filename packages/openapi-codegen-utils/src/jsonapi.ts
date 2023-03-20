@@ -24,7 +24,7 @@ export const createNullSchema = (parent: SchemaModelParent): SchemaModel => {
     result = SchemaFactory.create(parent, null);
     result.title = 'Null';
   }
-  result.enum = [null];
+  result.addAllowedValues(null);
 
   return result;
 };
@@ -131,7 +131,7 @@ export const addResourceAttribute = (
   options: CreateSchemaPropertyOptions,
 ): SchemaModel => {
   assert(resourceSchema.type === null, `Resource schema must have type set to null`);
-  const attributesSchema = resourceSchema.allOf?.at(1)?.getPropertyOrThrow('attributes');
+  const attributesSchema = resourceSchema.allOfAt(1)?.getPropertyOrThrow('attributes');
   assert(attributesSchema?.type === 'object');
   return attributesSchema.setProperty(name, options);
 };
@@ -181,7 +181,7 @@ export const addResourceRelationship = (
   cardinality: RelationshipCardinality = RelationshipCardinality.One,
   required = true,
 ): void => {
-  const bodySchema = resourceSchema.allOf?.at(1);
+  const bodySchema = resourceSchema.allOfAt(1);
   assert(bodySchema?.type === 'object');
 
   let relationshipsSchema = bodySchema.getProperty('relationships');
@@ -208,7 +208,7 @@ export const addResourceRelationship = (
     case RelationshipCardinality.ZeroOrOne: {
       const dataSchema = relationshipSchema.setProperty('data', null);
       setResourceIdSchema(dataSchema.addAllOf('object'), resourceType);
-      dataSchema.addAllOf(null).enum = [null];
+      dataSchema.addAllOf(null).addAllowedValues(null);
       break;
     }
     default:

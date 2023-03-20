@@ -231,7 +231,7 @@ export class Action {
           this.sourceFile.writeLine('attributes: %{');
           this.sourceFile.writeIndented(() => {
             const attributesSchema = resourceSchema.getPropertyDeepOrThrow('attributes');
-            for (const [attrName, attrSchema] of attributesSchema.properties) {
+            for (const [attrName, attrSchema] of attributesSchema.properties()) {
               switch (attrSchema.type) {
                 case 'boolean': {
                   this.generateBooleanSurgexParsers(attributesSchema, attrName);
@@ -259,7 +259,7 @@ export class Action {
           this.sourceFile.writeIndented(() => {
             const relationshipsSchema = resourceSchema.getPropertyDeepOrThrow('relationships');
 
-            for (const [relName] of relationshipsSchema.properties) {
+            for (const [relName] of relationshipsSchema.properties()) {
               const elixirAtttName = snakeCase(relName);
               const relParser = relationshipsSchema.isPropertyRequired(relName)
                 ? '[:resource_id, :required],'
@@ -391,8 +391,8 @@ export class Action {
       parsers.push(':required');
     }
 
-    if (propSchema.enum?.length) {
-      parsers.push(`{:contain, ~w{${propSchema.enum.join(' ')}}}`);
+    if (propSchema.allowedValueCount) {
+      parsers.push(`{:contain, ~w{${Array.from(propSchema.allowedValues()).join(' ')}}}`);
     }
 
     const parsersStr = parsers.length > 1 ? `[${parsers.join(', ')}]` : parsers[0];

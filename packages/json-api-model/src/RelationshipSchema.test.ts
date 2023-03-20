@@ -9,7 +9,7 @@ let dataSchema: SchemaModel;
 beforeEach(() => {
   const { components } = OpenAPIFactory.create();
   nullSchema = components.setSchema('Null');
-  nullSchema.enum = [null];
+  nullSchema.addAllowedValues(null);
   relSchema = components.setSchema('RelationshipTest', 'object');
   dataSchema = relSchema.setProperty('data', null);
 });

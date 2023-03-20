@@ -8,7 +8,7 @@ export const id = 'no-unused-shared-components';
 export const autoFixable = false;
 
 const removeReferenceSchema = (schema: SchemaModel, sharedSchemas: Set<SchemaModel>): void => {
-  for (const prop of schema.properties.values()) {
+  for (const [, prop] of schema.properties()) {
     removeReferenceSchema(prop, sharedSchemas);
   }
   if (schema.additionalProperties && schema.additionalProperties instanceof Object) {
@@ -23,18 +23,18 @@ const removeReferenceSchema = (schema: SchemaModel, sharedSchemas: Set<SchemaMod
       removeReferenceSchema(schema.items, sharedSchemas);
     }
   }
-  if (schema.allOf?.length) {
-    for (const alt of schema.allOf) {
+  if (schema.allOfCount) {
+    for (const alt of schema.allOf()) {
       removeReferenceSchema(alt, sharedSchemas);
     }
   }
-  if (schema.anyOf?.length) {
-    for (const alt of schema.anyOf) {
+  if (schema.anyOfCount) {
+    for (const alt of schema.anyOf()) {
       removeReferenceSchema(alt, sharedSchemas);
     }
   }
-  if (schema.oneOf?.length) {
-    for (const alt of schema.oneOf) {
+  if (schema.oneOfCount) {
+    for (const alt of schema.oneOf()) {
       removeReferenceSchema(alt, sharedSchemas);
     }
   }
