@@ -18,8 +18,10 @@ test('default properties', () => {
   expect(operation.responses.responseCount).toBe(0);
   expect(operation.callbackCount).toBe(0);
   expect(operation.deprecated).toBeFalsy();
-  expect(operation.security).toBeNull();
-  expect(operation.servers).toHaveLength(0);
+  expect(operation.effectiveSecurityRequirementCount).toBe(0);
+  expect(operation.securityRequirementCount).toBeUndefined();
+  expect(operation.securityRequirements()).toBeUndefined();
+  expect(operation.serverCount).toBe(0);
 });
 
 test('httpMethod property', () => {
@@ -151,22 +153,65 @@ test('callbacks collection', () => {
   expect(operation.callbackCount).toBe(0);
 });
 
-test('security requirement collection', () => {
-  const operation = openapi.setPathItem('/x').addOperation('patch');
+describe('security requirements', () => {
+  test('collection of own requirements', () => {
+    const operation = openapi.setPathItem('/x').addOperation('patch');
 
-  const s1 = operation.addSecurityRequirement();
-  operation.addSecurityRequirement();
-  const s3 = operation.addSecurityRequirement();
+    const s1 = operation.addSecurityRequirement();
+    operation.addSecurityRequirement();
+    const s3 = operation.addSecurityRequirement();
 
-  expect(operation.security).toHaveLength(3);
+    expect(operation.securityRequirementCount).toBe(3);
 
-  operation.deleteSecurityRequirementAt(1);
-  expect(operation.security).toHaveLength(2);
-  expect(operation.security?.[0]).toBe(s1);
-  expect(operation.security?.[1]).toBe(s3);
+    operation.deleteSecurityRequirementAt(1);
+    expect(operation.securityRequirementCount).toBe(2);
+    expect(operation.securityRequirementAt(0)).toBe(s1);
+    expect(operation.securityRequirementAt(1)).toBe(s3);
 
-  operation.clearSecurityRequirements();
-  expect(operation.security).toHaveLength(0);
+    operation.clearSecurityRequirements();
+    expect(operation.securityRequirementCount).toBe(0);
+  });
+
+  test('inherits requirements from openapi', () => {
+    openapi.components.setSecuritySchema('global', 'apiKey');
+    openapi.addSecurityRequirement().addSchema('global');
+
+    const operation = openapi.setPathItem('/items').addOperation('get');
+
+    expect(operation.effectiveSecurityRequirementCount).toBe(1);
+    expect(
+      Array.from(operation.effectiveSecurityRequirements(), req => Array.from(req.schemaNames())),
+    ).toStrictEqual([['global']]);
+  });
+
+  test('overrides requirements defined globally', () => {
+    openapi.components.setSecuritySchema('global', 'apiKey');
+    openapi.components.setSecuritySchema('custom', 'http');
+    openapi.addSecurityRequirement().addSchema('global');
+
+    const operation = openapi.setPathItem('/items').addOperation('get');
+    operation.addSecurityRequirement().addSchema('custom');
+
+    expect(operation.effectiveSecurityRequirementCount).toBe(1);
+    expect(
+      Array.from(operation.effectiveSecurityRequirements(), req => Array.from(req.schemaNames())),
+    ).toStrictEqual([['custom']]);
+  });
+
+  test('disables globally defined requirements', () => {
+    openapi.components.setSecuritySchema('global', 'apiKey');
+    openapi.components.setSecuritySchema('custom', 'http');
+    openapi.addSecurityRequirement().addSchema('global');
+
+    const operation = openapi.setPathItem('/items').addOperation('get');
+    operation.addSecurityRequirement().addSchema('custom');
+    operation.clearSecurityRequirements(); // this resets own requirements
+
+    expect(operation.effectiveSecurityRequirementCount).toBe(0);
+    expect(
+      Array.from(operation.effectiveSecurityRequirements(), req => Array.from(req.schemaNames())),
+    ).toStrictEqual([]);
+  });
 });
 
 test('servers collection', () => {

@@ -1,4 +1,4 @@
-import type { Nullable } from '@fresha/api-tools-core';
+import type { JSONValue, Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 let i = 0;
@@ -12,9 +12,9 @@ export const schemaToType = (schema: Nullable<SchemaModel>): string => {
       return schema?.nullable ? 'boolean | null' : 'boolean';
     case 'integer':
     case 'number': {
-      const elements: string[] = [];
-      if (schema.enum?.length) {
-        elements.push(...(schema.enum as string[]));
+      const elements: JSONValue[] = [];
+      if (schema.allowedValueCount) {
+        elements.push(...schema.allowedValues());
       } else {
         elements.push('number');
       }
@@ -24,9 +24,9 @@ export const schemaToType = (schema: Nullable<SchemaModel>): string => {
       return elements.join(' | ');
     }
     case 'string': {
-      const elements: string[] = [];
-      if (schema.enum?.length) {
-        for (const val of schema.enum) {
+      const elements: JSONValue[] = [];
+      if (schema.allowedValueCount) {
+        for (const val of schema.allowedValues()) {
           elements.push(`'${val as string}'`);
         }
       } else {

@@ -78,10 +78,7 @@ export class DocumentType extends NamedType {
 
     const primaryDataAlternatives = [];
     for (const primaryDataAlt of primaryDataSchemas) {
-      primaryDataAlternatives.push(
-        ...(primaryDataAlt.oneOf ?? []),
-        ...(primaryDataAlt.anyOf ?? []),
-      );
+      primaryDataAlternatives.push(...primaryDataAlt.oneOf(), ...primaryDataAlt.anyOf());
     }
     if (primaryDataAlternatives.length) {
       for (const subschema of primaryDataAlternatives) {
@@ -150,7 +147,7 @@ export class DocumentType extends NamedType {
         this.determineSingleIncludedDataType(s, namedTypes);
       } else {
         // multiple types of resources
-        const subshemas = [...(s.oneOf ?? []), ...(s.anyOf ?? [])];
+        const subshemas = [...s.oneOf(), ...s.anyOf()];
 
         for (const subschema of subshemas) {
           this.determineSingleIncludedDataType(subschema, namedTypes);

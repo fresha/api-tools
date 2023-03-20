@@ -73,7 +73,7 @@ export class ResourceSchema implements JSONAPIResourceSchema {
 
       this.#schema = resourceTypeOrSchema;
 
-      const resourceType = this.#schema.getPropertyDeepOrThrow('type').enum?.at(0);
+      const resourceType = this.#schema.getPropertyDeepOrThrow('type').allowedValueAt(0);
       assert(resourceType && typeof resourceType === 'string');
       this.#type = resourceType;
 
@@ -84,14 +84,14 @@ export class ResourceSchema implements JSONAPIResourceSchema {
       this.#idSchemaTitle = `${this.#schemaTitle}ID`;
 
       this.#attributesSchema = this.#schema.getPropertyDeepOrThrow('attributes');
-      for (const [attrName, attrSchema] of this.#attributesSchema.properties) {
+      for (const [attrName, attrSchema] of this.#attributesSchema.properties()) {
         const attribute = new AttributeSchema(this, attrName, attrSchema);
         this.#attributes.set(attrName, attribute);
       }
 
       this.#relationshipsSchema = this.#schema.getPropertyDeep('relationships') ?? null;
       if (this.#relationshipsSchema) {
-        for (const [relName, relSchema] of this.#relationshipsSchema.properties) {
+        for (const [relName, relSchema] of this.#relationshipsSchema.properties()) {
           const { resourceType: otherResourceType, cardinality } =
             parseRelationshipSchema(relSchema);
 

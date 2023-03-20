@@ -19,7 +19,7 @@ describe('resources', () => {
 
     expect(employee.idSchema.title).toBe('EmployeeResourceID');
     expect(employee.idSchema.type).toBe('object');
-    expect(employee.idSchema.getPropertyDeep('type')).toHaveProperty(['enum', '0'], 'employees');
+    expect(employee.idSchema.getPropertyDeep('type')?.allowedValueAt(0)).toBe('employees');
     expect(employee.schema).toBeNull();
     expect(employee.hasAttributes()).toBeFalsy();
     expect(employee.hasRelationships()).toBeFalsy();

@@ -12,7 +12,6 @@ import yaml from 'yaml';
 
 import { Callback } from './Callback';
 import { Components } from './Components';
-import { Discriminator } from './Discriminator';
 import { Encoding } from './Encoding';
 import { Example } from './Example';
 import { Header } from './Header';
@@ -48,7 +47,6 @@ import {
 } from './SecurityScheme';
 import { Server } from './Server';
 import { ServerVariable } from './ServerVariable';
-import { XML } from './XML';
 
 import type {
   PathItemOperationKey,
@@ -475,31 +473,30 @@ export class OpenAPIReader {
     model.uniqueItems = !!json.uniqueItems;
     model.minProperties = getNumericAttribute(json, 'minProperties', false);
     model.maxProperties = getNumericAttribute(json, 'maxProperties', false);
-    model.enum = json.enum ?? null;
+    if (json.enum) {
+      model.addAllowedValues(...json.enum);
+    }
     model.type = getStringAttribute(json, 'type', false) as SchemaType;
+    model.clearAllOf();
     if (json.allOf) {
-      model.allOf.splice(
-        0,
-        model.allOf.length,
-        ...json.allOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model)),
-      );
+      for (const subschemaJson of json.allOf) {
+        model.addAllOf(this.parseSchema(subschemaJson, model));
+      }
     }
+    model.clearOneOf();
     if (json.oneOf) {
-      model.oneOf.splice(
-        0,
-        model.oneOf.length,
-        ...json.oneOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model)),
-      );
+      for (const subschemaJson of json.oneOf) {
+        model.addOneOf(this.parseSchema(subschemaJson, model));
+      }
     }
+    model.clearAnyOf();
     if (json.anyOf) {
-      model.anyOf.splice(
-        0,
-        model.anyOf.length,
-        ...json.anyOf.map(subSchemaJson => this.parseSchema(subSchemaJson, model)),
-      );
+      for (const subschemaJson of json.anyOf) {
+        model.addAnyOf(this.parseSchema(subschemaJson, model));
+      }
     }
     if (json.not) {
-      model.not = this.parseSchema(json.not, model);
+      model.setNot(this.parseSchema(json.not, model));
     }
     if (json.items) {
       model.setItems(this.parseSchema(json.items, model));
@@ -514,9 +511,9 @@ export class OpenAPIReader {
     }
     if ('additionalProperties' in json) {
       if (typeof json.additionalProperties === 'boolean') {
-        model.additionalProperties = json.additionalProperties;
+        model.setAdditionalProperties(json.additionalProperties);
       } else if (json.additionalProperties) {
-        model.additionalProperties = this.parseSchema(json.additionalProperties, model);
+        model.setAdditionalProperties(this.parseSchema(json.additionalProperties, model));
       }
     }
     model.description = getStringAttribute(json, 'description', false);
@@ -526,12 +523,12 @@ export class OpenAPIReader {
     }
     model.nullable = !!json.nullable;
     if (json.discriminator) {
-      model.discriminator = this.parseDiscriminator(json.discriminator, model);
+      this.parseDiscriminator(json.discriminator, model);
     }
     model.readOnly = !!json.readOnly;
     model.writeOnly = !!json.writeOnly;
     if (json.xml) {
-      model.xml = this.parseXML(json.xml, model);
+      this.parseXML(json.xml, model);
     }
     if (json.externalDocs) {
       this.parseExternalDocumentation(json.externalDocs, model);
@@ -1332,7 +1329,6 @@ export class OpenAPIReader {
       }
     }
     if (json.security) {
-      result.setOwnSecurityRequirements(true);
       for (const securityRequirementObject of json.security) {
         this.parseSecurityRequirement(securityRequirementObject, result);
       }
@@ -1344,7 +1340,7 @@ export class OpenAPIReader {
     json: ExternalDocumentationObject,
     parent: ExternalDocumentationModelParent,
   ): void {
-    const result = parent.addExternalDocs(getStringAttribute(json, 'url') as string);
+    const result = parent.setExternalDocs(getStringAttribute(json, 'url') as string);
     this.parseExtensionFields(result, json);
     result.description = getStringAttribute(json, 'description', false);
   }
@@ -1374,17 +1370,13 @@ export class OpenAPIReader {
     }
   }
 
-  private parseDiscriminator(
-    json: DiscriminatorObject,
-    parent: DiscriminatorModelParent,
-  ): Discriminator {
-    const result = new Discriminator(parent, json.propertyName);
+  private parseDiscriminator(json: DiscriminatorObject, parent: DiscriminatorModelParent): void {
+    const result = parent.setDiscriminator(json.propertyName);
     this.parseExtensionFields(result, json);
-    return result;
   }
 
-  private parseXML(json: XMLObject, parent: XMLModelParent): XML {
-    const result = new XML(parent);
+  private parseXML(json: XMLObject, parent: XMLModelParent): void {
+    const result = parent.setXML();
     this.parseExtensionFields(result, json);
     if (json.name) {
       result.name = json.name;
@@ -1397,6 +1389,5 @@ export class OpenAPIReader {
     }
     result.attribute = json.attribute as boolean;
     result.wrapped = json.wrapped as boolean;
-    return result;
   }
 }

@@ -15,14 +15,22 @@ export interface TreeParent {
 export class BasicNode<TParent extends TreeParent>
   implements TreeNodeModel<TParent>, Disposable, SpecificationExtensionsModel
 {
-  readonly root: OpenAPIModel;
-  readonly parent: TParent;
+  readonly #root: OpenAPIModel;
+  readonly #parent: TParent;
   readonly #extensions: ExtensionFields;
 
   constructor(parent: TParent) {
-    this.parent = parent;
-    this.root = parent.root;
+    this.#parent = parent;
+    this.#root = parent.root;
     this.#extensions = new Map<string, JSONValue>();
+  }
+
+  get root(): OpenAPIModel {
+    return this.#root;
+  }
+
+  get parent(): TParent {
+    return this.#parent;
   }
 
   // eslint-disable-next-line class-methods-use-this

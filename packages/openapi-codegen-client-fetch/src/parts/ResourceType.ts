@@ -79,10 +79,10 @@ export class ResourceType extends NamedType {
 
     assert(typeSchema, `Missing 'type' property in resource ${this.name}`, this.context.operation);
 
-    if (typeSchema.enum?.length !== 1) {
+    if (typeSchema.allowedValueCount !== 1) {
       this.context.logger.warn(
         `Expected resource schema to have only one allowed value, got ${String(
-          typeSchema.enum?.length,
+          typeSchema.allowedValueCount,
         )} ${this.context.operation.parent.pathUrl}`,
       );
       // this.context.console.log(this.schema);
@@ -90,14 +90,14 @@ export class ResourceType extends NamedType {
     }
 
     assert(
-      typeSchema.enum?.length === 1,
+      typeSchema.allowedValueCount === 1,
       `Expected resource schema to have only one allowed value, got ${String(
-        typeSchema.enum?.length,
+        typeSchema.allowedValueCount,
       )}`,
       this.context.operation,
     );
 
-    const resourceType = typeSchema.enum[0];
+    const resourceType = typeSchema.allowedValueAt(0);
     assert(
       typeof resourceType === 'string',
       `Expected resource type to be a string, got ${typeof resourceType}`,
@@ -163,9 +163,9 @@ export class ResourceType extends NamedType {
           }, property ${name}`,
           this.context.operation,
         );
-        rawResType = resTypes[0].enum?.at(0);
+        rawResType = resTypes[0].allowedValueAt(0);
       } else {
-        rawResType = propDataSchema.getPropertyDeep('type')?.enum?.at(0);
+        rawResType = propDataSchema.getPropertyDeep('type')?.allowedValueAt(0);
       }
 
       assert(

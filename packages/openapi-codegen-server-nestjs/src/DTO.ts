@@ -79,7 +79,7 @@ export class DTO {
     addImportDeclaration(this.sourceFile, 'class-transformer', 'Expose');
     addDecorator(propDef, 'Expose', undefined);
 
-    if (prop.schema.allOf?.length || prop.schema.oneOf?.length || prop.schema.anyOf?.length) {
+    if (prop.schema.allOfCount || prop.schema.oneOfCount || prop.schema.anyOfCount) {
       addImportDeclaration(this.sourceFile, 'class-validator', 'ValidateNested');
       addDecorator(propDef, 'ValidateNested', undefined);
     }

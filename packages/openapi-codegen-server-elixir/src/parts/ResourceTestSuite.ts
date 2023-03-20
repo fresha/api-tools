@@ -62,7 +62,7 @@ export class ResourceTestSuite {
     result.set('id', faker.datatype.number({ min: 1, max: 1000 }));
 
     const attributesSchema = resourceSchema.getPropertyDeepOrThrow('attributes');
-    for (const [attrName, attrSchema] of attributesSchema.properties) {
+    for (const [attrName, attrSchema] of attributesSchema.properties()) {
       switch (attrSchema.type) {
         case 'boolean':
           result.set(attrName, faker.datatype.boolean());
@@ -114,7 +114,7 @@ export class ResourceTestSuite {
     }
 
     const relationshipsSchema = resourceSchema.getPropertyDeepOrThrow('relationships');
-    for (const [relName] of relationshipsSchema.properties) {
+    for (const [relName] of relationshipsSchema.properties()) {
       const key = `${relName}Id`;
       result.set(key, faker.datatype.number({ min: 1, max: 1000 }));
     }

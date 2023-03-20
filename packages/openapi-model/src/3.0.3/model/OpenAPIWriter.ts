@@ -364,24 +364,24 @@ export class OpenAPIWriter {
     if (schema.requiredPropertyCount) {
       result.required = Array.from(schema.requiredPropertyNames());
     }
-    if (schema.enum != null) {
-      result.enum = schema.enum;
+    if (schema.allowedValueCount) {
+      result.enum = Array.from(schema.allowedValues());
     }
     if (schema.type != null) {
       result.type = schema.type;
     }
-    if (schema.allOf?.length) {
-      result.allOf = schema.allOf.map((subschema: SchemaModel) =>
+    if (schema.allOfCount) {
+      result.allOf = Array.from(schema.allOf(), (subschema: SchemaModel) =>
         this.writeSchema(subschema, schema),
       );
     }
-    if (schema.oneOf?.length) {
-      result.oneOf = schema.oneOf.map((subschema: SchemaModel) =>
+    if (schema.oneOfCount) {
+      result.oneOf = Array.from(schema.oneOf(), (subschema: SchemaModel) =>
         this.writeSchema(subschema, schema),
       );
     }
-    if (schema.anyOf?.length) {
-      result.anyOf = schema.anyOf.map((subschema: SchemaModel) =>
+    if (schema.anyOfCount) {
+      result.anyOf = Array.from(schema.anyOf(), (subschema: SchemaModel) =>
         this.writeSchema(subschema, schema),
       );
     }
@@ -391,9 +391,9 @@ export class OpenAPIWriter {
     if (schema.items != null) {
       result.items = this.writeSchema(schema.items, schema);
     }
-    if (schema.properties.size) {
+    if (schema.propertyCount) {
       result.properties = {};
-      for (const [key, value] of schema.properties) {
+      for (const [key, value] of schema.properties()) {
         result.properties[key] = this.writeSchema(value, schema);
       }
     }
@@ -912,8 +912,9 @@ export class OpenAPIWriter {
     if (operation.deprecated) {
       result.deprecated = operation.deprecated;
     }
-    if (operation.security) {
-      result.security = this.writeSecurityRequirementArray(operation.security.values());
+    const it = operation.securityRequirements();
+    if (it) {
+      result.security = this.writeSecurityRequirementArray(it);
     }
     if (operation.servers?.length) {
       result.servers = Array.from(operation.servers(), arg => this.writeServer(arg));

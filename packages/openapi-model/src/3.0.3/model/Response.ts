@@ -37,7 +37,7 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
     return this.#headers.size;
   }
 
-  headerNames(): IterableIterator<string> {
+  headerKeys(): IterableIterator<string> {
     return this.#headers.keys();
   }
 

@@ -48,7 +48,7 @@ describe('SchemaFactory', () => {
     expect(booleanSchema).toHaveProperty('parent', openapi.components);
     expect(booleanSchema).toHaveProperty('type', 'boolean');
     expect(booleanSchema).toHaveProperty('nullable', true);
-    expect(booleanSchema).toHaveProperty('enum', [false]);
+    expect(Array.from(booleanSchema.allowedValues())).toEqual([false]);
 
     const int32Schema = SchemaFactory.create(openapi.components, {
       type: 'int32',
@@ -122,7 +122,7 @@ describe('SchemaFactory', () => {
 
     const gender = attributes.getPropertyOrThrow('gender');
     expect(gender).toHaveProperty('type', 'string');
-    expect(gender).toHaveProperty('enum', ['male', 'female', 'other']);
+    expect(Array.from(gender.allowedValues())).toEqual(['male', 'female', 'other']);
 
     const mentorId = employee
       .getPropertyOrThrow('relationships')
@@ -158,7 +158,7 @@ describe('SchemaFactory', () => {
   test('createObject()', () => {
     const emptyObjectSchema = SchemaFactory.createObject(openapi.components, {});
     expect(emptyObjectSchema.parent).toBe(openapi.components);
-    expect(emptyObjectSchema.properties).toHaveProperty('size', 0);
+    expect(emptyObjectSchema.propertyCount).toBe(0);
     expect(emptyObjectSchema.requiredPropertyCount).toBe(0);
 
     const objectSchema = SchemaFactory.createObject(openapi.components, {
@@ -166,9 +166,9 @@ describe('SchemaFactory', () => {
       age: { type: 'int32', required: true },
       active: { type: 'boolean', required: true },
     });
-    expect(objectSchema.properties).toHaveProperty('size', 3);
-    expect(objectSchema.properties.get('name')?.type).toBe('string');
-    expect(objectSchema.properties.get('age')?.type).toBe('integer');
+    expect(objectSchema.propertyCount).toBe(3);
+    expect(objectSchema.getProperty('name')?.type).toBe('string');
+    expect(objectSchema.getProperty('age')?.type).toBe('integer');
     expect(Array.from(objectSchema.requiredPropertyNames())).toStrictEqual(['age', 'active']);
   });
 
@@ -183,6 +183,34 @@ describe('SchemaFactory', () => {
 });
 
 describe('Schema', () => {
+  test('allowedValues', () => {
+    const schema = openapi.components.setSchema('EnumSchema', null);
+    schema.addAllowedValues(1, '124', true, { a: 123 }, [12, null]);
+
+    expect(Array.from(schema.allowedValues())).toEqual([1, '124', true, { a: 123 }, [12, null]]);
+    expect(schema.hasAllowedValue({ a: 123 })).toBeTruthy();
+    expect(schema.allowedValueCount).toBe(5);
+
+    schema.deleteAllowedValueAt(2);
+    expect(Array.from(schema.allowedValues())).toEqual([1, '124', { a: 123 }, [12, null]]);
+    expect(schema.hasAllowedValue('124')).toBeTruthy();
+    expect(schema.hasAllowedValue([12, null])).toBeTruthy();
+    expect(schema.allowedValueCount).toBe(4);
+
+    schema.deleteAllowedValues(1, { a: 123 });
+    expect(Array.from(schema.allowedValues())).toEqual(['124', [12, null]]);
+    expect(schema.hasAllowedValue({ a: 123 })).toBeFalsy();
+    expect(schema.allowedValueCount).toBe(2);
+
+    schema.addAllowedValues([12, null], { a: 123 });
+    expect(Array.from(schema.allowedValues())).toEqual(['124', [12, null], { a: 123 }]);
+    expect(schema.hasAllowedValue({ a: 123 })).toBeTruthy();
+    expect(schema.allowedValueCount).toBe(3);
+
+    schema.clearAllowedValues();
+    expect(schema.allowedValueCount).toBe(0);
+  });
+
   test('isComposite', () => {
     const objectSchema = openapi.components.setSchema('ObjectSchema', 'object');
     objectSchema.setProperties({
@@ -220,11 +248,11 @@ describe('Schema', () => {
     expect(nullTypedButNoEnum.isNull()).toBeFalsy();
 
     const typedWithEnum = openapi.components.setSchema('OnlyNullEnum', 'boolean');
-    typedWithEnum.enum = [null];
+    typedWithEnum.addAllowedValues(null);
     expect(typedWithEnum.isNull()).toBeFalsy();
 
     const nullSchema = openapi.components.setSchema('Null');
-    nullSchema.enum = [null];
+    nullSchema.addAllowedValues(null);
     expect(nullSchema.isNull()).toBeTruthy();
   });
 
@@ -240,26 +268,22 @@ describe('Schema', () => {
 
     test('true for null schemas', () => {
       const nullSchema = openapi.components.setSchema('Null');
-      nullSchema.enum = [null];
+      nullSchema.addAllowedValues(null);
 
       expect(nullSchema.isNullish()).toBeTruthy();
     });
 
     test('true if at least one subschema is nullish', () => {
       const nullishSchema = openapi.components.setSchema('NullishSchema');
-      const alt1 = SchemaFactory.create(nullishSchema, 'object');
-      const alt2 = SchemaFactory.create(nullishSchema, null);
-      nullishSchema.addOneOf(alt1);
-      nullishSchema.addOneOf(alt2);
 
-      const alt3 = SchemaFactory.create(alt2, 'array');
-      const alt4 = SchemaFactory.create(alt2, null);
-      alt2.anyOf = [alt3, alt4];
+      nullishSchema.addOneOf('object');
 
-      const alt5 = SchemaFactory.create(alt4, 'string');
-      const alt6 = SchemaFactory.create(alt4, null);
-      alt6.enum = [null];
-      alt4.allOf = [alt5, alt6];
+      const alt2 = nullishSchema.addOneOf(null);
+      alt2.addAnyOf('array');
+
+      const alt4 = alt2.addAnyOf(null);
+      alt4.addAllOf('string');
+      alt4.addAllOf(null).addAllowedValues(null);
 
       expect(nullishSchema.isNullish()).toBeTruthy();
     });
@@ -271,13 +295,11 @@ describe('Schema', () => {
       nullishSchema.addOneOf(alt1);
       nullishSchema.addOneOf(alt2);
 
-      const alt3 = SchemaFactory.create(alt2, 'array');
-      const alt4 = SchemaFactory.create(alt2, null);
-      alt2.anyOf = [alt3, alt4];
+      alt2.addAnyOf('array');
+      const alt4 = alt2.addAnyOf(null);
 
-      const alt5 = SchemaFactory.create(alt4, 'string');
-      const alt6 = SchemaFactory.create(alt4, 'boolean');
-      alt4.allOf = [alt5, alt6];
+      alt4.addAllOf('string');
+      alt4.addAllOf('boolean');
 
       expect(nullishSchema.isNullish()).toBeFalsy();
     });
@@ -318,7 +340,7 @@ describe('Schema', () => {
     });
 
     test('empty state', () => {
-      expect(schema.properties.size).toBe(0);
+      expect(schema.propertyCount).toBe(0);
       expect(schema.requiredPropertyCount).toBe(0);
     });
 
@@ -340,36 +362,36 @@ describe('Schema', () => {
       test('defaults', () => {
         const prop1 = schema.setProperty('prop1', 'boolean');
         expect(prop1).toHaveProperty('parent', schema);
-        expect(prop1).toHaveProperty('enum', null);
+        expect(prop1).toHaveProperty('allowedValueCount', 0);
         expect(prop1).toHaveProperty('default', null);
 
         const prop2 = schema.setProperty('prop2', { type: 'boolean' });
         expect(prop2).toHaveProperty('parent', schema);
-        expect(prop2).toHaveProperty('enum', null);
+        expect(prop2).toHaveProperty('allowedValueCount', 0);
         expect(prop2).toHaveProperty('default', null);
 
         expect(schema.isPropertyRequired('prop1')).toBeFalsy();
         expect(schema.isPropertyRequired('prop2')).toBeFalsy();
       });
 
-      test('enum', () => {
+      test('allowedValues', () => {
         const propEnum = [true];
         const prop1 = schema.setProperty('prop', {
           type: 'boolean',
           required: true,
           enum: propEnum,
         });
-        expect(prop1).toHaveProperty('enum', [true]);
+        expect(Array.from(prop1.allowedValues())).toEqual([true]);
 
         propEnum.push(false, true);
-        expect(prop1).toHaveProperty('enum', [true]);
+        expect(Array.from(prop1.allowedValues())).toEqual([true]);
 
         const prop2 = schema.setProperty('prop', {
           type: 'boolean',
           required: true,
           enum: [true, false, true],
         });
-        expect(prop2).toHaveProperty('enum', null);
+        expect(prop2).toHaveProperty('allowedValueCount', 0);
       });
 
       test('default', () => {
@@ -378,7 +400,7 @@ describe('Schema', () => {
           enum: [true],
           default: true,
         });
-        expect(prop).toHaveProperty('enum', [true]);
+        expect(Array.from(prop.allowedValues())).toEqual([true]);
         expect(prop).toHaveProperty('default', true);
 
         expect(() =>
@@ -396,25 +418,25 @@ describe('Schema', () => {
         const int32Prop = schema.setProperty('int32Prop', 'int32');
         expect(int32Prop).toHaveProperty('type', 'integer');
         expect(int32Prop).toHaveProperty('format', 'int32');
-        expect(int32Prop).toHaveProperty('enum', null);
+        expect(int32Prop).toHaveProperty('allowedValueCount', 0);
         expect(int32Prop).toHaveProperty('default', null);
 
         const int64Prop = schema.setProperty('int64Prop', 'int64');
         expect(int64Prop).toHaveProperty('type', 'integer');
         expect(int64Prop).toHaveProperty('format', 'int64');
-        expect(int64Prop).toHaveProperty('enum', null);
+        expect(int64Prop).toHaveProperty('allowedValueCount', 0);
         expect(int64Prop).toHaveProperty('default', null);
 
         const intProp = schema.setProperty('intProp', 'integer');
         expect(intProp).toHaveProperty('type', 'integer');
         expect(intProp).toHaveProperty('format', null);
-        expect(intProp).toHaveProperty('enum', null);
+        expect(intProp).toHaveProperty('allowedValueCount', 0);
         expect(intProp).toHaveProperty('default', null);
 
         const numberProp = schema.setProperty('numberProp', 'number');
         expect(numberProp).toHaveProperty('type', 'number');
         expect(numberProp).toHaveProperty('format', null);
-        expect(numberProp).toHaveProperty('enum', null);
+        expect(numberProp).toHaveProperty('allowedValueCount', 0);
         expect(numberProp).toHaveProperty('default', null);
 
         expect(schema.isPropertyRequired('int32Prop')).toBeFalsy();
@@ -423,13 +445,13 @@ describe('Schema', () => {
         expect(schema.isPropertyRequired('numberProp')).toBeFalsy();
       });
 
-      test('enum', () => {
+      test('allowedValues', () => {
         const enumValues = [1, 3, 12];
         const enumProp = schema.setProperty('enumProp', { type: 'integer', enum: enumValues });
-        expect(enumProp).toHaveProperty('enum', [1, 3, 12]);
+        expect(Array.from(enumProp.allowedValues())).toEqual([1, 3, 12]);
 
         enumValues.push(-9, 4);
-        expect(enumProp).toHaveProperty('enum', [1, 3, 12]);
+        expect(Array.from(enumProp.allowedValues())).toEqual([1, 3, 12]);
       });
 
       test('default value', () => {
@@ -479,23 +501,23 @@ describe('Schema', () => {
         const dateProp = schema.setProperty('dateProp', 'date');
         expect(dateProp).toHaveProperty('type', 'string');
         expect(dateProp).toHaveProperty('format', 'date');
-        expect(dateProp).toHaveProperty('enum', null);
+        expect(dateProp).toHaveProperty('allowedValueCount', 0);
         expect(dateProp).toHaveProperty('default', null);
 
         const dateTimeProp = schema.setProperty('dateTimeProp', 'date-time');
         expect(dateTimeProp).toHaveProperty('type', 'string');
         expect(dateTimeProp).toHaveProperty('format', 'date-time');
-        expect(dateTimeProp).toHaveProperty('enum', null);
+        expect(dateTimeProp).toHaveProperty('allowedValueCount', 0);
         expect(dateTimeProp).toHaveProperty('default', null);
       });
 
-      test('enum', () => {
+      test('allowedValues', () => {
         const enumValues = ['2022-12-12'];
         const enumProp = schema.setProperty('enumProp', { type: 'date', enum: enumValues });
-        expect(enumProp).toHaveProperty('enum', ['2022-12-12']);
+        expect(Array.from(enumProp.allowedValues())).toEqual(['2022-12-12']);
 
         enumValues.push('2022-01-01');
-        expect(enumProp).toHaveProperty('enum', ['2022-12-12']);
+        expect(Array.from(enumProp.allowedValues())).toEqual(['2022-12-12']);
       });
 
       test('default value', () => {
@@ -517,17 +539,17 @@ describe('Schema', () => {
         const prop = schema.setProperty('emailProp', 'email');
         expect(prop).toHaveProperty('type', 'string');
         expect(prop).toHaveProperty('format', 'email');
-        expect(prop).toHaveProperty('enum', null);
+        expect(prop).toHaveProperty('allowedValueCount', 0);
         expect(prop).toHaveProperty('default', null);
       });
 
-      test('enum', () => {
+      test('allowedValues', () => {
         const enumValues = ['john@example.com'];
         const prop = schema.setProperty('emailSubset', { type: 'email', enum: enumValues });
-        expect(prop).toHaveProperty('enum', ['john@example.com']);
+        expect(Array.from(prop.allowedValues())).toEqual(['john@example.com']);
 
         enumValues.push('mary@example.com');
-        expect(prop).toHaveProperty('enum', ['john@example.com']);
+        expect(Array.from(prop.allowedValues())).toEqual(['john@example.com']);
       });
 
       test('default value', () => {
@@ -549,17 +571,17 @@ describe('Schema', () => {
         const prop = schema.setProperty('tipAmount', 'decimal');
         expect(prop).toHaveProperty('type', 'string');
         expect(prop).toHaveProperty('format', 'decimal');
-        expect(prop).toHaveProperty('enum', null);
+        expect(prop).toHaveProperty('allowedValueCount', 0);
         expect(prop).toHaveProperty('default', null);
       });
 
-      test('enum', () => {
+      test('allowedValues', () => {
         const enumValues = ['12.34', '-0.000001'];
         const prop = schema.setProperty('decimalWithChoice', { type: 'decimal', enum: enumValues });
-        expect(prop).toHaveProperty('enum', ['12.34', '-0.000001']);
+        expect(Array.from(prop.allowedValues())).toEqual(['12.34', '-0.000001']);
 
         enumValues.push('1.1111');
-        expect(prop).toHaveProperty('enum', ['12.34', '-0.000001']);
+        expect(Array.from(prop.allowedValues())).toEqual(['12.34', '-0.000001']);
       });
 
       test('default value', () => {
@@ -577,13 +599,13 @@ describe('Schema', () => {
     });
 
     describe('string property', () => {
-      test('enum', () => {
+      test('allowedValues', () => {
         const genderEnum = ['male', 'female'];
         const genderProp = schema.setProperty('gender', { type: 'string', enum: genderEnum });
-        expect(genderProp).toHaveProperty('enum', ['male', 'female']);
+        expect(Array.from(genderProp.allowedValues())).toEqual(['male', 'female']);
 
         genderEnum.push('non-binary');
-        expect(genderProp).toHaveProperty('enum', ['male', 'female']);
+        expect(Array.from(genderProp.allowedValues())).toEqual(['male', 'female']);
       });
 
       test('default', () => {
@@ -625,7 +647,7 @@ describe('Schema', () => {
       y: 'int32',
       z: { type: 'boolean', required: true },
     });
-    expect(schema.properties.size).toBe(3);
+    expect(schema.propertyCount).toBe(3);
     expect(Array.from(schema.requiredPropertyNames())).toStrictEqual(['z']);
   });
 
@@ -636,12 +658,12 @@ describe('Schema', () => {
       y: 'int32',
       z: { type: 'date', required: true },
     });
-    expect(schema.properties.size).toBe(3);
+    expect(schema.propertyCount).toBe(3);
     expect(schema.requiredPropertyCount).toBe(1);
 
     schema.deleteProperty('z');
 
-    expect(schema.properties.get('z')).toBeUndefined();
+    expect(schema.getProperty('z')).toBeUndefined();
     expect(schema.requiredPropertyCount).toBe(0);
   });
 
@@ -654,7 +676,7 @@ describe('Schema', () => {
     });
     schema.clearProperties();
 
-    expect(schema.properties.size).toBe(0);
+    expect(schema.propertyCount).toBe(0);
     expect(schema.requiredPropertyCount).toBe(0);
   });
 
@@ -682,7 +704,7 @@ describe('Schema', () => {
 
   test('addAllOf', () => {
     const schema = SchemaFactory.create(openapi.components, null);
-    expect(schema.allOf).toStrictEqual([]);
+    expect(schema.allOfCount).toBe(0);
 
     const option1 = schema.addAllOf('integer');
 
@@ -692,9 +714,9 @@ describe('Schema', () => {
     expect(option1).toHaveProperty('parent', schema);
     expect(option2).toBe(anotherSchema);
 
-    expect(schema.allOf?.length).toBe(2);
-    expect(schema.allOf?.[0]).toBe(option1);
-    expect(schema.allOf?.[1]).toBe(option2);
+    expect(schema.allOfCount).toBe(2);
+    expect(schema.allOfAt(0)).toBe(option1);
+    expect(schema.allOfAt(1)).toBe(option2);
   });
 
   test('deleteAllOfAt', () => {
@@ -704,12 +726,12 @@ describe('Schema', () => {
 
     schema.deleteAllOfAt(0);
 
-    expect(schema.allOf).toHaveLength(1);
-    expect(schema.allOf?.[0]).toHaveProperty('type', 'number');
+    expect(schema.allOfCount).toBe(1);
+    expect(schema.allOfAt(0)).toHaveProperty('type', 'number');
 
     schema.deleteAllOfAt(0);
 
-    expect(schema.allOf).toStrictEqual([]);
+    expect(schema.allOfCount).toBe(0);
   });
 
   test('clearAllOf', () => {
@@ -717,16 +739,16 @@ describe('Schema', () => {
     schema.addAllOf('integer');
     schema.addAllOf('double');
 
-    expect(schema.allOf).toHaveLength(2);
+    expect(schema.allOfCount).toBe(2);
 
     schema.clearAllOf();
 
-    expect(schema.allOf).toStrictEqual([]);
+    expect(schema.allOfCount).toBe(0);
   });
 
   test('addOneOf', () => {
     const schema = SchemaFactory.create(openapi.components, null);
-    expect(schema.allOf).toStrictEqual([]);
+    expect(schema.allOfCount).toBe(0);
 
     const option1 = schema.addOneOf('integer');
 
@@ -736,9 +758,9 @@ describe('Schema', () => {
     expect(option1).toHaveProperty('parent', schema);
     expect(option2).toBe(anotherSchema);
 
-    expect(schema.oneOf?.length).toBe(2);
-    expect(schema.oneOf?.[0]).toBe(option1);
-    expect(schema.oneOf?.[1]).toBe(option2);
+    expect(schema.oneOfCount).toBe(2);
+    expect(schema.oneOfAt(0)).toBe(option1);
+    expect(schema.oneOfAt(1)).toBe(option2);
   });
 
   test('deleteOneOfAt', () => {
@@ -748,12 +770,12 @@ describe('Schema', () => {
 
     schema.deleteOneOfAt(0);
 
-    expect(schema.oneOf).toHaveLength(1);
-    expect(schema.oneOf?.[0]).toHaveProperty('type', 'number');
+    expect(schema.oneOfCount).toBe(1);
+    expect(schema.oneOfAt(0)).toHaveProperty('type', 'number');
 
     schema.deleteOneOfAt(0);
 
-    expect(schema.oneOf).toStrictEqual([]);
+    expect(schema.oneOfCount).toBe(0);
   });
 
   test('clearOneOf', () => {
@@ -761,11 +783,11 @@ describe('Schema', () => {
     schema.addOneOf('integer');
     schema.addOneOf('double');
 
-    expect(schema.oneOf).toHaveLength(2);
+    expect(schema.oneOfCount).toBe(2);
 
     schema.clearOneOf();
 
-    expect(schema.oneOf).toStrictEqual([]);
+    expect(schema.oneOfCount).toBe(0);
   });
 
   test('arrayOf', () => {
@@ -774,5 +796,21 @@ describe('Schema', () => {
     const arraySchema = itemSchema.arrayOf(openapi.components);
 
     expect(arraySchema.items).toBe(itemSchema);
+  });
+
+  test('externalDocs', () => {
+    const schema = openapi.components.setSchema('TestExternalDocs');
+    expect(schema.externalDocs).toBeNull();
+
+    expect(() => schema.setExternalDocs('not-a-url')).toThrow();
+    expect(schema.externalDocs).toBeNull();
+
+    const docs = schema.setExternalDocs('http://www.example.com');
+    expect(schema.externalDocs).toBe(docs);
+
+    expect(() => schema.setExternalDocs('http://another.example.com')).toThrow();
+
+    schema.deleteExternalDocs();
+    expect(schema.externalDocs).toBeNull();
   });
 });

@@ -172,7 +172,7 @@ test('serializes tags', () => {
 
   const t1 = openapi.addTag('t1');
   t1.description = 'The single tag';
-  const externalDocs = t1.addExternalDocs('http://www.example.com/docs');
+  const externalDocs = t1.setExternalDocs('http://www.example.com/docs');
   externalDocs.description = '3rd party docs';
   t1.setExtension('x', 'y');
 

@@ -7,7 +7,7 @@ import { RequestBody } from './RequestBody';
 import { Response } from './Response';
 import { SchemaFactory } from './Schema';
 
-import type { ComponentsModel, OpenAPIModel, ParameterLocation, SecuritySchemeType } from './types';
+import type { ComponentsModel, OpenAPIModel, ParameterLocation } from './types';
 
 let openapi: OpenAPIModel;
 let components: ComponentsModel;
@@ -384,7 +384,7 @@ describe('securitySchemes', () => {
     expect(components.getSecuritySchema('oid')).toHaveProperty('type', 'openIdConnect');
 
     expect(() =>
-      components.setSecuritySchema('schema', 'wrongType' as SecuritySchemeType),
+      components.setSecuritySchema('schema', 'wrongTypeInDisguise' as 'apiKey'),
     ).toThrow();
   });
 

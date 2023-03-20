@@ -29,7 +29,7 @@ describe('schemaToType', () => {
     const openapi = OpenAPIFactory.create();
 
     const enumInteger = openapi.components.setSchema('EnumInt', 'integer');
-    enumInteger.enum = [1, 3, 2, 8];
+    enumInteger.addAllowedValues(1, 3, 2, 8);
 
     expect(schemaToType(enumInteger)).toBe('1 | 3 | 2 | 8');
 
@@ -42,7 +42,7 @@ describe('schemaToType', () => {
     const openapi = OpenAPIFactory.create();
 
     const enumString = openapi.components.setSchema('EnumString', 'string');
-    enumString.enum = ['val1', 'val2'];
+    enumString.addAllowedValues('val1', 'val2');
 
     expect(schemaToType(enumString)).toBe("'val1' | 'val2'");
 

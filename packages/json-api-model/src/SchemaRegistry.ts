@@ -69,8 +69,8 @@ export class SchemaRegistry implements JSONAPISchemaRegistry {
     }
     assert(title === undefined, `When given a schema model, title must not be provided`);
     const typeAttr = resourceTypeOrSchema.getPropertyDeepOrThrow('type');
-    assert(typeAttr.enum?.length === 1, `Resource schemas must have a single enum value`);
-    const resourceType = typeAttr.enum[0];
+    assert(typeAttr.allowedValueCount === 1, `Resource schemas must have a single enum value`);
+    const resourceType = typeAttr.allowedValueAt(0);
     assert(
       resourceType && typeof resourceType === 'string',
       'Resource types must be non-empty strings',

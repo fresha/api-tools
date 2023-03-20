@@ -1,8 +1,12 @@
 import assert from 'assert';
+import { isDeepStrictEqual } from 'util';
+
+import isURL from 'validator/lib/isURL';
 
 import { BasicNode } from './BasicNode';
 import { Discriminator } from './Discriminator';
 import { ExternalDocumentation } from './ExternalDocumentation';
+import { XML } from './XML';
 
 import type {
   SchemaCreateArrayObject,
@@ -16,7 +20,6 @@ import type {
   CreateSchemaPropertyOptions,
   SchemaPropertyObject,
   SchemaType,
-  XMLModel,
 } from './types';
 import type { CommonMarkString, JSONValue, Nullable, URLString } from '@fresha/api-tools-core';
 
@@ -52,23 +55,23 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   #maxProperties: Nullable<number>;
   #minProperties: Nullable<number>;
   readonly #required: Set<string>;
-  enum: Nullable<JSONValue[]>;
+  #enum: JSONValue[];
   #type: Nullable<SchemaType>;
-  readonly allOf: SchemaModel[];
-  readonly oneOf: SchemaModel[];
-  readonly anyOf: SchemaModel[];
-  not: Nullable<SchemaModel>;
-  items: Nullable<SchemaModel>;
-  readonly properties: Map<string, SchemaModel>;
-  additionalProperties: Nullable<SchemaModel | boolean>;
+  readonly #allOf: Schema[];
+  readonly #oneOf: Schema[];
+  readonly #anyOf: Schema[];
+  #not: Nullable<Schema>;
+  #items: Nullable<Schema>;
+  readonly #properties: Map<string, Schema>;
+  #additionalProperties: Nullable<Schema | boolean>;
   #description: Nullable<CommonMarkString>;
   #format: Nullable<SchemaFormat>;
   #default: Nullable<JSONValue>;
   #nullable: boolean;
-  discriminator: Nullable<Discriminator>;
+  #discriminator: Nullable<Discriminator>;
   #readOnly: boolean;
   #writeOnly: boolean;
-  xml: Nullable<XMLModel>;
+  #xml: Nullable<XML>;
   #externalDocs: Nullable<ExternalDocumentation>;
   #example: Nullable<JSONValue>;
   #deprecated: boolean;
@@ -129,13 +132,13 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
         case 'boolean': {
           if (params.enum?.includes(true)) {
             if (!params.enum?.includes(false)) {
-              result.enum = [true];
+              result.#enum = [true];
             }
           } else if (params.enum?.includes(false)) {
-            result.enum = [false];
+            result.#enum = [false];
           }
           if (params.default != null) {
-            assert(result.enum == null || result.enum.includes(!!params.default));
+            assert(result.#enum == null || result.#enum.includes(!!params.default));
             result.default = !!params.default;
           }
           break;
@@ -145,10 +148,10 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
         case 'int64':
         case 'number': {
           if (params.enum?.length) {
-            result.enum = params.enum.slice();
+            result.#enum = params.enum.slice();
           }
           if (params.default != null) {
-            assert(result.enum == null || result.enum.includes(params.default));
+            assert(!result.#enum.length || result.#enum.includes(params.default));
             result.default = params.default;
           }
           if (params.minimum != null) {
@@ -170,20 +173,20 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
         case 'email':
         case 'decimal': {
           if (params.enum?.length) {
-            result.enum = params.enum.slice();
+            result.#enum = params.enum.slice();
           }
           if (params.default != null) {
-            assert(result.enum == null || result.enum.includes(params.default));
+            assert(!result.#enum.length || result.#enum.includes(params.default));
             result.default = params.default;
           }
           break;
         }
         case 'string': {
           if (params.enum?.length) {
-            result.enum = params.enum.slice();
+            result.#enum = params.enum.slice();
           }
           if (params.default != null) {
-            assert(result.enum == null || result.enum.includes(params.default));
+            assert(!result.#enum.length || result.#enum.includes(params.default));
             result.default = params.default;
           }
           if (params.pattern != null) {
@@ -231,15 +234,15 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     const result = Schema.create(parent, 'array');
 
     if (typeof options === 'string' || options == null) {
-      result.items = Schema.create(result, options);
+      result.#items = Schema.create(result, options);
     } else if (options instanceof Schema) {
-      result.items = options;
+      result.#items = options;
     } else {
       const { itemsOptions } = options as SchemaCreateArrayObject;
       if (typeof itemsOptions === 'string' || itemsOptions == null) {
-        result.items = Schema.create(result, itemsOptions);
+        result.#items = Schema.create(result, itemsOptions);
       } else if (itemsOptions instanceof Schema) {
-        result.items = itemsOptions;
+        result.#items = itemsOptions;
       } else {
         assert.fail(`Unsupported schema type ${String(itemsOptions)}`);
       }
@@ -279,23 +282,23 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.#minProperties = null;
     this.#maxProperties = null;
     this.#required = new Set<string>();
-    this.enum = null;
+    this.#enum = [];
     this.#type = null;
-    this.allOf = [];
-    this.oneOf = [];
-    this.anyOf = [];
-    this.not = null;
-    this.items = null;
-    this.properties = new Map<string, SchemaModel>();
-    this.additionalProperties = true;
+    this.#allOf = [];
+    this.#oneOf = [];
+    this.#anyOf = [];
+    this.#not = null;
+    this.#items = null;
+    this.#properties = new Map<string, Schema>();
+    this.#additionalProperties = true;
     this.#description = null;
     this.#format = null;
     this.#default = null;
     this.#nullable = false;
-    this.discriminator = null;
+    this.#discriminator = null;
     this.#readOnly = false;
     this.#writeOnly = false;
-    this.xml = null;
+    this.#xml = null;
     this.#externalDocs = null;
     this.#example = null;
     this.#deprecated = false;
@@ -419,12 +422,97 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     this.#minProperties = value;
   }
 
+  get allowedValueCount(): number {
+    return this.#enum?.length;
+  }
+
+  allowedValues(): IterableIterator<JSONValue> {
+    return this.#enum.values();
+  }
+
+  allowedValueAt(index: number): JSONValue {
+    return this.#enum[index];
+  }
+
+  hasAllowedValue(value: JSONValue): boolean {
+    return this.#enum.some(val => isDeepStrictEqual(val, value));
+  }
+
+  addAllowedValues(...values: JSONValue[]): void {
+    for (const value of values) {
+      if (!this.hasAllowedValue(value)) {
+        this.#enum.push(value);
+      }
+    }
+  }
+
+  deleteAllowedValueAt(index: number): void {
+    this.#enum.splice(index, 1);
+  }
+
+  deleteAllowedValues(...values: JSONValue[]): void {
+    for (const value of values) {
+      for (let i = this.#enum.length - 1; i >= 0; i -= 1) {
+        if (isDeepStrictEqual(this.#enum[i], value)) {
+          this.#enum.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  clearAllowedValues(): void {
+    this.#enum.splice(0, this.#enum.length);
+  }
+
   get type(): Nullable<SchemaType> {
     return this.#type;
   }
 
   set type(value: Nullable<SchemaType>) {
     this.#type = value;
+  }
+
+  get not(): Nullable<Schema> {
+    return this.#not;
+  }
+
+  setNot(params: CreateOrSetSchemaOptions): Schema {
+    assert(!this.#not, `Not schema is already set`);
+    if (isSchemaModel(params)) {
+      this.#not = params as Schema;
+    } else {
+      this.#not = Schema.create(this, params);
+    }
+    return this.#not;
+  }
+
+  deleteNot(): void {
+    this.#not?.dispose();
+    this.#not = null;
+  }
+
+  get additionalProperties(): Nullable<SchemaModel | boolean> {
+    return this.#additionalProperties;
+  }
+
+  setAdditionalProperties(value: boolean): boolean;
+  setAdditionalProperties(params: CreateOrSetSchemaOptions): Schema;
+  setAdditionalProperties(value: CreateOrSetSchemaOptions | boolean): Schema | boolean {
+    if (typeof value === 'boolean') {
+      this.#additionalProperties = value;
+    } else if (isSchemaModel(value)) {
+      this.#additionalProperties = value as Schema;
+    } else {
+      this.#additionalProperties = Schema.create(this, value);
+    }
+    return this.#additionalProperties;
+  }
+
+  deleteAdditionalProperties(): void {
+    if (isSchemaModel(this.#additionalProperties)) {
+      this.#additionalProperties.dispose();
+    }
+    this.#additionalProperties = null;
   }
 
   get description(): Nullable<CommonMarkString> {
@@ -457,6 +545,21 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   set nullable(value: boolean) {
     this.#nullable = value;
+  }
+
+  get discriminator(): Nullable<Discriminator> {
+    return this.#discriminator;
+  }
+
+  setDiscriminator(propertyName: string): Discriminator {
+    assert(!this.#discriminator, 'Discriminator is already set');
+    this.#discriminator = new Discriminator(this, propertyName);
+    return this.#discriminator;
+  }
+
+  deleteDiscriminator(): void {
+    this.#discriminator?.dispose();
+    this.#discriminator = null;
   }
 
   get readOnly(): boolean {
@@ -492,45 +595,64 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   }
 
   isComposite(): boolean {
-    return !!(this.allOf.length || this.oneOf.length || this.anyOf.length);
+    return !!(this.#allOf.length || this.#oneOf.length || this.#anyOf.length);
   }
 
   isNull(): boolean {
-    return !!(this.#type === null && this.enum?.length === 1 && this.enum[0] === null);
+    return !!(this.#type === null && this.#enum.length === 1 && this.#enum[0] === null);
   }
 
   isNullish(): boolean {
     return !!(
       this.nullable ||
       this.isNull() ||
-      this.allOf.some(s => s.isNullish()) ||
-      this.oneOf.some(s => s.isNullish()) ||
-      this.anyOf.some(s => s.isNullish())
+      this.#allOf.some(s => s.isNullish()) ||
+      this.#oneOf.some(s => s.isNullish()) ||
+      this.#anyOf.some(s => s.isNullish())
     );
   }
 
   isTuple(): boolean {
-    return this.#type === 'array' && Array.isArray(this.items);
+    return this.#type === 'array' && Array.isArray(this.#items);
+  }
+
+  get propertyCount(): number {
+    return this.#properties.size;
+  }
+
+  propertyNames(): IterableIterator<string> {
+    return this.#properties.keys();
+  }
+
+  properties(): IterableIterator<[string, Schema]> {
+    return this.#properties.entries();
+  }
+
+  hasProperty(name: string): boolean {
+    return this.#properties.has(name);
   }
 
   *getProperties(): IterableIterator<SchemaPropertyObject> {
-    for (const [name, schema] of this.properties) {
+    for (const [name, schema] of this.#properties) {
       yield { name, schema, required: this.isPropertyRequired(name) };
     }
   }
 
-  getProperty(name: string): SchemaModel | undefined {
-    return this.properties.get(name);
+  getProperty(name: string): Schema | undefined {
+    return this.#properties.get(name);
   }
 
-  getPropertyOrThrow(name: string): SchemaModel {
+  getPropertyOrThrow(name: string): Schema {
     const result = this.getProperty(name);
     assert(result, `Expected to find property ${name}, but got none`);
     return result;
   }
 
   hasPropertiesDeep(): boolean {
-    return !!this.allOf.reduce((accum, elem) => accum + elem.properties.size, this.properties.size);
+    return !!this.#allOf.reduce(
+      (accum, elem) => accum + elem.#properties.size,
+      this.#properties.size,
+    );
   }
 
   *getPropertiesDeep(): IterableIterator<SchemaPropertyObject> {
@@ -538,21 +660,21 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     for (const prop of this.getProperties()) {
       yield prop;
     }
-    for (const subschema of this.allOf) {
+    for (const subschema of this.#allOf) {
       for (const subprop of subschema.getProperties()) {
         yield subprop;
       }
     }
   }
 
-  getPropertyDeep(name: string): SchemaModel | undefined {
+  getPropertyDeep(name: string): Schema | undefined {
     if (this.#type === 'object') {
       const prop = this.getProperty(name);
       if (prop) {
         return prop;
       }
     }
-    for (const subschema of this.allOf) {
+    for (const subschema of this.#allOf) {
       if (subschema.type === 'object') {
         const prop = subschema.getProperty(name);
         if (prop) {
@@ -563,32 +685,32 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     return undefined;
   }
 
-  getPropertyDeepOrThrow(name: string): SchemaModel {
+  getPropertyDeepOrThrow(name: string): Schema {
     const result = this.getPropertyDeep(name);
     assert(result, `Expected to find (deep) property ${name}, but got none`);
     return result;
   }
 
-  setProperty(name: string, params: CreateSchemaPropertyOptions): SchemaModel {
-    let propertySchema: SchemaModel;
+  setProperty(name: string, params: CreateSchemaPropertyOptions): Schema {
+    let propertySchema: Schema;
     let propertyRequired: boolean | undefined;
 
     if (params == null || typeof params === 'string') {
       propertySchema = Schema.create(this, params);
     } else if (isSchemaModel(params)) {
-      propertySchema = params;
+      propertySchema = params as Schema;
     } else {
       if (params.type == null || typeof params.type === 'string') {
         propertySchema = Schema.create(this, params);
       } else if (isSchemaModelType(params)) {
-        propertySchema = params.type;
+        propertySchema = params.type as Schema;
       } else {
         assert.fail(`Unsupported type ${String(params)} for property '${name}'`);
       }
       propertyRequired = params.required;
     }
 
-    this.properties.set(name, propertySchema);
+    this.#properties.set(name, propertySchema);
 
     if (propertyRequired != null) {
       this.setPropertyRequired(name, propertyRequired);
@@ -605,12 +727,12 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
   }
 
   deleteProperty(name: string): void {
-    this.properties.delete(name);
+    this.#properties.delete(name);
     this.#required.delete(name);
   }
 
   clearProperties(): void {
-    this.properties.clear();
+    this.#properties.clear();
     this.#required.clear();
   }
 
@@ -622,9 +744,9 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     return this.#required.keys();
   }
 
-  *requiredProperties(): IterableIterator<[string, SchemaModel]> {
+  *requiredProperties(): IterableIterator<[string, Schema]> {
     for (const name of this.#required.keys()) {
-      const prop = this.properties.get(name);
+      const prop = this.#properties.get(name);
       if (prop !== undefined) {
         yield [name, prop];
       }
@@ -643,64 +765,131 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
     }
   }
 
-  setItems(options: CreateOrSetSchemaOptions): SchemaModel {
-    assert(!this.items, `This schema's items have already been set`);
-    this.items = isSchemaModel(options) ? options : Schema.create(this, options);
-    return this.items;
+  get items(): Nullable<Schema> {
+    return this.#items;
   }
 
-  addAllOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {
-    const schema = isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema);
-    this.allOf.push(schema);
+  setItems(options: CreateOrSetSchemaOptions): Schema {
+    assert(!this.#items, `This schema's items have already been set`);
+    this.#items = (isSchemaModel(options) ? options : Schema.create(this, options)) as Schema;
+    return this.#items;
+  }
+
+  deleteItems(): void {
+    this.#items?.dispose();
+    this.#items = null;
+  }
+
+  get allOfCount(): number {
+    return this.#allOf.length;
+  }
+
+  allOf(): IterableIterator<Schema> {
+    return this.#allOf.values();
+  }
+
+  allOfAt(index: number): Schema {
+    return this.#allOf[index];
+  }
+
+  addAllOf(typeOrSchema: CreateOrSetSchemaOptions): Schema {
+    const schema = (
+      isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema)
+    ) as Schema;
+    this.#allOf.push(schema);
     return schema;
   }
 
   deleteAllOfAt(index: number): void {
-    this.allOf.splice(index, 1);
+    this.#allOf.splice(index, 1);
   }
 
   clearAllOf(): void {
-    this.allOf.splice(0, this.allOf.length);
+    this.#allOf.splice(0, this.#allOf.length);
   }
 
-  addOneOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {
-    const schema = isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema);
-    this.oneOf.push(schema);
+  get oneOfCount(): number {
+    return this.#oneOf.length;
+  }
+
+  oneOf(): IterableIterator<Schema> {
+    return this.#oneOf.values();
+  }
+
+  oneOfAt(index: number): Schema {
+    return this.#oneOf[index];
+  }
+
+  addOneOf(typeOrSchema: CreateOrSetSchemaOptions): Schema {
+    const schema = (
+      isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema)
+    ) as Schema;
+    this.#oneOf.push(schema);
     return schema;
   }
 
   deleteOneOfAt(index: number): void {
-    this.oneOf.splice(index, 1);
+    this.#oneOf.splice(index, 1);
   }
 
   clearOneOf(): void {
-    this.oneOf.splice(0, this.oneOf.length);
+    this.#oneOf.splice(0, this.#oneOf.length);
   }
 
-  addAnyOf(typeOrSchema: CreateOrSetSchemaOptions): SchemaModel {
-    const schema = isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema);
-    this.anyOf.push(schema);
+  get anyOfCount(): number {
+    return this.#anyOf.length;
+  }
+
+  anyOf(): IterableIterator<Schema> {
+    return this.#anyOf.values();
+  }
+
+  anyOfAt(index: number): Schema {
+    return this.#anyOf[index];
+  }
+
+  addAnyOf(typeOrSchema: CreateOrSetSchemaOptions): Schema {
+    const schema = (
+      isSchemaModel(typeOrSchema) ? typeOrSchema : Schema.create(this, typeOrSchema)
+    ) as Schema;
+    this.#anyOf.push(schema);
     return schema;
   }
 
   deleteAnyOfAt(index: number): void {
-    this.anyOf.splice(index, 1);
+    this.#anyOf.splice(index, 1);
   }
 
   clearAnyOf(): void {
-    this.anyOf.splice(0, this.anyOf.length);
+    this.#anyOf.splice(0, this.#anyOf.length);
   }
 
-  arrayOf(parent: SchemaModelParent): SchemaModel {
+  arrayOf(parent: SchemaModelParent): Schema {
     return Schema.createArray(parent, this);
+  }
+
+  get xml(): Nullable<XML> {
+    return this.#xml;
+  }
+
+  setXML(): XML {
+    assert(!this.#xml, 'xml property is already set');
+    this.#xml = new XML(this);
+    return this.#xml;
+  }
+
+  deleteXML(): void {
+    this.#xml?.dispose();
+    this.#xml = null;
   }
 
   get externalDocs(): Nullable<ExternalDocumentation> {
     return this.#externalDocs;
   }
 
-  addExternalDocs(url: URLString): ExternalDocumentation {
+  setExternalDocs(url: URLString): ExternalDocumentation {
     assert(!this.#externalDocs, 'External documentation is already set');
+    assert(isURL(url), `'${url}' is not a valid URL`);
     this.#externalDocs = new ExternalDocumentation(this, url);
     return this.#externalDocs;
   }

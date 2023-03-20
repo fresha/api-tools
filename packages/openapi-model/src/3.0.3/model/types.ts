@@ -183,24 +183,47 @@ export interface SchemaModel
   uniqueItems: boolean;
   maxProperties: Nullable<number>;
   minProperties: Nullable<number>;
-  enum: Nullable<JSONValue[]>;
+
+  readonly allowedValueCount: number;
+  allowedValues(): IterableIterator<JSONValue>;
+  allowedValueAt(index: number): JSONValue;
+  hasAllowedValue(value: JSONValue): boolean;
+  addAllowedValues(...values: JSONValue[]): void;
+  deleteAllowedValueAt(index: number): void;
+  deleteAllowedValues(...values: JSONValue[]): void;
+  clearAllowedValues(): void;
+
   type: Nullable<SchemaType>;
-  allOf: Nullable<SchemaModel[]>;
-  oneOf: Nullable<SchemaModel[]>;
-  anyOf: Nullable<SchemaModel[]>;
-  not: Nullable<SchemaModel>;
-  items: Nullable<SchemaModel>;
-  readonly properties: ReadonlyMap<string, SchemaModel>;
-  additionalProperties: Nullable<SchemaModel | boolean>;
+
+  readonly not: Nullable<SchemaModel>;
+  setNot(params: CreateOrSetSchemaOptions): SchemaModel;
+  deleteNot(): void;
+
+  readonly additionalProperties: Nullable<SchemaModel | boolean>;
+  setAdditionalProperties(value: boolean): boolean;
+  setAdditionalProperties(params: CreateOrSetSchemaOptions): SchemaModel;
+  deleteAdditionalProperties(): void;
+
   description: Nullable<CommonMarkString>;
   format: Nullable<SchemaFormat>;
   default: Nullable<JSONValue>;
   nullable: boolean;
-  discriminator: Nullable<DiscriminatorModel>;
+
+  readonly discriminator: Nullable<DiscriminatorModel>;
+  setDiscriminator(propertyName: string): DiscriminatorModel;
+  deleteDiscriminator(): void;
+
   readOnly: boolean;
   writeOnly: boolean;
-  xml: Nullable<XMLModel>;
-  externalDocs: Nullable<ExternalDocumentationModel>;
+
+  readonly xml: Nullable<XMLModel>;
+  setXML(): XMLModel;
+  deleteXML(): void;
+
+  readonly externalDocs: Nullable<ExternalDocumentationModel>;
+  setExternalDocs(url: URLString): ExternalDocumentationModel;
+  deleteExternalDocs(): void;
+
   example: Nullable<JSONValue>;
   deprecated: boolean;
 
@@ -234,6 +257,10 @@ export interface SchemaModel
   //  */
   // getTypeDeep(): SchemaType;
 
+  readonly propertyCount: number;
+  propertyNames(): IterableIterator<string>;
+  properties(): IterableIterator<[string, SchemaModel]>;
+  hasProperty(name: string): boolean;
   getProperties(): IterableIterator<SchemaPropertyObject>;
   getProperty(name: string): SchemaModel | undefined;
   getPropertyOrThrow(name: string): SchemaModel;
@@ -279,6 +306,8 @@ export interface SchemaModel
   isPropertyRequired(name: string): boolean;
   setPropertyRequired(name: string, value: boolean): void;
 
+  readonly items: Nullable<SchemaModel>;
+
   /**
    * Initializes subschema for the `items` property of this schema.
    *
@@ -286,23 +315,30 @@ export interface SchemaModel
    * @return this.items
    */
   setItems(options: CreateOrSetSchemaOptions): SchemaModel;
+  deleteItems(): void;
 
+  readonly allOfCount: number;
+  allOf(): IterableIterator<SchemaModel>;
+  allOfAt(index: number): SchemaModel;
   addAllOf(options: CreateOrSetSchemaOptions): SchemaModel;
   deleteAllOfAt(index: number): void;
   clearAllOf(): void;
 
+  readonly oneOfCount: number;
+  oneOf(): IterableIterator<SchemaModel>;
+  oneOfAt(index: number): SchemaModel;
   addOneOf(options: CreateOrSetSchemaOptions): SchemaModel;
   deleteOneOfAt(index: number): void;
   clearOneOf(): void;
 
+  readonly anyOfCount: number;
+  anyOf(): IterableIterator<SchemaModel>;
+  anyOfAt(index: number): SchemaModel;
   addAnyOf(options: CreateOrSetSchemaOptions): SchemaModel;
   deleteAnyOfAt(index: number): void;
   clearAnyOf(): void;
 
   arrayOf(parent: SchemaModelParent): SchemaModel;
-
-  addExternalDocs(url: URLString): ExternalDocumentationModel;
-  deleteExternalDocs(): void;
 }
 
 export type SchemaCreateArrayObject = {
@@ -550,18 +586,11 @@ export type EncodingModelParent = MediaTypeModel;
 export type EncodingSerializationStyle = 'form' | 'spaceDelimited' | 'pipeDelimited' | 'deepObject';
 
 /**
- * @see https://spec.openapis.org/oas/v3.0.3#encoding-object
+ * Common interface for nodes exposing a collection of Header models.
  */
-export interface EncodingModel
-  extends TreeNodeModel<EncodingModelParent>,
-    SpecificationExtensionsModel {
-  contentType: Nullable<string>;
-  style: Nullable<EncodingSerializationStyle>;
-  explode: boolean;
-  allowReserved: boolean;
-
+export interface HeaderModelMap {
   readonly headerCount: number;
-  headerNames(): IterableIterator<string>;
+  headerKeys(): IterableIterator<string>;
   headers(): IterableIterator<[string, HeaderModel]>;
   hasHeader(name: string): boolean;
   getHeader(name: string): HeaderModel | undefined;
@@ -569,6 +598,19 @@ export interface EncodingModel
   setHeader(name: string): HeaderModel;
   deleteHeader(name: string): void;
   clearHeaders(): void;
+}
+
+/**
+ * @see https://spec.openapis.org/oas/v3.0.3#encoding-object
+ */
+export interface EncodingModel
+  extends TreeNodeModel<EncodingModelParent>,
+    SpecificationExtensionsModel,
+    HeaderModelMap {
+  contentType: Nullable<string>;
+  style: Nullable<EncodingSerializationStyle>;
+  explode: boolean;
+  allowReserved: boolean;
 }
 
 export type MediaTypeModelParent = ParameterModel | RequestBodyModel | ResponseModel | HeaderModel;
@@ -634,18 +676,9 @@ export interface ResponseModel
   extends TreeNodeModel<ResponseModelParent>,
     SpecificationExtensionsModel,
     MediaTypeModelMap,
+    HeaderModelMap,
     LinkModelMap {
   description: CommonMarkString;
-
-  readonly headerCount: number;
-  headerNames(): IterableIterator<string>;
-  headers(): IterableIterator<[string, HeaderModel]>;
-  hasHeader(name: string): boolean;
-  getHeader(name: string): HeaderModel | undefined;
-  getHeaderOrThrow(name: string): HeaderModel;
-  setHeader(name: string): HeaderModel;
-  deleteHeader(name: string): void;
-  clearHeaders(): void;
 }
 
 export type HTTPStatusCode = number | string;
@@ -690,11 +723,6 @@ export interface OperationModel
   deprecated: boolean;
 
   /**
-   * List of own security requirements.
-   */
-  readonly security: Nullable<ReadonlyArray<SecurityRequirementModel>>;
-
-  /**
    * HTTP method this operation is associated with, within its path item.
    */
   readonly httpMethod: PathItemOperationKey;
@@ -709,7 +737,7 @@ export interface OperationModel
   clearTags(): void;
 
   readonly externalDocs: Nullable<ExternalDocumentationModel>;
-  addExternalDocs(url: URLString): ExternalDocumentationModel;
+  setExternalDocs(url: URLString): ExternalDocumentationModel;
   deleteExternalDocs(): void;
 
   readonly parameterCount: number;
@@ -741,21 +769,39 @@ export interface OperationModel
   deleteResponse(code: HTTPStatusCode): void;
   clearResponses(): void;
 
+  readonly effectiveSecurityRequirementCount: number;
+
   /**
    * Return effective security requirements for this operation. It uses own requirements,
    * if defined; otherwise uses global requirements defined in {@link OpenAPIModel}.
    */
-  getSecurityRequirements(): ReadonlyArray<SecurityRequirementModel>;
+  effectiveSecurityRequirements(): IterableIterator<SecurityRequirementModel>;
 
   /**
-   * Adds own security requirement.
+   * Returns the number of own security requirements. Returns null if this operation
+   * inherits requirements from the global scope.
+   */
+  readonly securityRequirementCount: number | undefined;
+
+  /**
+   * Iterates over own security requirements. If this operation does not use its own
+   * requirements, this function returns null.
+   */
+  securityRequirements(): IterableIterator<SecurityRequirementModel> | undefined;
+
+  /**
+   * Returns own security requirement at given index. If this operation does not use
+   * its own requirements, this function return undefined.
+   */
+  securityRequirementAt(index: number): SecurityRequirementModel | undefined;
+
+  /**
+   * Adds a new security requirement to the list of own requirements.
    */
   addSecurityRequirement(): SecurityRequirementModel;
 
   /**
    * Removes own security requirement at specified index.
-   *
-   * @param index zero-based index
    */
   deleteSecurityRequirementAt(index: number): void;
 
@@ -765,13 +811,10 @@ export interface OperationModel
   clearSecurityRequirements(): void;
 
   /**
-   * Starts / stops overriding global security requirements.
-   *
-   * @param doUse if false, sets own requirements to null. Otherwise, if this operation
-   * already has own requirements, does nothing. If not, sets own requirements to an
-   * empty array.
+   * Deletes all security requirements from this operation, and makes this operation
+   * inherit requirements from the global scope.
    */
-  setOwnSecurityRequirements(doUse: boolean): void;
+  deleteSecurityRequirements(): void;
 
   readonly serverCount: number;
   servers(): IterableIterator<ServerModel>;
@@ -905,13 +948,15 @@ export interface SecuritySchemaBaseModel
   description: Nullable<CommonMarkString>;
 }
 
+export type APIKeySecuritySchemaModelLocation = 'query' | 'header' | 'cookie';
+
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#security-scheme-object
  */
 export interface APIKeySecuritySchemaModel extends SecuritySchemaBaseModel {
   readonly type: 'apiKey';
   name: string;
-  in: 'query' | 'header' | 'cookie';
+  in: APIKeySecuritySchemaModelLocation;
 }
 
 /**
@@ -1135,6 +1180,7 @@ export interface ComponentsModel
   extends TreeNodeModel<ComponentsModelParent>,
     SpecificationExtensionsModel,
     CallbackModelMap,
+    HeaderModelMap,
     LinkModelMap,
     ExampleModelMap {
   isEmpty(): boolean;
@@ -1171,7 +1217,7 @@ export interface ComponentsModel
   getParameter(name: string): ParameterModel | undefined;
   getParameterOrThrow(name: string): ParameterModel;
   setParameterModel(name: string, model: ParameterModel): void;
-  setParameter(name: string, kind: ParameterModel['in'], paramName: string): ParameterModel;
+  setParameter(name: string, kind: ParameterLocation, paramName: string): ParameterModel;
   deleteParameter(name: string): void;
   clearParameters(): void;
 
@@ -1186,16 +1232,7 @@ export interface ComponentsModel
   deleteRequestBody(name: string): void;
   clearRequestBodies(): void;
 
-  readonly headerCount: number;
-  headerKeys(): IterableIterator<string>;
-  headers(): IterableIterator<[string, HeaderModel]>;
-  hasHeader(name: string): boolean;
-  getHeader(name: string): HeaderModel | undefined;
-  getHeaderOrThrow(name: string): HeaderModel;
   setHeaderModel(name: string, model: HeaderModel): void;
-  setHeader(name: string): HeaderModel;
-  deleteHeader(name: string): void;
-  clearHeaders(): void;
 
   readonly securitySchemaCount: number;
   securitySchemaKeys(): IterableIterator<string>;
@@ -1204,7 +1241,10 @@ export interface ComponentsModel
   getSecuritySchema(name: string): SecuritySchemaModel | undefined;
   getSecuritySchemaOrThrow(name: string): SecuritySchemaModel;
   setSecuritySchemaModel(name: string, model: SecuritySchemaModel): void;
-  setSecuritySchema(name: string, kind: SecuritySchemaModel['type']): SecuritySchemaModel;
+  setSecuritySchema(name: string, kind: 'http'): HTTPSecuritySchemaModel;
+  setSecuritySchema(name: string, kind: 'apiKey'): APIKeySecuritySchemaModel;
+  setSecuritySchema(name: string, kind: 'oauth2'): OAuth2SecuritySchemaModel;
+  setSecuritySchema(name: string, kind: 'openIdConnect'): OpenIDConnectSecuritySchemaModel;
   deleteSecuritySchema(name: string): void;
   clearSecuritySchemes(): void;
 }
@@ -1241,7 +1281,7 @@ export interface TagModel extends TreeNodeModel<TagModelParent>, SpecificationEx
   description: Nullable<CommonMarkString>;
 
   readonly externalDocs: Nullable<ExternalDocumentationModel>;
-  addExternalDocs(url: URLString): ExternalDocumentationModel;
+  setExternalDocs(url: URLString): ExternalDocumentationModel;
   deleteExternalDocs(): void;
 }
 
@@ -1308,7 +1348,7 @@ export interface OpenAPIModel extends Disposable, SpecificationExtensionsModel {
   clearTags(): void;
 
   readonly externalDocs: Nullable<ExternalDocumentationModel>;
-  addExternalDocs(url: URLString): ExternalDocumentationModel;
+  setExternalDocs(url: URLString): ExternalDocumentationModel;
   deleteExternalDocs(): void;
 }
 
