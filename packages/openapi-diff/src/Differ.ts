@@ -3,6 +3,7 @@ import console from 'console';
 
 import { Nullable } from '@fresha/api-tools-core';
 import chalk from 'chalk';
+import { SemVer } from 'semver';
 
 import { DiffItem } from './DiffItem';
 import { Severity } from './types';
@@ -638,18 +639,19 @@ export class Differ {
       severities.add(item.severity);
     }
 
-    let [major, minor, patch] = this.#model2.info.version.split('.');
-
+    const version1 = new SemVer(this.#model1.info.version);
     if (severities.has('major')) {
-      major = `${Number(major) + 1}`;
+      version1.inc('major');
     } else if (severities.has('minor')) {
-      minor = `${Number(minor) + 1}`;
+      version1.inc('minor');
     } else if (severities.has('patch')) {
-      patch = `${Number(patch) + 1}`;
+      version1.inc('patch');
     }
 
-    this.#outdatedVersion = severities.size > 0;
-    this.#newVersion = `${major}.${minor}.${patch}`;
+    const version2 = new SemVer(this.#model2.info.version);
+
+    this.#outdatedVersion = version2.compare(version1) < 0;
+    this.#newVersion = (this.#outdatedVersion ? version1 : version2).toString();
   }
 
   print(): void {

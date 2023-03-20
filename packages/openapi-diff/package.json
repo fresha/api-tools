@@ -59,12 +59,15 @@
     "@fresha/eslint-config": "^0.2.0",
     "@fresha/jest-config": "^0.2.0",
     "@fresha/typescript-config": "^0.2.0",
+    "@types/semver": "^7.3.13",
     "typescript": "^5.0.2"
   },
   "dependencies": {
     "@fresha/api-tools-core": "^0.5.0",
     "@fresha/openapi-model": "^0.7.0",
     "chalk": "^4.1.2",
+    "semver": "^7.3.8",
+    "yaml": "^2.2.1",
     "yargs": "^17.6.2"
   },
   "gitHead": "5830273395fc060b19d06814b9396ce07eea778d"
