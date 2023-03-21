@@ -27,6 +27,7 @@ import type {
   ComponentsModel,
   ComponentsModelParent,
   CreateSchemaOptions,
+  ParameterLocation,
   SecuritySchemeType,
 } from './types';
 import type { CommonMarkString } from '@fresha/api-tools-core';
@@ -209,7 +210,11 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.#parameters.set(name, model);
   }
 
-  setParameter(name: string, kind: Parameter['in'], paramName: string): Parameter {
+  setParameter(name: string, kind: 'path', paramName: string): PathParameter;
+  setParameter(name: string, kind: 'query', paramName: string): QueryParameter;
+  setParameter(name: string, kind: 'header', paramName: string): HeaderParameter;
+  setParameter(name: string, kind: 'cookie', paramName: string): CookieParameter;
+  setParameter(name: string, kind: ParameterLocation, paramName: string): Parameter {
     let result: PathParameter | QueryParameter | HeaderParameter | CookieParameter;
     switch (kind) {
       case 'path':

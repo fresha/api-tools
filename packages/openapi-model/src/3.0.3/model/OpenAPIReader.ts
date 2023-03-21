@@ -399,7 +399,7 @@ export class OpenAPIReader {
 
       for (const [key, headerJson] of Object.entries(json.headers)) {
         const header = this.parseHeader(headerJson, result, key);
-        result.setHeaderModel(key, header);
+        // result.setHeaderModel(key, header);
         this.schemaPointers.set(`#/components/headers/${key}`, header);
       }
     }
@@ -1293,8 +1293,8 @@ export class OpenAPIReader {
       result.summary = json.summary;
     }
     result.description = json.description as string;
-    if (json.externalDocumentation) {
-      this.parseExternalDocumentation(json.externalDocumentation, result);
+    if (json.externalDocs) {
+      this.parseExternalDocumentation(json.externalDocs, result);
     }
     if (json.operationId) {
       result.operationId = json.operationId;

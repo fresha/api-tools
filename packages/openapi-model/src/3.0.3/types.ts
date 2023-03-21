@@ -11,7 +11,6 @@ import type {
   LinkObject,
   MediaTypeObject as MediaTypeObjectBase,
   OperationObject as OperationObjectBase,
-  ParameterObject as ParameterObjectBase,
   PathItemObject as PathItemObjectBase,
   PathParameterObject as PathParameterObjectBase,
   PathsObject as PathsObjectBase,
@@ -102,7 +101,11 @@ export type HeaderParameterObject = HeaderParameterObjectBase<SchemaObject>;
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#parameter-object
  */
-export type ParameterObject = ParameterObjectBase<SchemaObject>;
+export type ParameterObject =
+  | PathParameterObject
+  | QueryParameterObject
+  | HeaderParameterObject
+  | CookieParameterObject;
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#request-body-object

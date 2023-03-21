@@ -553,6 +553,10 @@ export class Schema extends BasicNode<SchemaModelParent> implements SchemaModel 
 
   setDiscriminator(propertyName: string): Discriminator {
     assert(!this.#discriminator, 'Discriminator is already set');
+    assert(
+      this.#properties.has(propertyName),
+      `Discriminator property '${propertyName}' does not exist`,
+    );
     this.#discriminator = new Discriminator(this, propertyName);
     return this.#discriminator;
   }

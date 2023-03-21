@@ -1,9 +1,13 @@
 import { OpenAPIFactory } from './OpenAPI';
 
-let openapi = OpenAPIFactory.create();
+import type { OpenAPIModel, PathItemModel } from './types';
+
+let openapi: OpenAPIModel;
+let pathItem: PathItemModel;
 
 beforeEach(() => {
   openapi = OpenAPIFactory.create();
+  pathItem = openapi.setPathItem('/health');
 });
 
 test('.pathUrl', () => {
@@ -12,27 +16,59 @@ test('.pathUrl', () => {
 });
 
 describe('operations()', () => {
-  test('sparse', () => {
-    const pathItem = openapi.setPathItem('/health');
-    pathItem.addOperation('get');
-    pathItem.addOperation('delete');
-
-    expect(Array.from(pathItem.operations(), ([key]) => key)).toStrictEqual(['get', 'delete']);
+  test('default', () => {
+    expect(pathItem.operationCount).toBe(0);
+    expect([...pathItem.operationMethods()]).toStrictEqual([]);
   });
 
-  test('sorting', () => {
-    const pathItem = openapi.setPathItem('/health');
-    pathItem.addOperation('trace');
-    pathItem.addOperation('options');
-    pathItem.addOperation('head');
+  test('operations', () => {
+    const opGet = pathItem.addOperation('get');
     pathItem.addOperation('delete');
-    pathItem.addOperation('patch');
-    pathItem.addOperation('get');
-    pathItem.addOperation('put');
-    pathItem.addOperation('post');
 
-    expect(new Set<string>(pathItem.operationMethods())).toStrictEqual(
-      new Set<string>(['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace']),
-    );
+    expect(pathItem.operationCount).toBe(2);
+    expect(Array.from(pathItem.operations(), ([key]) => key)).toStrictEqual(['get', 'delete']);
+
+    expect(pathItem.hasOperation('get')).toBeTruthy();
+    expect(pathItem.hasOperation('patch')).toBeFalsy();
+
+    expect(pathItem.getOperation('get')).toBe(opGet);
+    expect(pathItem.getOperationKeyOrThrow(opGet)).toBe('get');
+
+    expect(() => pathItem.getOperationOrThrow('put')).toThrow();
+
+    pathItem.deleteOperation('get');
+    expect(pathItem.operationCount).toBe(1);
+
+    pathItem.clearOperations();
+    expect(pathItem.operationCount).toBe(0);
+  });
+
+  test('server collection', () => {
+    expect(pathItem.serverCount).toBe(0);
+
+    pathItem.addServer('http://first.example.com');
+    const server2 = pathItem.addServer('http://second.example.com');
+    expect(pathItem.serverCount).toBe(2);
+    expect(pathItem.serverAt(1)).toBe(server2);
+
+    expect(() => pathItem.addServer('http://first.example.com')).toThrow();
+
+    pathItem.deleteServerAt(0);
+    expect(pathItem.serverAt(0)).toBe(server2);
+
+    pathItem.addServer('http://third.example.com');
+    expect(Array.from(pathItem.servers(), ({ url }) => url)).toStrictEqual([
+      'http://second.example.com',
+      'http://third.example.com',
+    ]);
+
+    pathItem.deleteServer('http://fourth.example.com');
+    pathItem.deleteServer('http://third.example.com');
+    expect(Array.from(pathItem.servers(), ({ url }) => url)).toStrictEqual([
+      'http://second.example.com',
+    ]);
+
+    pathItem.clearServers();
+    expect(pathItem.serverCount).toBe(0);
   });
 });

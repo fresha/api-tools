@@ -8,3 +8,5 @@ export type { ParameterBase } from './ParameterBase';
 export type Parameter = PathParameter | QueryParameter | HeaderParameter | CookieParameter;
 
 export { PathParameter, QueryParameter, HeaderParameter, CookieParameter };
+
+export { defaultRequired, defaultExplode } from './utils';

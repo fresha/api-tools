@@ -1217,7 +1217,10 @@ export interface ComponentsModel
   getParameter(name: string): ParameterModel | undefined;
   getParameterOrThrow(name: string): ParameterModel;
   setParameterModel(name: string, model: ParameterModel): void;
-  setParameter(name: string, kind: ParameterLocation, paramName: string): ParameterModel;
+  setParameter(name: string, kind: 'path', paramName: string): PathParameterModel;
+  setParameter(name: string, kind: 'query', paramName: string): QueryParameterModel;
+  setParameter(name: string, kind: 'header', paramName: string): HeaderParameterModel;
+  setParameter(name: string, kind: 'cookie', paramName: string): CookieParameterModel;
   deleteParameter(name: string): void;
   clearParameters(): void;
 

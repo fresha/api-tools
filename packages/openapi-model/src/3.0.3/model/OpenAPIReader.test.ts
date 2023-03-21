@@ -1,10 +1,14 @@
+import { OpenAPIObject } from '../types';
+
 import { OpenAPIReader } from './OpenAPIReader';
 
 import type { SchemaModel } from './types';
 
-test('barebones', () => {
-  const reader = new OpenAPIReader();
-  const openapi = reader.parse({
+let openapiObjectSkeleton: OpenAPIObject;
+let reader: OpenAPIReader;
+
+beforeEach(() => {
+  openapiObjectSkeleton = {
     openapi: '3.0.3',
     info: {
       title: 'Barebones',
@@ -12,7 +16,12 @@ test('barebones', () => {
     },
     paths: {},
     components: {},
-  });
+  };
+  reader = new OpenAPIReader();
+});
+
+test('barebones', () => {
+  const openapi = reader.parse(openapiObjectSkeleton);
 
   expect(openapi.info.title).toBe('Barebones');
   expect(openapi.info.version).toBe('1.2.3');
@@ -20,16 +29,21 @@ test('barebones', () => {
   expect(openapi.components.isEmpty()).toBeTruthy();
 });
 
+test('OpenAPIModel', () => {
+  const openapi = reader.parse({
+    ...openapiObjectSkeleton,
+    externalDocs: {
+      url: 'http://docs.example.com',
+    },
+  });
+
+  expect(openapi).toHaveProperty('externalDocs.url', 'http://docs.example.com');
+});
+
 describe('SchemaModel', () => {
   test('sets correct default schema attributes', () => {
-    const reader = new OpenAPIReader();
     const openapi = reader.parse({
-      openapi: '3.0.3',
-      info: {
-        title: 'Components.schemas test',
-        version: '0.1.0',
-      },
-      paths: {},
+      ...openapiObjectSkeleton,
       components: {
         schemas: {
           EmptySchema: {},
@@ -80,14 +94,8 @@ describe('SchemaModel', () => {
   });
 
   test('reads schema attributes', () => {
-    const reader = new OpenAPIReader();
     const openapi = reader.parse({
-      openapi: '3.0.3',
-      info: {
-        title: 'Components.schemas test',
-        version: '0.1.0',
-      },
-      paths: {},
+      ...openapiObjectSkeleton,
       components: {
         schemas: {
           ErrorMessage: {
@@ -232,14 +240,8 @@ describe('SchemaModel', () => {
 
 describe('ComponentsModel', () => {
   test('schema references are read and resolved', () => {
-    const reader = new OpenAPIReader();
     const openapi = reader.parse({
-      openapi: '3.0.3',
-      info: {
-        title: 'Components.schemas test',
-        version: '0.1.0',
-      },
-      paths: {},
+      ...openapiObjectSkeleton,
       components: {
         schemas: {
           ErrorMessage: {
@@ -265,7 +267,6 @@ describe('ComponentsModel', () => {
     expect(openapi.components.schemaCount).toBe(3);
 
     const errorMessageSchema = openapi.components.getSchema('ErrorMessage');
-
     expect(errorMessageSchema).toHaveProperty('root', openapi);
     expect(errorMessageSchema).toHaveProperty('parent', openapi.components);
 
@@ -283,19 +284,155 @@ describe('ComponentsModel', () => {
     expect(errorListSchema).toHaveProperty('root', openapi);
     expect(errorListSchema).toHaveProperty('parent', openapi.components);
   });
+
+  test('parameters collection', () => {
+    const openapi = reader.parse({
+      ...openapiObjectSkeleton,
+      components: {
+        parameters: {
+          PathParam: {
+            name: 'path-param',
+            in: 'path',
+            required: true,
+          },
+          QueryParam: {
+            name: 'query-param',
+            in: 'query',
+          },
+          HeaderParam: {
+            name: 'header-param',
+            in: 'header',
+          },
+          CookieParam: {
+            name: 'cookie-param',
+            in: 'cookie',
+          },
+        },
+      },
+    });
+
+    expect(openapi).toHaveProperty('components.parameterCount', 4);
+    expect([...openapi.components.parameterKeys()]).toStrictEqual([
+      'PathParam',
+      'QueryParam',
+      'HeaderParam',
+      'CookieParam',
+    ]);
+  });
+
+  test('headers collection', () => {
+    const openapi = reader.parse({
+      ...openapiObjectSkeleton,
+      components: {
+        headers: {
+          First: {
+            required: true,
+          },
+          Second: {
+            required: false,
+          },
+        },
+      },
+    });
+
+    expect(openapi).toHaveProperty('components.headerCount', 2);
+    expect([...openapi.components.headerKeys()]).toStrictEqual(['First', 'Second']);
+  });
+
+  test('examples collection', () => {
+    const openapi = reader.parse({
+      ...openapiObjectSkeleton,
+      components: {
+        examples: {
+          First: {},
+          Second: {},
+        },
+      },
+    });
+
+    expect(openapi.components).toHaveProperty('exampleCount', 2);
+    expect([...openapi.components.exampleKeys()]).toStrictEqual(['First', 'Second']);
+  });
+
+  test('callbacks collection', () => {
+    const openapi = reader.parse({
+      ...openapiObjectSkeleton,
+      components: {
+        callbacks: {
+          First: {},
+          Second: {},
+        },
+      },
+    });
+
+    expect(openapi.components).toHaveProperty('callbackCount', 2);
+    expect([...openapi.components.callbackKeys()]).toStrictEqual(['First', 'Second']);
+  });
+
+  test('security scheme collection', () => {
+    const openapi = reader.parse({
+      ...openapiObjectSkeleton,
+      components: {
+        securitySchemes: {
+          ApiKey: {
+            type: 'apiKey',
+            name: 'key1',
+            in: 'header',
+          },
+          Http: {
+            type: 'http',
+            scheme: { type: 'string' },
+            bearerFormat: 'JWT',
+          },
+          OAuth2: {
+            type: 'oauth2',
+            flows: {
+              authorizationCode: {
+                authorizationUrl: 'http://auth.example.com',
+                tokenUrl: 'http://token.example.com',
+                scopes: {},
+              },
+              clientCredentials: {
+                tokenUrl: 'http://token.example.com',
+                refreshUrl: 'http://refresh.example.com',
+                scopes: {},
+              },
+              implicit: {
+                authorizationUrl: 'http://auth.example.com',
+                scopes: {},
+              },
+              password: {
+                tokenUrl: 'http://token.example.com',
+                scopes: {},
+              },
+            },
+          },
+          OpenIdConnect: {
+            type: 'openIdConnect',
+            openIdConnectUrl: 'http://openid.example.com',
+          },
+        },
+      },
+    });
+
+    expect(openapi.components.securitySchemaCount).toBe(4);
+
+    const apiKeySchema = openapi.components.getSecuritySchemaOrThrow('ApiKey');
+    expect(apiKeySchema).toHaveProperty('name', 'key1');
+
+    const httpSchema = openapi.components.getSecuritySchemaOrThrow('Http');
+    expect(httpSchema).toHaveProperty('bearerFormat', 'JWT');
+
+    const oauth2Schema = openapi.components.getSecuritySchemaOrThrow('OAuth2');
+    expect(oauth2Schema).toHaveProperty(
+      'flows.authorizationCode.tokenUrl',
+      'http://token.example.com',
+    );
+
+    const openIdConnectSchema = openapi.components.getSecuritySchemaOrThrow('OpenIdConnect');
+    expect(openIdConnectSchema).toHaveProperty('openIdConnectUrl', 'http://openid.example.com');
+  });
 });
-
-// import OpenAPI from '../OpenAPI';
-// import Components from '../Components';
-
-// import ApiKeyScheme from './ApiKeyScheme';
-
-// let parent: Components;
-
-// beforeEach(() => {
-//   const openapi = new OpenAPI('SecurityScheme.test', '0.0.1');
-//   parent = new Components(openapi);
-// });
 
 // it('fromJSON throws without required data', () => {
 //   expect(() => ApiKeyScheme.fromJSON({}, parent));

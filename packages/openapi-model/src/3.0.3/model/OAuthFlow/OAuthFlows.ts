@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { BasicNode } from '../BasicNode';
 
 import { OAuthAuthorisationCodeFlow } from './OAuthAuthorisationCodeFlow';
@@ -7,7 +9,6 @@ import { OAuthPasswordFlow } from './OAuthPasswordFlow';
 
 import type { OAuthFlowsModel, OAuthFlowsModelParent } from '../types';
 import type { Nullable, URLString } from '@fresha/api-tools-core';
-import assert from 'assert';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#oauth-flows-object

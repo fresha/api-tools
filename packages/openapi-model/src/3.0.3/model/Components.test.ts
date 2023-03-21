@@ -7,7 +7,7 @@ import { RequestBody } from './RequestBody';
 import { Response } from './Response';
 import { SchemaFactory } from './Schema';
 
-import type { ComponentsModel, OpenAPIModel, ParameterLocation } from './types';
+import type { ComponentsModel, OpenAPIModel } from './types';
 
 let openapi: OpenAPIModel;
 let components: ComponentsModel;
@@ -181,7 +181,7 @@ describe('parameters', () => {
     expect(sessionParam).toHaveProperty('in', 'cookie');
     expect(sessionParam).toHaveProperty('name', 'session');
 
-    expect(() => components.setParameter('key', 'kookie' as ParameterLocation, 'wrong')).toThrow();
+    expect(() => components.setParameter('key', 'kookie' as 'cookie', 'wrong')).toThrow();
   });
 
   test('deleteParameter', () => {

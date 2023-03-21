@@ -1,6 +1,6 @@
 export default {
   clearMocks: true,
-  coverageDirectory: '/tmp/coverage',
+  coverageDirectory: 'coverage',
   coverageProvider: 'v8',
   coverageThreshold: {
     global: {

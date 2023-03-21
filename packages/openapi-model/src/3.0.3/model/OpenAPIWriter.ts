@@ -1,7 +1,8 @@
-import assert from 'assert';
 import fs from 'fs';
 
 import yaml from 'yaml';
+
+import { defaultExplode } from './Parameter';
 
 import type {
   APIKeySecuritySchemaModel,
@@ -26,6 +27,7 @@ import type {
   OpenIDConnectSecuritySchemaModel,
   OperationModel,
   ParameterModel,
+  ParameterModelParent,
   PathItemModel,
   PathParameterModel,
   PathsModel,
@@ -264,7 +266,7 @@ export class OpenAPIWriter {
     if (components.parameterCount) {
       result.parameters = {};
       for (const [key, parameter] of components.parameters()) {
-        result.parameters[key] = this.writeParameter(parameter);
+        result.parameters[key] = this.writeParameter(parameter, components);
       }
     }
     if (components.exampleCount) {
@@ -681,8 +683,8 @@ export class OpenAPIWriter {
     if (param.style !== 'simple') {
       result.style = param.style;
     }
-    if (!param.explode) {
-      result.explode = false;
+    if (param.explode !== defaultExplode[param.style]) {
+      result.explode = param.explode;
     }
     return result;
   }
@@ -696,14 +698,24 @@ export class OpenAPIWriter {
     if (param.style !== 'form') {
       result.style = param.style as CookieParameterSerializationStyle;
     }
-    if (param.explode !== (param.style === 'form')) {
+    if (param.explode !== defaultExplode[param.style]) {
       result.explode = param.explode;
     }
     return result;
   }
 
   // eslint-disable-next-line consistent-return
-  private writeParameter(parameter: ParameterModel): ParameterObject {
+  private writeParameter(
+    parameter: ParameterModel,
+    node: ParameterModelParent,
+  ): ObjectOrRef<ParameterObject> {
+    if (node !== parameter.parent) {
+      const pointer = this.schemaPointers.get(parameter);
+      if (pointer) {
+        return { $ref: pointer };
+      }
+    }
+
     switch (parameter.in) {
       case 'path':
         return this.writePathParameter(parameter);
@@ -713,10 +725,6 @@ export class OpenAPIWriter {
         return this.writeHeaderParameter(parameter);
       case 'cookie':
         return this.writeCookieParameter(parameter);
-      default:
-        assert.fail(
-          `Unsupported parameter type ${String((parameter as Record<string, string>).in)}`,
-        );
     }
   }
 
@@ -832,6 +840,7 @@ export class OpenAPIWriter {
     return result;
   }
 
+  // eslint-disable-next-line consistent-return
   private writeSecuritySchema(securitySchema: SecuritySchemaModel): SecuritySchemeObject {
     switch (securitySchema.type) {
       case 'apiKey':
@@ -842,8 +851,6 @@ export class OpenAPIWriter {
         return this.writeOAuth2SecuritySchema(securitySchema);
       case 'openIdConnect':
         return this.writeOpenIdConnectSecuritySchema(securitySchema);
-      default:
-        throw new Error(`Unsupported security schema type ${String(securitySchema)}`);
     }
   }
 
@@ -872,7 +879,9 @@ export class OpenAPIWriter {
       result.servers = Array.from(pathItem.servers(), arg => this.writeServer(arg));
     }
     if (pathItem.parameterCount) {
-      result.parameters = Array.from(pathItem.parameters(), arg => this.writeParameter(arg));
+      result.parameters = Array.from(pathItem.parameters(), arg =>
+        this.writeParameter(arg, pathItem),
+      );
     }
     return result;
   }
@@ -892,13 +901,15 @@ export class OpenAPIWriter {
       result.description = operation.description;
     }
     if (operation.externalDocs) {
-      result.externalDocumentation = this.writeExternalDocs(operation.externalDocs);
+      result.externalDocs = this.writeExternalDocs(operation.externalDocs);
     }
     if (operation.operationId) {
       result.operationId = operation.operationId;
     }
     if (operation.parameterCount) {
-      result.parameters = Array.from(operation.parameters(), arg => this.writeParameter(arg));
+      result.parameters = Array.from(operation.parameters(), arg =>
+        this.writeParameter(arg, operation),
+      );
     }
     if (operation.requestBody) {
       result.requestBody = this.writeRequestBody(operation.requestBody, operation);
@@ -916,7 +927,7 @@ export class OpenAPIWriter {
     if (it) {
       result.security = this.writeSecurityRequirementArray(it);
     }
-    if (operation.servers?.length) {
+    if (operation.serverCount) {
       result.servers = Array.from(operation.servers(), arg => this.writeServer(arg));
     }
     return result;
