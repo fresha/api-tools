@@ -7,6 +7,7 @@ import { OAuthPasswordFlow } from './OAuthPasswordFlow';
 
 import type { OAuthFlowsModel, OAuthFlowsModelParent } from '../types';
 import type { Nullable, URLString } from '@fresha/api-tools-core';
+import assert from 'assert';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#oauth-flows-object
@@ -30,6 +31,7 @@ export class OAuthFlows extends BasicNode<OAuthFlowsModelParent> implements OAut
   }
 
   setImplicit(authorizationUrl: URLString): OAuthImplicitFlow {
+    assert(!this.#implicit, 'Implicit flow is already set');
     this.#implicit = new OAuthImplicitFlow(this, authorizationUrl);
     return this.#implicit;
   }
@@ -43,6 +45,7 @@ export class OAuthFlows extends BasicNode<OAuthFlowsModelParent> implements OAut
   }
 
   setPassword(tokenUrl: URLString): OAuthPasswordFlow {
+    assert(!this.#password, 'Password flow is already set');
     this.#password = new OAuthPasswordFlow(this, tokenUrl);
     return this.#password;
   }
@@ -56,6 +59,7 @@ export class OAuthFlows extends BasicNode<OAuthFlowsModelParent> implements OAut
   }
 
   setClientCredentials(tokenUrl: URLString): OAuthClientCredentialsFlow {
+    assert(!this.#clientCredentials, 'Client credentials flow is already set');
     this.#clientCredentials = new OAuthClientCredentialsFlow(this, tokenUrl);
     return this.#clientCredentials;
   }
@@ -72,6 +76,7 @@ export class OAuthFlows extends BasicNode<OAuthFlowsModelParent> implements OAut
     authorizationUrl: URLString,
     tokenUrl: URLString,
   ): OAuthAuthorisationCodeFlow {
+    assert(!this.#authorizationCode, 'Authorization code flow is already set');
     this.#authorizationCode = new OAuthAuthorisationCodeFlow(this, authorizationUrl, tokenUrl);
     return this.#authorizationCode;
   }
