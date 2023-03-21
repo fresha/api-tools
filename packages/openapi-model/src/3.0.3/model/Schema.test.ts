@@ -813,4 +813,14 @@ describe('Schema', () => {
     schema.deleteExternalDocs();
     expect(schema.externalDocs).toBeNull();
   });
+
+  describe('discriminator', () => {
+    test('throws on attempt to discriminate on unknown property', () => {
+      const shape = openapi.components.setSchema('Shape', {
+        type: 'object',
+        properties: { kind: { type: 'string', enum: ['square', 'circle'] } },
+      });
+      expect(() => shape.setDiscriminator('i do not exist')).toThrow();
+    });
+  });
 });

@@ -397,7 +397,7 @@ export type OperationObject<TSchema> = {
   tags?: string[];
   summary?: string;
   description?: CommonMarkString;
-  externalDocumentation?: ExternalDocumentationObject;
+  externalDocs?: ExternalDocumentationObject;
   operationId?: string;
   parameters?: ObjectOrRef<ParameterObject<TSchema>>[];
   requestBody?: ObjectOrRef<RequestBodyObject<TSchema>>;

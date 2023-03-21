@@ -19,8 +19,12 @@ beforeEach(() => {
 test('refreshUrl validation', () => {
   expect(flow.refreshUrl).toBeNull();
 
-  expect(() => { flow.refreshUrl = ''; }).toThrow();
-  expect(() => { flow.refreshUrl = 'https://'; }).toThrow();
+  expect(() => {
+    flow.refreshUrl = '';
+  }).toThrow();
+  expect(() => {
+    flow.refreshUrl = 'https://';
+  }).toThrow();
 
   flow.refreshUrl = 'https://auth.example.com/tokens';
   expect(flow.refreshUrl).toBe('https://auth.example.com/tokens');
@@ -36,7 +40,10 @@ test('scopes collection', () => {
   flow.addScope('y', 'email');
 
   expect(Array.from(flow.scopeNames())).toStrictEqual(['x', 'y']);
-  expect(Array.from(flow.scopes())).toStrictEqual([['x', '*'], ['y', 'email']]);
+  expect(Array.from(flow.scopes())).toStrictEqual([
+    ['x', '*'],
+    ['y', 'email'],
+  ]);
 
   expect(flow.hasScope('x')).toBeTruthy();
   expect(flow.hasScope('_')).toBeFalsy();

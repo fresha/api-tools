@@ -20,11 +20,13 @@ describe('headers collection', () => {
   });
 });
 
-describe('content collection', () => {
+describe('media type collection', () => {
   test('getContent + getContentOrThrow', () => {
     response.setMediaType('application/json');
     response.setMediaType('application/xml');
 
+    expect(response.mediaTypeCount).toBe(2);
+    expect([...response.mediaTypeKeys()]).toStrictEqual(['application/json', 'application/xml']);
     expect(response.getMediaType('application/json')).not.toBeUndefined();
     expect(response.getMediaType('-')).toBeUndefined();
     expect(response.getMediaTypeOrThrow('application/xml')).not.toBeUndefined();

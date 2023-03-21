@@ -127,6 +127,9 @@ module.exports = {
       },
     ],
     '@typescript-eslint/no-var-requires': 0,
+    // use TS-aware rule instead
+    'default-case': 0,
+    '@typescript-eslint/switch-exhaustiveness-check': 2,
     'no-console': 'error',
     'no-restricted-imports': 'error',
     // disallow certain syntax forms

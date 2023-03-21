@@ -25,6 +25,10 @@ export class Discriminator
   }
 
   set propertyName(value: string) {
+    assert(
+      this.parent.hasProperty(value),
+      `Cannot change discriminator property to '${value}' because it does not exist`,
+    );
     this.#propertyName = value;
   }
 

@@ -124,6 +124,10 @@ export class PathItem extends BasicNode<PathItemModelParent> implements PathItem
   }
 
   addServer(url: string): Server {
+    assert(
+      !this.#servers.some(server => server.url === url),
+      `Server for URL '${url}' already exists`,
+    );
     const result = new Server(this, url);
     this.#servers.push(result);
     return result;

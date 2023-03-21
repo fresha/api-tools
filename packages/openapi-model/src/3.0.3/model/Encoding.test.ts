@@ -21,9 +21,16 @@ test('default properties', () => {
 
 describe('header collection', () => {
   test('getHeader + getHeaderOrThrow', () => {
-    encoding.setHeader('Accept');
-    encoding.setHeader('Content-Length');
+    const h1 = encoding.setHeader('Accept');
+    const h2 = encoding.setHeader('Content-Length');
 
+    expect([...encoding.headerKeys()]).toStrictEqual(['Accept', 'Content-Length']);
+    expect([...encoding.headers()]).toStrictEqual([
+      ['Accept', h1],
+      ['Content-Length', h2],
+    ]);
+    expect(encoding.hasHeader('Accept')).toBeTruthy();
+    expect(encoding.hasHeader('X-Rate-Limit')).toBeFalsy();
     expect(encoding.getHeader('Accept')).not.toBeUndefined();
     expect(encoding.getHeader('-')).toBeUndefined();
     expect(encoding.getHeaderOrThrow('Content-Length')).not.toBeUndefined();

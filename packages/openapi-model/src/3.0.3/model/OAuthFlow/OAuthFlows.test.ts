@@ -1,5 +1,6 @@
-import { OpenAPIFactory } from "../OpenAPI";
-import type { OAuthFlowsModel } from "../types";
+import { OpenAPIFactory } from '../OpenAPI';
+
+import type { OAuthFlowsModel } from '../types';
 
 let flows: OAuthFlowsModel;
 

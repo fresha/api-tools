@@ -1,6 +1,8 @@
-import { OpenAPIFactory } from "../OpenAPI";
-import type { OAuthFlowModelParent } from "../types";
-import { OAuthImplicitFlow } from "./OAuthImplicitFlow";
+import { OpenAPIFactory } from '../OpenAPI';
+
+import { OAuthImplicitFlow } from './OAuthImplicitFlow';
+
+import type { OAuthFlowModelParent } from '../types';
 
 let parent: OAuthFlowModelParent;
 
@@ -13,8 +15,12 @@ test('validates attributes', () => {
 
   const flow = new OAuthImplicitFlow(parent, 'https://www.example.com');
 
-  expect(() => { flow.authorizationUrl = ''; }).toThrow();
-  expect(() => { flow.authorizationUrl = '/wrong#url'; }).toThrow();
+  expect(() => {
+    flow.authorizationUrl = '';
+  }).toThrow();
+  expect(() => {
+    flow.authorizationUrl = '/wrong#url';
+  }).toThrow();
   flow.authorizationUrl = 'https://auth.example.com#x';
   expect(flow.authorizationUrl).toBe('https://auth.example.com#x');
 });

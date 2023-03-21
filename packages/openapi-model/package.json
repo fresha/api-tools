@@ -19,7 +19,7 @@
     "lint": "run-s eslint typecheck",
     "lint:fix": "run-s eslint:fix typecheck",
     "prebuild": "npm run clean",
-    "test": "jest",
+    "test": "jest --coverage",
     "typecheck": "tsc --noEmit"
   },
   "publishConfig": {
