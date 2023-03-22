@@ -161,30 +161,23 @@ export class OpenAPI implements OpenAPIModel, SpecificationExtensionsModel {
   }
 
   getPathItem(url: ParametrisedURLString): PathItem | undefined {
-    return this.paths.get(url);
+    return this.#paths.getItem(url);
   }
 
   getPathItemOrThrow(url: ParametrisedURLString): PathItem {
-    const result = this.paths.get(url);
-    assert(result);
-    return result;
+    return this.#paths.getItemOrThrow(url);
   }
 
   setPathItem(url: ParametrisedURLString): PathItem {
-    if (this.paths.has(url)) {
-      throw new Error(`Duplicate path item ${url}`);
-    }
-    const pathItem = new PathItem(this.paths);
-    this.paths.set(url, pathItem);
-    return pathItem;
+    return this.#paths.setPathItem(url);
   }
 
   deletePathItem(url: ParametrisedURLString): void {
-    this.paths.delete(url);
+    this.#paths.deletePathItem(url);
   }
 
   clearPathItems(): void {
-    this.paths.clear();
+    this.#paths.clearPathItems();
   }
 
   get components(): Components {

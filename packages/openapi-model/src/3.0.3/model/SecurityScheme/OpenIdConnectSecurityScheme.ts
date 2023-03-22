@@ -1,3 +1,7 @@
+import assert from 'assert';
+
+import isURL from 'validator/lib/isURL';
+
 import { SecuritySchemeBase } from './SecuritySchemeBase';
 
 import type { OpenIDConnectSecuritySchemaModel, SecuritySchemaModelParent } from '../types';
@@ -14,7 +18,13 @@ export class OpenIdConnectSecurityScheme
 
   constructor(parent: SecuritySchemaModelParent, openIdConnectUrl: URLString) {
     super(parent, 'openIdConnect');
+    this.#assertUrl(openIdConnectUrl);
     this.#openIdConnectUrl = openIdConnectUrl;
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  #assertUrl(value: URLString): void {
+    assert(isURL(value), `Invalid URL '${value}'`);
   }
 
   get openIdConnectUrl(): URLString {
@@ -22,6 +32,7 @@ export class OpenIdConnectSecurityScheme
   }
 
   set openIdConnectUrl(value: URLString) {
+    this.#assertUrl(value);
     this.#openIdConnectUrl = value;
   }
 }

@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { ParameterBase } from './ParameterBase';
 import { defaultRequired, defaultExplode } from './utils';
 
@@ -46,6 +48,10 @@ export class QueryParameter extends ParameterBase<'query'> implements QueryParam
   }
 
   set style(value: QueryParameterSerializationStyle) {
+    assert(
+      ['form', 'spaceDelimited', 'pipeDelimited', 'deepObject'].includes(value),
+      `Invalid style ${value}`,
+    );
     this.#style = value;
   }
 

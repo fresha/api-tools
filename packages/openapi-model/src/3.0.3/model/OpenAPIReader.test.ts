@@ -294,10 +294,16 @@ describe('ComponentsModel', () => {
             name: 'path-param',
             in: 'path',
             required: true,
+            content: {
+              'application/json': {
+                schema: { type: 'string' },
+              },
+            },
           },
           QueryParam: {
             name: 'query-param',
             in: 'query',
+            deprecated: true,
           },
           HeaderParam: {
             name: 'header-param',
@@ -337,6 +343,38 @@ describe('ComponentsModel', () => {
 
     expect(openapi).toHaveProperty('components.headerCount', 2);
     expect([...openapi.components.headerKeys()]).toStrictEqual(['First', 'Second']);
+  });
+
+  test('response collection', () => {
+    const openapi = reader.parse({
+      ...openapiObjectSkeleton,
+      components: {
+        responses: {
+          First: {
+            description: 'A response with headers',
+            headers: {
+              'content-disposition': {
+                description: 'longer text',
+                deprecated: false,
+                required: true,
+              },
+            },
+            links: {
+              Link1: {},
+            },
+          },
+        },
+      },
+    });
+
+    const response = openapi.components.getResponseOrThrow('First');
+    expect(response).toHaveProperty('description', 'A response with headers');
+
+    expect(response).toHaveProperty('headerCount', 1);
+    expect([...response.headerKeys()]).toStrictEqual(['content-disposition']);
+
+    expect(response).toHaveProperty('linkCount', 1);
+    expect([...response.linkKeys()]).toStrictEqual(['Link1']);
   });
 
   test('examples collection', () => {
@@ -432,6 +470,107 @@ describe('ComponentsModel', () => {
     const openIdConnectSchema = openapi.components.getSecuritySchemaOrThrow('OpenIdConnect');
     expect(openIdConnectSchema).toHaveProperty('openIdConnectUrl', 'http://openid.example.com');
   });
+});
+
+test('OperationModel', () => {
+  const openapi = reader.parse({
+    ...openapiObjectSkeleton,
+    paths: {
+      '/link': {
+        put: {
+          operationId: 'updateLink',
+          responses: {
+            200: { $ref: '#/components/responses/Shared' },
+          },
+          externalDocs: { url: 'http://docs.example.com' },
+        },
+        post: {
+          operationId: 'createLink',
+          responses: {
+            200: {
+              description: 'Ok',
+              content: {
+                'application/json': {
+                  schema: { type: 'string' },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      responses: {
+        Shared: {
+          description: 'Shared response',
+          content: {
+            'application/vnd.api+json': {
+              schema: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const createLinkOp = openapi.getPathItemOrThrow('/link').getOperationOrThrow('post');
+  const createResponseMediaType = createLinkOp
+    .getResponseOrThrow('200')
+    .getMediaTypeOrThrow('application/json');
+
+  expect(createResponseMediaType).toHaveProperty('schema.type', 'string');
+
+  const sharedResponse = openapi.components.getResponseOrThrow('Shared');
+
+  const updateLinkOp = openapi.getPathItemOrThrow('/link').getOperationOrThrow('put');
+  const updateResponse = updateLinkOp.getResponseOrThrow('200');
+
+  expect(updateResponse).toBe(sharedResponse);
+});
+
+test('MediaTypeModel', () => {
+  const openapi = reader.parse({
+    ...openapiObjectSkeleton,
+    paths: {
+      '/hello': {
+        get: {
+          responses: {
+            200: {
+              description: 'Ok',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      avatar: { type: 'string', format: 'binary' },
+                    },
+                  },
+                  encoding: {
+                    avatar: {
+                      contentType: 'image/jpeg',
+                      headers: {
+                        'content-disposition': {
+                          required: true,
+                        },
+                      },
+                      explode: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const mediaType = openapi
+    .getPathItemOrThrow('/hello')
+    .getOperationOrThrow('get')
+    .getResponseOrThrow('200')
+    .getMediaTypeOrThrow('application/json');
+  expect(mediaType).toHaveProperty('encodingCount', 1);
 });
 
 // it('fromJSON throws without required data', () => {

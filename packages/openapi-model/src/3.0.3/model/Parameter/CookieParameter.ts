@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { ParameterBase } from './ParameterBase';
 import { defaultExplode, defaultRequired } from './utils';
 
@@ -34,6 +36,7 @@ export class CookieParameter extends ParameterBase<'cookie'> implements CookiePa
   }
 
   set style(value: CookieParameterSerializationStyle) {
+    assert(value === 'form', `Invalid style ${value}`);
     this.#style = value;
   }
 }

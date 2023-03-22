@@ -49,7 +49,7 @@ export class ServerVariable
         resetDefault = true;
       }
     }
-    if (resetDefault && !this.#allowedValues.size) {
+    if (resetDefault && this.#allowedValues.size) {
       this.#defaultValue = '';
     }
   }

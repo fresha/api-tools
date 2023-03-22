@@ -83,6 +83,7 @@ export abstract class ParameterBase<TLocation extends ParameterLocation>
   }
 
   setSchema(params: CreateOrSetSchemaOptions): Schema {
+    assert(this.#schema === null, 'Schema already set');
     if (isSchemaModel(params)) {
       this.#schema = params as Schema;
     } else {
@@ -131,12 +132,11 @@ export abstract class ParameterBase<TLocation extends ParameterLocation>
 
   setExampleModel(name: string, model: Example): void {
     assert(!this.hasExample(name), `Example named '${name}' has already been set`);
-    assert.equal(model.parent, this);
-    assert(!Array.from(this.#examples.values()).includes(model));
     this.#examples.set(name, model);
   }
 
   setExample(name: string): Example {
+    assert(!this.hasExample(name), `Example named '${name}' has already been set`);
     const result = new Example(this as unknown as ExampleModelParent);
     this.#examples.set(name, result);
     return result;
@@ -182,14 +182,11 @@ export abstract class ParameterBase<TLocation extends ParameterLocation>
       `Content for mime type '${mimeType}' has already been set`,
     );
     assert.equal(model.parent, this, `Wrong parent for content model`);
-    assert(
-      !Array.from(this.#content.values()).includes(model),
-      `Content model for mime type '${mimeType}' is already in the list`,
-    );
     this.#content.set(mimeType, model);
   }
 
   setMediaType(key: MIMETypeString): MediaType {
+    assert(!this.#content.has(key), `Content for mime type '${key}' has already been set`);
     const result = new MediaType(this as unknown as MediaTypeModelParent);
     this.#content.set(key, result);
     return result;

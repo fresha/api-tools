@@ -56,38 +56,18 @@ export class Paths extends BasicNode<PathsModelParent> implements PathsModel {
   }
 
   setPathItem(key: string): PathItem {
+    assert(!this.#items.has(key), `Path item at ${key} already exists`);
     const result = new PathItem(this);
     this.#items.set(key, result);
     return result;
   }
 
-  clear(): void {
+  deletePathItem(key: ParametrisedURLString): void {
+    this.#items.delete(key);
+  }
+
+  clearPathItems(): void {
     this.#items.clear();
-  }
-
-  delete(key: string): boolean {
-    return this.#items.delete(key);
-  }
-
-  forEach(
-    callbackfn: (value: PathItem, key: string, map: Map<string, PathItem>) => void,
-    thisArg?: unknown,
-  ): void {
-    this.#items.forEach(callbackfn, thisArg);
-  }
-
-  get(key: string): PathItem | undefined {
-    return this.#items.get(key);
-  }
-
-  has(key: string): boolean {
-    return this.#items.has(key);
-  }
-
-  set(key: string, value: PathItem): this {
-    assert(value.parent === this, `Path item at ${key} does not belong to the paths object`);
-    this.#items.set(key, value);
-    return this;
   }
 
   sort(sorter: (entry1: [string, PathItem], entry2: [string, PathItem]) => number): void {
