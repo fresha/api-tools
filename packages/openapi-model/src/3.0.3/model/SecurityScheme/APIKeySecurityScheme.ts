@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { SecuritySchemeBase } from './SecuritySchemeBase';
 
 import type {
@@ -31,6 +33,7 @@ export class APIKeySecurityScheme
   }
 
   set name(value: string) {
+    assert(value, `Invalid or empty name '${value}'`);
     this.#name = value;
   }
 
@@ -39,6 +42,7 @@ export class APIKeySecurityScheme
   }
 
   set in(value: APIKeySecuritySchemaModelLocation) {
+    assert(['query', 'header', 'cookie'].includes(value), `Invalid location '${value}'`);
     this.#in = value;
   }
 }

@@ -1,18 +1,29 @@
 import { OpenAPIFactory } from './OpenAPI';
+import { PathItem } from './PathItem';
 
-let { paths } = OpenAPIFactory.create();
+import type { Paths } from './Paths';
+
+let paths: Paths;
 
 beforeEach(() => {
-  paths = OpenAPIFactory.create().paths;
+  paths = OpenAPIFactory.create().paths as Paths;
 });
 
-test('getItem + getItemOrThrow', () => {
-  paths.root.setPathItem('/people');
-  paths.root.setPathItem('/pets');
+test('querying', () => {
+  const item1 = paths.root.setPathItem('/people');
+  const item2 = paths.root.setPathItem('/pets');
 
-  expect(paths.getItem('/people')).not.toBeUndefined();
+  expect(paths.pathItemCount).toBe(2);
+  expect([...paths.pathItemUrls()]).toStrictEqual(['/people', '/pets']);
+  expect([...paths.pathItems()]).toStrictEqual([
+    ['/people', item1],
+    ['/pets', item2],
+  ]);
+  expect(paths.hasPathItem('/people')).toBe(true);
+  expect(paths.hasPathItem('/wizards')).toBe(false);
+  expect(paths.getItem('/people')).toBe(item1);
   expect(paths.getItem('/wizards')).toBeUndefined();
-  expect(paths.getItemOrThrow('/pets')).not.toBeUndefined();
+  expect(paths.getItemOrThrow('/pets')).toBe(item2);
   expect(() => paths.getItemOrThrow('/monsters')).toThrow();
 });
 
@@ -34,7 +45,7 @@ test('getItemUrl() + getItemUrlOrThrow()', () => {
 });
 
 test('getItemUrl() + mutations', () => {
-  const item = paths.root.setPathItem('/hello');
+  const item = paths.root.setPathItem('/hello') as PathItem;
   paths.root.deletePathItem('/hello');
   expect(paths.getItemUrl(item)).toBeUndefined();
 });

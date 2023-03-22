@@ -7,9 +7,9 @@ module.exports = {
   coverageThreshold: {
     ...coverageThreshold,
     './src/3.0.3/**/*.ts': {
-      branches: 60,
-      functions: 60,
-      lines: 60,
+      branches: 70,
+      functions: 80,
+      lines: 80,
     },
   },
 };

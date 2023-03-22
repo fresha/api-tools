@@ -929,6 +929,9 @@ export interface PathsModel extends TreeNodeModel<PathsModelParent>, Specificati
 
   setPathItem(key: ParametrisedURLString): PathItemModel;
 
+  deletePathItem(url: ParametrisedURLString): void;
+  clearPathItems(): void;
+
   sort(
     sorter: (
       entry1: [ParametrisedURLString, PathItemModel],

@@ -55,11 +55,12 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
 
   getHeaderOrThrow(name: string): Header {
     const result = this.getHeader(name);
-    assert(result);
+    assert(result, `Header '${name}' does not exist`);
     return result;
   }
 
   setHeader(name: string): Header {
+    assert(!this.hasHeader(name), `Header '${name}' already exists`);
     const result = new Header(this);
     this.#headers.set(name, result);
     return result;
@@ -95,14 +96,12 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
 
   getMediaTypeOrThrow(mimeType: MIMETypeString): MediaType {
     const result = this.getMediaType(mimeType);
-    assert(result);
+    assert(result, `Media type '${mimeType}' does not exist`);
     return result;
   }
 
   setMediaType(mimeType: MIMETypeString): MediaType {
-    if (this.#content.has(mimeType)) {
-      throw new Error(`Duplicate content for ${mimeType}`);
-    }
+    assert(!this.hasMediaType(mimeType), `Media type '${mimeType}' already exists`);
     const result = new MediaType(this);
     this.#content.set(mimeType, result);
     return result;
@@ -143,6 +142,7 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
   }
 
   setLink(key: string): Link {
+    assert(!this.hasLink(key), `Link '${key}' already exists`);
     const result = new Link(this);
     this.#links.set(key, result);
     return result;
@@ -150,10 +150,6 @@ export class Response extends BasicNode<ResponseModelParent> implements Response
 
   setLinkModel(key: string, link: Link): void {
     assert(!this.hasLink(key), `Link '${key}' already exists`);
-    assert(
-      !Array.from(this.#links.values()).includes(link),
-      `Link to be placed under the '${key}' key already exists under different key`,
-    );
     this.#links.set(key, link);
   }
 

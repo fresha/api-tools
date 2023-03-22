@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { ParameterBase } from './ParameterBase';
 import { defaultExplode } from './utils';
 
@@ -24,6 +26,7 @@ export class PathParameter extends ParameterBase<'path'> implements PathParamete
   }
 
   set style(value: PathParameterSerializationStyle) {
+    assert(['matrix', 'label', 'simple'].includes(value), `Invalid style ${value}`);
     this.#style = value;
   }
 

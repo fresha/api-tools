@@ -1,3 +1,5 @@
+import assert from 'assert';
+
 import { ParameterBase } from './ParameterBase';
 import { defaultExplode, defaultRequired } from './utils';
 
@@ -34,6 +36,7 @@ export class HeaderParameter extends ParameterBase<'header'> implements HeaderPa
   }
 
   set style(value: HeaderParameterSerializationStyle) {
+    assert(value === 'simple', `Invalid style ${value}`);
     this.#style = value;
   }
 }
