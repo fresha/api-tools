@@ -1226,7 +1226,7 @@ export interface ComponentsModel
 
   readonly requestBodyCount: number;
   requestBodyKeys(): IterableIterator<string>;
-  requestBodies(): Iterable<[string, RequestBodyModel]>;
+  requestBodies(): IterableIterator<[string, RequestBodyModel]>;
   hasRequestBody(name: string): boolean;
   getRequestBody(name: string): RequestBodyModel | undefined;
   getRequestBodyOrThrow(name: string): RequestBodyModel;
