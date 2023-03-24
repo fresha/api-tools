@@ -299,7 +299,7 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     return this.#requestBodies.keys();
   }
 
-  requestBodies(): Iterable<[string, RequestBody]> {
+  requestBodies(): IterableIterator<[string, RequestBody]> {
     return this.#requestBodies.entries();
   }
 

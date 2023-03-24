@@ -9,6 +9,8 @@ import { hideBin } from 'yargs/helpers';
 
 import { Differ } from './Differ';
 
+import './model';
+
 try {
   const argv = yargs(hideBin(process.argv))
     .epilog(
