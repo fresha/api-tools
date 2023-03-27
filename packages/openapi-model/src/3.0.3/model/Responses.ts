@@ -76,10 +76,10 @@ export class Responses extends BasicNode<ResponsesModelParent> implements Respon
 
   setResponseModel(code: HTTPStatusCode, model: Response): void {
     assert(!this.#codes.has(code), `Duplicate response for code ${code}`);
-    assert(
-      !Array.from(this.#codes.values()).includes(model),
-      `The response you want to add under '${code}' code already exists under another code`,
-    );
+    // assert(
+    //   !Array.from(this.#codes.values()).includes(model),
+    //   `The response you want to add under '${code}' code already exists under another code`,
+    // );
     this.#codes.set(code, model);
   }
 
