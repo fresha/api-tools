@@ -162,8 +162,10 @@ test('simple test', () => {
       addQueryParam(url, 'offset', params.offset);
       addQueryParam(url, 'limit', params.limit);
 
+      const headers = {...COMMON_HEADERS}
+
       const request = {
-        headers: COMMON_HEADERS,
+        headers: headers,
       };
 
       authorizeRequest(request, extraParams);
@@ -296,9 +298,11 @@ test('specific naming convention for client library', () => {
     ): Promise<ReadEmployeeListResponse> {
       const url = makeUrl(\`/employees\`);
 
+      const headers = {...COMMON_HEADERS}
+
       const request = {
         method: 'PATCH',
-        headers: COMMON_HEADERS,
+        headers: headers,
       };
 
       authorizeRequest(request, extraParams);
@@ -392,8 +396,10 @@ test('action returns raw response', () => {
     ): Promise<Response> {
       const url = makeUrl(\`/employees\`);
 
+      const headers = {...COMMON_HEADERS}
+
       const request = {
-        headers: COMMON_HEADERS,
+        headers: headers,
       };
 
       applyExtraParams(request, extraParams);
@@ -401,6 +407,92 @@ test('action returns raw response', () => {
       const response = await callApi(url, request);
 
       return response;
+    }
+  `);
+});
+
+test('test optional header parameters', () => {
+  const openapi = OpenAPIFactory.create();
+  buildEmployeeSchemasForTesting(openapi);
+
+  openapi.components.setSecuritySchema('the_auth', 'apiKey');
+
+  const operation = openapi.setPathItem('/test-endpoint').addOperation('get');
+  operation.operationId = 'test';
+  operation.summary = 'operation with an optional header';
+  operation.description = `This operation has an optional header parameter`
+
+  const headerParameter = operation.addParameter('Optional-Header-Parameter', 'header');
+  headerParameter.required = false;
+  headerParameter.setSchema('string');
+  headerParameter.description = 'optional header parameter';
+  operation
+    .setResponse(200, 'returns a success')
+    .setMediaType(MEDIA_TYPE_JSON_API)
+
+  operation.addSecurityRequirement().addSchema('the_auth');
+
+  const namedTypes = new Map<string, NamedType>();
+
+  const action = createAction(operation);
+  action.collectData(namedTypes);
+  action.generateCode();
+
+  const generatedTypes = new Set<string>();
+  for (const namedType of namedTypes.values()) {
+    namedType.generateCode(generatedTypes);
+  }
+
+  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
+    import {
+      COMMON_HEADERS,
+      makeUrl,
+      callJsonApi,
+      addQueryParam,
+      authorizeRequest,
+      ExtraCallParams,
+      applyExtraParams,
+    } from './utils';
+
+    /**
+     * operation with an optional header
+     *
+     * This operation has an optional header parameter
+     *
+     * @param params call parameters
+     * @param [params.OptionalHeaderParameter] optional header parameter
+     *
+     * @param [extraParams] additional parameters
+     * @param [extraParams.authCookieName] name of the authorization cookie for this request
+     * @param [extraParams.authCookie] value of the authorization cookie for this request
+     * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+     * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+     * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+     */
+    export async function test(
+      params: {
+        OptionalHeaderParameter?: string,
+      },
+      extraParams?: ExtraCallParams,
+    ): Promise<void> {
+      const url = makeUrl(\`/test-endpoint\`);
+
+      const headers = {...COMMON_HEADERS};
+
+      if (params.OptionalHeaderParameter)
+        headers['Optional-Header-Parameter'] = params.OptionalHeaderParameter;
+
+      const request = {
+        headers: headers,
+      };
+
+      authorizeRequest(request, extraParams);
+
+      applyExtraParams(request, extraParams);
+
+      await callJsonApi(url, request);
+
+      return;
     }
   `);
 });

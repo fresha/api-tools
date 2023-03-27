@@ -206,6 +206,17 @@ export class ActionFunc {
         }
       }
 
+      writer.writeLine('const headers = {...COMMON_HEADERS}');
+
+      writer.newLine();
+
+      if (this.headerToSet.size) {
+        for (const [headerName, varName] of this.headerToSet) {
+          writer.writeLine(`if (params.${varName}) headers['${headerName}'] = params.${varName}`);
+        }
+      }
+      writer.newLine();
+
       writer.writeLine('const request = {');
       writer.indent(() => {
         const httpMethod = this.context.operation.httpMethod.toUpperCase();
@@ -215,18 +226,7 @@ export class ActionFunc {
         if (this.requestType) {
           writer.writeLine('body: JSON.stringify(body),');
         }
-        if (this.headerToSet.size) {
-          writer.write('headers:');
-          writer.block(() => {
-            writer.writeLine('...COMMON_HEADERS,');
-            for (const [headerName, varName] of this.headerToSet) {
-              writer.writeLine(`'${headerName}': params.${varName}`);
-            }
-          });
-          writer.writeLine(',');
-        } else {
-          writer.writeLine('headers: COMMON_HEADERS,');
-        }
+        writer.write('headers: headers,');
       });
       writer.writeLine('};');
       writer.newLine();
