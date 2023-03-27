@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-docs-json-api",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Better OpenAPI documentation generator for JSON:API",
   "main": "build/index.js",
   "publishConfig": {
@@ -53,13 +53,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/api-tools-core": "^0.5.0",
-    "@fresha/openapi-codegen-utils": "^0.2.0",
-    "@fresha/openapi-model": "^0.7.0"
+    "@fresha/api-tools-core": "^0.6.0",
+    "@fresha/openapi-codegen-utils": "^0.3.0",
+    "@fresha/openapi-model": "^0.8.0"
   },
   "devDependencies": {
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/openapi-codegen-test-utils": "^0.2.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/openapi-codegen-test-utils": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "typescript": "^5.0.2"
   },

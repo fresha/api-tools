@@ -1,6 +1,6 @@
 {
   "name": "@fresha/code-morph-ts",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Code parsers and builders for TypeScript",
   "main": "build/index.js",
   "repository": {
@@ -51,9 +51,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/code-morph-test-utils": "^0.2.0",
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/jest-config": "^0.2.0",
+    "@fresha/code-morph-test-utils": "^0.3.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "typescript": "^5.0.2"
   },

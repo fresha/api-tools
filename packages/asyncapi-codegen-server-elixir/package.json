@@ -1,6 +1,6 @@
 {
   "name": "@fresha/asyncapi-codegen-server-elixir",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AsyncAPI code generation for Elixir/Phoenix servers",
   "main": "build/index.js",
   "repository": {
@@ -53,8 +53,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/jest-config": "^0.2.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "typescript": "^5.0.2"
   }

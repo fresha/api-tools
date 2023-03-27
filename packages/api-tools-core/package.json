@@ -1,6 +1,6 @@
 {
   "name": "@fresha/api-tools-core",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Core project functionality",
   "repository": {
     "type": "git",
@@ -52,8 +52,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/jest-config": "^0.2.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "typescript": "^5.0.2"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@fresha/asyncapi-model",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "AsyncAPI object model",
   "main": "build/index.js",
   "repository": {
@@ -51,9 +51,9 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/api-tools-core": "^0.5.0",
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/jest-config": "^0.2.0",
+    "@fresha/api-tools-core": "^0.6.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "typescript": "^5.0.2"
   }

@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-server-elixir",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "OpenAPI code generation for Elixir/Phoenix servers",
   "main": "build/index.js",
   "publishConfig": {
@@ -54,17 +54,17 @@
   "license": "MIT",
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
-    "@fresha/api-tools-core": "^0.5.0",
-    "@fresha/code-morph-ex": "^0.2.0",
-    "@fresha/json-api-model": "^0.3.0",
-    "@fresha/openapi-codegen-utils": "^0.2.0",
-    "@fresha/openapi-model": "^0.7.0",
+    "@fresha/api-tools-core": "^0.6.0",
+    "@fresha/code-morph-ex": "^0.3.0",
+    "@fresha/json-api-model": "^0.4.0",
+    "@fresha/openapi-codegen-utils": "^0.3.0",
+    "@fresha/openapi-model": "^0.8.0",
     "memfs": "^3.4.7"
   },
   "devDependencies": {
-    "@fresha/code-morph-test-utils": "^0.2.0",
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/openapi-codegen-test-utils": "^0.2.0",
+    "@fresha/code-morph-test-utils": "^0.3.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/openapi-codegen-test-utils": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "typescript": "^5.0.2"
   },

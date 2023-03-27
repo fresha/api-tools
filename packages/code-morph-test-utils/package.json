@@ -1,6 +1,6 @@
 {
   "name": "@fresha/code-morph-test-utils",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Testing utilites for code morphers",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -54,13 +54,13 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "^0.2.0",
+    "@fresha/eslint-config": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "@types/jest": "^29.1.2",
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@fresha/jest-config": "^0.2.0",
+    "@fresha/jest-config": "^0.3.0",
     "jest-matcher-utils": "^29.1.2",
     "prettier": "^2.7.1"
   }

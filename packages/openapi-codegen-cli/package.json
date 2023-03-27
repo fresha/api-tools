@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-cli",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "CLI for OpenAPI code generators",
   "bin": {
     "fresha-openapi-codegen": "./bin/fresha-openapi-codegen.js"
@@ -54,18 +54,18 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/jest-config": "^0.2.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "@types/yargs": "^17.0.12",
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@fresha/openapi-codegen-client-fetch": "^0.3.1",
-    "@fresha/openapi-codegen-docs-json-api": "^0.2.0",
-    "@fresha/openapi-codegen-server-elixir": "^0.3.0",
-    "@fresha/openapi-codegen-server-mock": "^0.2.0",
-    "@fresha/openapi-codegen-server-nestjs": "^0.3.0",
+    "@fresha/openapi-codegen-client-fetch": "^0.4.0",
+    "@fresha/openapi-codegen-docs-json-api": "^0.3.0",
+    "@fresha/openapi-codegen-server-elixir": "^0.4.0",
+    "@fresha/openapi-codegen-server-mock": "^0.3.0",
+    "@fresha/openapi-codegen-server-nestjs": "^0.4.0",
     "yargs": "^17.5.1"
   },
   "gitHead": "5830273395fc060b19d06814b9396ce07eea778d"

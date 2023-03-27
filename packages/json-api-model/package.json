@@ -1,6 +1,6 @@
 {
   "name": "@fresha/json-api-model",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "JSON:API object model",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -52,13 +52,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/api-tools-core": "^0.5.0",
-    "@fresha/openapi-model": "^0.7.0",
+    "@fresha/api-tools-core": "^0.6.0",
+    "@fresha/openapi-model": "^0.8.0",
     "pluralize": "^8.0.0"
   },
   "devDependencies": {
-    "@fresha/eslint-config": "^0.2.0",
-    "@fresha/jest-config": "^0.2.0",
+    "@fresha/eslint-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
     "@types/pluralize": "^0.0.29",
     "typescript": "^5.0.2"
