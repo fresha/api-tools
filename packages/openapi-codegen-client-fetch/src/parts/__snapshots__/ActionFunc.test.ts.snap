@@ -1,0 +1,92 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`simple test 1`] = `
+"import type { JSONAPIServerResource, JSONAPIResourceRelationship1, JSONAPIResourceRelationship0, JSONAPIResourceRelationshipN, JSONAPIDataDocument } from "@fresha/api-tools-core";
+
+
+/**
+ * EmployeeResource
+ *
+ * Attributes:
+ * -  name
+ * -  age
+ * -  gender
+ * -  active
+ *
+ * Relationships:
+ * -  manager relationship to the 'employees' resource
+ * -  buddy relationship to the 'employees' resource
+ * -  subordinates relationship to the 'employees' resource
+ *
+ */
+export type EmployeeResource = JSONAPIServerResource<'employees', {
+        'name': string;
+        'age'?: number | null;
+        'gender'?: 'male' | 'female' | 'other' | null;
+        'active'?: boolean;
+}, {
+        'manager': JSONAPIResourceRelationship1<'employees'>;
+        'buddy': JSONAPIResourceRelationship0<'employees'>;
+        'subordinates': JSONAPIResourceRelationshipN<'employees'>;
+}>;
+
+/**
+ * This is a response resource
+ *
+ * Primary data resources:
+ *  - EmployeeResource
+ *
+ */
+export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>;
+"
+`;
+
+exports[`simple test 2`] = `
+"import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess, transformResponse } from "./utils";
+import type { ReadEmployeeListResponse } from "./types";
+
+/**
+ * Reads employee list
+ *
+ * This operation reads a list of employee resources, and returns them as a JSON:API
+ * document. Besides employees, it includes resources associated with employees, like
+ * addresses and **departments**.
+ *
+ * @param params call parameters
+ * @param params.offset Index of the first employee to retrieve
+ * @param [params.limit] Maximal number of employee resources to retrieve
+ *
+ * @param [extraParams] additional parameters
+ * @param [extraParams.authCookieName] name of the authorization cookie for this request
+ * @param [extraParams.authCookie] value of the authorization cookie for this request
+ * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+ * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+ * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ */
+export async function readEmployeeList(params: {
+    offset: number;
+    limit?: number;
+}, extraParams?: ExtraCallParams): Promise<ReadEmployeeListResponse> {
+    const url = makeUrl(\`/employees\`);
+    addQueryParam(url, 'offset', params.offset);
+    addQueryParam(url, 'limit', params.limit);
+
+    const headers = {...COMMON_HEADERS};
+
+
+    const request = {
+        headers,
+    };
+
+    authorizeRequest(request, extraParams);
+
+    applyExtraParams(request, extraParams)
+
+    const response = await callJsonApi(url, request);
+
+    dispatchSuccess('readEmployeeList', params, response)
+
+    return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response)
+}
+"
+`;
