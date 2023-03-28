@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-client-fetch",
-  "version": "0.4.0",
+  "version": "0.4.4",
   "description": "OpenAPI code generation for Fetch API clients",
   "main": "build/index.js",
   "publishConfig": {
@@ -69,5 +69,5 @@
     "pluralize": "^8.0.0",
     "typescript": "^5.0.2"
   },
-  "gitHead": "5830273395fc060b19d06814b9396ce07eea778d"
+  "gitHead": "430053f02ffdbb73a2e5dc0d4a572b44495d329e"
 }
