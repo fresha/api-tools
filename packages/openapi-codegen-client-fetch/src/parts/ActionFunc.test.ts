@@ -70,8 +70,12 @@ test('simple test', () => {
     namedType.generateCode(generatedTypes);
   }
 
-  expect(action.context.project.getSourceFileOrThrow('src/types.ts').getText()).toMatchSnapshot();
-  expect(action.context.project.getSourceFileOrThrow('src/index.ts').getText()).toMatchSnapshot();
+  expect(action.context.project.getSourceFileOrThrow('src/types.ts').getText()).toMatchSnapshot(
+    'src/types.ts',
+  );
+  expect(action.context.project.getSourceFileOrThrow('src/index.ts').getText()).toMatchSnapshot(
+    'src/index.ts',
+  );
 });
 
 test('specific naming convention for client library', () => {
@@ -121,96 +125,12 @@ test('specific naming convention for client library', () => {
     namedType.generateCode(generatedTypes);
   }
 
-  expect(action.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
-    import type {
-      JSONAPIServerResource,
-      JSONAPIResourceRelationship1,
-      JSONAPIDataDocument,
-    } from "@fresha/api-tools-core";
-
-    /**
-     * EmployeeResource
-     *
-     * Attributes:
-     * -  old-name
-     * -  new-name
-     * -  age
-     * -  is-active
-     *
-     * Relationships:
-     * -  direct-manager relationship to the 'employees' resource
-     *
-     */
-    export type EmployeeResource = JSONAPIServerResource<
-      'employees',
-      {
-        oldName: string;
-        newName: string;
-        age?: number | null;
-        isActive?: boolean;
-      },
-      {
-        directManager: JSONAPIResourceRelationship1<'employees'>;
-      }
-    >;
-
-    /**
-     * This is a response resource
-     *
-     * Primary data resources:
-     *  - EmployeeResource
-     *
-     */
-    export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
-  `);
-
-  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
-    import {
-      COMMON_HEADERS,
-      makeUrl,
-      callJsonApi,
-      authorizeRequest,
-      ExtraCallParams,
-      applyExtraParams,
-      dispatchSuccess,
-      transformResponse,
-    } from './utils';
-    import type { ReadEmployeeListResponse } from './types';
-    import { camelCaseDeep } from '@fresha/api-tools-core';
-
-    /**
-     * @param [extraParams] additional parameters
-     * @param [extraParams.authCookieName] name of the authorization cookie for this request
-     * @param [extraParams.authCookie] value of the authorization cookie for this request
-     * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
-     * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
-     * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
-     */
-    export async function readEmployeeList(
-      extraParams?: ExtraCallParams,
-    ): Promise<ReadEmployeeListResponse> {
-      const url = makeUrl(\`/employees\`);
-
-      const headers = {...COMMON_HEADERS};
-
-      const request = {
-        method: 'PATCH',
-        headers,
-      };
-
-      authorizeRequest(request, extraParams);
-
-      applyExtraParams(request, extraParams);
-
-      let response = await callJsonApi(url, request);
-
-      response = camelCaseDeep(response);
-
-      dispatchSuccess('readEmployeeList', undefined, response);
-
-      return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response);
-    }
-  `);
+  expect(action.context.project.getSourceFileOrThrow('src/types.ts').getText()).toMatchSnapshot(
+    'src/types.ts',
+  );
+  expect(action.context.project.getSourceFileOrThrow('src/index.ts').getText()).toMatchSnapshot(
+    'src/index.ts',
+  );
 });
 
 test('action returns raw response', () => {
@@ -244,64 +164,12 @@ test('action returns raw response', () => {
     namedType.generateCode(generatedTypes);
   }
 
-  expect(action.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
-    import type {
-      JSONAPIServerResource,
-      JSONAPIDataDocument,
-    } from "@fresha/api-tools-core";
-
-    /**
-     * EmployeeResource
-     *
-     */
-    export type EmployeeResource = JSONAPIServerResource<'employees'>;
-
-    /**
-     * This is a response resource
-     *
-     * Primary data resources:
-     *  - EmployeeResource
-     *
-     */
-    export type ReadEmployeeListResponse = JSONAPIDataDocument<EmployeeResource[]>;
-  `);
-
-  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
-    import {
-      COMMON_HEADERS,
-      makeUrl,
-      callApi,
-      ExtraCallParams,
-      applyExtraParams
-    } from './utils';
-    import type { ReadEmployeeListResponse } from './types';
-
-    /**
-     * @param [extraParams] additional parameters
-     * @param [extraParams.authCookieName] name of the authorization cookie for this request
-     * @param [extraParams.authCookie] value of the authorization cookie for this request
-     * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
-     * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
-     * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
-     */
-    export async function readEmployeeList(
-      extraParams?: ExtraCallParams,
-    ): Promise<Response> {
-      const url = makeUrl(\`/employees\`);
-
-      const headers = {...COMMON_HEADERS};
-
-      const request = {
-        headers,
-      };
-
-      applyExtraParams(request, extraParams);
-
-      const response = await callApi(url, request);
-
-      return response;
-    }
-  `);
+  expect(action.context.project.getSourceFileOrThrow('src/types.ts').getText()).toMatchSnapshot(
+    'src/types.ts',
+  );
+  expect(action.context.project.getSourceFileOrThrow('src/index.ts').getText()).toMatchSnapshot(
+    'src/index.ts',
+  );
 });
 
 test('test optional header parameters', () => {
@@ -334,56 +202,7 @@ test('test optional header parameters', () => {
     namedType.generateCode(generatedTypes);
   }
 
-  expect(action.context.project.getSourceFile('src/index.ts')).toHaveFormattedTypeScriptText(`
-    import {
-      COMMON_HEADERS,
-      makeUrl,
-      callJsonApi,
-      addQueryParam,
-      authorizeRequest,
-      ExtraCallParams,
-      applyExtraParams,
-    } from './utils';
-
-    /**
-     * operation with an optional header
-     *
-     * This operation has an optional header parameter
-     *
-     * @param params call parameters
-     * @param [params.OptionalHeaderParameter] optional header parameter
-     *
-     * @param [extraParams] additional parameters
-     * @param [extraParams.authCookieName] name of the authorization cookie for this request
-     * @param [extraParams.authCookie] value of the authorization cookie for this request
-     * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
-     * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
-     * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
-     */
-    export async function test(
-      params: {
-        OptionalHeaderParameter?: string,
-      },
-      extraParams?: ExtraCallParams,
-    ): Promise<void> {
-      const url = makeUrl(\`/test-endpoint\`);
-
-      const headers = {...COMMON_HEADERS};
-
-      if (params.OptionalHeaderParameter)
-        headers['Optional-Header-Parameter'] = params.OptionalHeaderParameter;
-
-      const request = {
-        headers,
-      };
-
-      authorizeRequest(request, extraParams);
-
-      applyExtraParams(request, extraParams);
-
-      await callJsonApi(url, request);
-
-      return;
-    }
-  `);
+  expect(action.context.project.getSourceFileOrThrow('src/index.ts').getText()).toMatchSnapshot(
+    'src/index.ts',
+  );
 });

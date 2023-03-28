@@ -132,7 +132,7 @@ export class UtilsFile {
         }
       };
 
-      export const COMMON_HEADERS = {
+      export const COMMON_HEADERS: Record<string, string> = {
         "X-Requested-With": "XMLHttpRequest",
         Accept: "application/vnd.api+json",
         "Content-Type": "application/vnd.api+json",

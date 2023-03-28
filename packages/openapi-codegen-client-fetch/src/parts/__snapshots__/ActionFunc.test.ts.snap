@@ -1,6 +1,106 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`simple test 1`] = `
+exports[`action returns raw response: src/index.ts 1`] = `
+"import { COMMON_HEADERS, makeUrl, callApi, ExtraCallParams, applyExtraParams } from "./utils";
+import type { ReadEmployeeListResponse } from "./types";
+
+/**
+ * @param [extraParams] additional parameters
+ * @param [extraParams.authCookieName] name of the authorization cookie for this request
+ * @param [extraParams.authCookie] value of the authorization cookie for this request
+ * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+ * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+ * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ */
+export async function readEmployeeList(extraParams?: ExtraCallParams): Promise<Response> {
+    const url = makeUrl(\`/employees\`);
+
+    const headerParameters: Record<string, string> = {};
+
+    const request = {
+        headers: {...COMMON_HEADERS, ...headerParameters},
+    };
+
+    applyExtraParams(request, extraParams)
+
+    const response = await callApi(url, request);
+
+    return response;
+}
+"
+`;
+
+exports[`action returns raw response: src/types.ts 1`] = `
+"import type { JSONAPIServerResource, JSONAPIDataDocument } from "@fresha/api-tools-core";
+
+
+/**
+ * EmployeeResource
+ *
+ */
+export type EmployeeResource = JSONAPIServerResource<'employees'>;
+
+/**
+ * This is a response resource
+ *
+ * Primary data resources:
+ *  - EmployeeResource
+ *
+ */
+export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>;
+"
+`;
+
+exports[`simple test: src/index.ts 1`] = `
+"import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess, transformResponse } from "./utils";
+import type { ReadEmployeeListResponse } from "./types";
+
+/**
+ * Reads employee list
+ *
+ * This operation reads a list of employee resources, and returns them as a JSON:API
+ * document. Besides employees, it includes resources associated with employees, like
+ * addresses and **departments**.
+ *
+ * @param params call parameters
+ * @param params.offset Index of the first employee to retrieve
+ * @param [params.limit] Maximal number of employee resources to retrieve
+ *
+ * @param [extraParams] additional parameters
+ * @param [extraParams.authCookieName] name of the authorization cookie for this request
+ * @param [extraParams.authCookie] value of the authorization cookie for this request
+ * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+ * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+ * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ */
+export async function readEmployeeList(params: {
+    offset: number;
+    limit?: number;
+}, extraParams?: ExtraCallParams): Promise<ReadEmployeeListResponse> {
+    const url = makeUrl(\`/employees\`);
+    addQueryParam(url, 'offset', params.offset);
+    addQueryParam(url, 'limit', params.limit);
+
+    const headerParameters: Record<string, string> = {};
+
+    const request = {
+        headers: {...COMMON_HEADERS, ...headerParameters},
+    };
+
+    authorizeRequest(request, extraParams);
+
+    applyExtraParams(request, extraParams)
+
+    const response = await callJsonApi(url, request);
+
+    dispatchSuccess('readEmployeeList', params, response)
+
+    return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response)
+}
+"
+`;
+
+exports[`simple test: src/types.ts 1`] = `
 "import type { JSONAPIServerResource, JSONAPIResourceRelationship1, JSONAPIResourceRelationship0, JSONAPIResourceRelationshipN, JSONAPIDataDocument } from "@fresha/api-tools-core";
 
 
@@ -41,20 +141,91 @@ export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>
 "
 `;
 
-exports[`simple test 2`] = `
-"import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess, transformResponse } from "./utils";
+exports[`specific naming convention for client library: src/index.ts 1`] = `
+"import { COMMON_HEADERS, makeUrl, callJsonApi, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess, transformResponse } from "./utils";
 import type { ReadEmployeeListResponse } from "./types";
+import { camelCaseDeep } from "@fresha/api-tools-core";
 
 /**
- * Reads employee list
+ * @param [extraParams] additional parameters
+ * @param [extraParams.authCookieName] name of the authorization cookie for this request
+ * @param [extraParams.authCookie] value of the authorization cookie for this request
+ * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
+ * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
+ * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ */
+export async function readEmployeeList(extraParams?: ExtraCallParams): Promise<ReadEmployeeListResponse> {
+    const url = makeUrl(\`/employees\`);
+
+    const headerParameters: Record<string, string> = {};
+
+    const request = {
+        method: 'PATCH',
+        headers: {...COMMON_HEADERS, ...headerParameters},
+    };
+
+    authorizeRequest(request, extraParams);
+
+    applyExtraParams(request, extraParams)
+
+    let response = await callJsonApi(url, request);
+
+    response = camelCaseDeep(response);
+
+    dispatchSuccess('readEmployeeList', undefined, response)
+
+    return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response)
+}
+"
+`;
+
+exports[`specific naming convention for client library: src/types.ts 1`] = `
+"import type { JSONAPIServerResource, JSONAPIResourceRelationship1, JSONAPIDataDocument } from "@fresha/api-tools-core";
+
+
+/**
+ * EmployeeResource
  *
- * This operation reads a list of employee resources, and returns them as a JSON:API
- * document. Besides employees, it includes resources associated with employees, like
- * addresses and **departments**.
+ * Attributes:
+ * -  old-name
+ * -  new-name
+ * -  age
+ * -  is-active
+ *
+ * Relationships:
+ * -  direct-manager relationship to the 'employees' resource
+ *
+ */
+export type EmployeeResource = JSONAPIServerResource<'employees', {
+        'oldName': string;
+        'newName': string;
+        'age'?: number | null;
+        'isActive'?: boolean;
+}, {
+        'directManager': JSONAPIResourceRelationship1<'employees'>;
+}>;
+
+/**
+ * This is a response resource
+ *
+ * Primary data resources:
+ *  - EmployeeResource
+ *
+ */
+export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>;
+"
+`;
+
+exports[`test optional header parameters: src/index.ts 1`] = `
+"import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams } from "./utils";
+
+/**
+ * operation with an optional header
+ *
+ * This operation has an optional header parameter
  *
  * @param params call parameters
- * @param params.offset Index of the first employee to retrieve
- * @param [params.limit] Maximal number of employee resources to retrieve
+ * @param [params.OptionalHeaderParameter] optional header parameter
  *
  * @param [extraParams] additional parameters
  * @param [extraParams.authCookieName] name of the authorization cookie for this request
@@ -63,30 +234,26 @@ import type { ReadEmployeeListResponse } from "./types";
  * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
  * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
  */
-export async function readEmployeeList(params: {
-    offset: number;
-    limit?: number;
-}, extraParams?: ExtraCallParams): Promise<ReadEmployeeListResponse> {
-    const url = makeUrl(\`/employees\`);
-    addQueryParam(url, 'offset', params.offset);
-    addQueryParam(url, 'limit', params.limit);
+export async function test(params: {
+    OptionalHeaderParameter?: string;
+}, extraParams?: ExtraCallParams): Promise<void> {
+    const url = makeUrl(\`/test-endpoint\`);
 
-    const headers = {...COMMON_HEADERS};
+    const headerParameters: Record<string, string> = {};
 
+    if (params.OptionalHeaderParameter) headerParameters['Optional-Header-Parameter'] = params.OptionalHeaderParameter
 
     const request = {
-        headers,
+        headers: {...COMMON_HEADERS, ...headerParameters},
     };
 
     authorizeRequest(request, extraParams);
 
     applyExtraParams(request, extraParams)
 
-    const response = await callJsonApi(url, request);
+    await callJsonApi(url, request);
 
-    dispatchSuccess('readEmployeeList', params, response)
-
-    return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response)
+    return
 }
 "
 `;

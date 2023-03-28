@@ -206,13 +206,14 @@ export class ActionFunc {
         }
       }
 
-      writer.writeLine('const headers = {...COMMON_HEADERS};');
-
-      writer.newLine();
+      writer.writeLine('const headerParameters: Record<string, string> = {};');
 
       if (this.headerToSet.size) {
+        writer.newLine();
         for (const [headerName, varName] of this.headerToSet) {
-          writer.writeLine(`if (params.${varName}) headers['${headerName}'] = params.${varName}`);
+          writer.writeLine(
+            `if (params.${varName}) headerParameters['${headerName}'] = params.${varName}`,
+          );
         }
       }
       writer.newLine();
@@ -226,7 +227,7 @@ export class ActionFunc {
         if (this.requestType) {
           writer.writeLine('body: JSON.stringify(body),');
         }
-        writer.write('headers,');
+        writer.write('headers: {...COMMON_HEADERS, ...headerParameters},');
       });
       writer.writeLine('};');
       writer.newLine();
