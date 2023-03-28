@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-cli",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "CLI for OpenAPI code generators",
   "bin": {
     "fresha-openapi-codegen": "./bin/fresha-openapi-codegen.js"
@@ -61,7 +61,7 @@
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@fresha/openapi-codegen-client-fetch": "^0.4.1",
+    "@fresha/openapi-codegen-client-fetch": "^0.4.2",
     "@fresha/openapi-codegen-docs-json-api": "^0.3.0",
     "@fresha/openapi-codegen-server-elixir": "^0.4.0",
     "@fresha/openapi-codegen-server-mock": "^0.3.0",
