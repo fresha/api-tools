@@ -68,5 +68,5 @@
     "@fresha/openapi-codegen-server-nestjs": "^0.4.0",
     "yargs": "^17.5.1"
   },
-  "gitHead": "edc5d6442eca71b864a4b5abffd8ef10ea984b14"
+  "gitHead": "430053f02ffdbb73a2e5dc0d4a572b44495d329e"
 }
