@@ -206,7 +206,7 @@ export class ActionFunc {
         }
       }
 
-      writer.writeLine('const headers = {...COMMON_HEADERS}');
+      writer.writeLine('const headers = {...COMMON_HEADERS};');
 
       writer.newLine();
 
@@ -226,7 +226,7 @@ export class ActionFunc {
         if (this.requestType) {
           writer.writeLine('body: JSON.stringify(body),');
         }
-        writer.write('headers: headers,');
+        writer.write('headers,');
       });
       writer.writeLine('};');
       writer.newLine();

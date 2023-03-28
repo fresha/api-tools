@@ -162,10 +162,10 @@ test('simple test', () => {
       addQueryParam(url, 'offset', params.offset);
       addQueryParam(url, 'limit', params.limit);
 
-      const headers = {...COMMON_HEADERS}
+      const headers = {...COMMON_HEADERS};
 
       const request = {
-        headers: headers,
+        headers,
       };
 
       authorizeRequest(request, extraParams);
@@ -298,11 +298,11 @@ test('specific naming convention for client library', () => {
     ): Promise<ReadEmployeeListResponse> {
       const url = makeUrl(\`/employees\`);
 
-      const headers = {...COMMON_HEADERS}
+      const headers = {...COMMON_HEADERS};
 
       const request = {
         method: 'PATCH',
-        headers: headers,
+        headers,
       };
 
       authorizeRequest(request, extraParams);
@@ -396,10 +396,10 @@ test('action returns raw response', () => {
     ): Promise<Response> {
       const url = makeUrl(\`/employees\`);
 
-      const headers = {...COMMON_HEADERS}
+      const headers = {...COMMON_HEADERS};
 
       const request = {
-        headers: headers,
+        headers,
       };
 
       applyExtraParams(request, extraParams);
@@ -420,15 +420,13 @@ test('test optional header parameters', () => {
   const operation = openapi.setPathItem('/test-endpoint').addOperation('get');
   operation.operationId = 'test';
   operation.summary = 'operation with an optional header';
-  operation.description = `This operation has an optional header parameter`
+  operation.description = `This operation has an optional header parameter`;
 
   const headerParameter = operation.addParameter('Optional-Header-Parameter', 'header');
   headerParameter.required = false;
   headerParameter.setSchema('string');
   headerParameter.description = 'optional header parameter';
-  operation
-    .setResponse(200, 'returns a success')
-    .setMediaType(MEDIA_TYPE_JSON_API)
+  operation.setResponse(200, 'returns a success').setMediaType(MEDIA_TYPE_JSON_API);
 
   operation.addSecurityRequirement().addSchema('the_auth');
 
@@ -483,7 +481,7 @@ test('test optional header parameters', () => {
         headers['Optional-Header-Parameter'] = params.OptionalHeaderParameter;
 
       const request = {
-        headers: headers,
+        headers,
       };
 
       authorizeRequest(request, extraParams);
