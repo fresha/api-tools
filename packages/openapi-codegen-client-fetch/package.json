@@ -61,6 +61,7 @@
     "ts-morph": "^17.0.1"
   },
   "devDependencies": {
+    "@fresha/code-morph-test-utils": "^0.3.0",
     "@fresha/eslint-config": "^0.3.0",
     "@fresha/openapi-codegen-test-utils": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
