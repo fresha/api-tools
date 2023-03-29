@@ -1,0 +1,35 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`simple: src/formatters.ts 1`] = `
+"import type { CreateEmployeeRequest } from "./types";
+
+export function formatCreateEmployeeRequest(params: {
+    fullName: string;
+    age: number;
+    gender?: 'male' | 'female';
+    manager: string;
+    subordinates?: string[];
+    mentor?: string | null;
+}): CreateEmployeeRequest {
+    return {
+        jsonapi: { version: '1.0' },
+        data: 
+        {
+            type: 'employees',
+            attributes: 
+            {
+                'full-name': params.fullName,
+                'age': params.age,
+                'gender': params.gender,
+            },
+            relationships: 
+            {
+                'manager': { data: { type: 'employees', id: manager } },
+                'subordinates': subordinates !== undefined ? { data: subordinates.map(id => ({ type: 'employees', id })) } : undefined,
+                'mentor': mentor !== undefined ? { data: mentor == null ? { type: 'employees', id: mentor } : null } : undefined,
+            }
+        }
+    }
+}
+"
+`;

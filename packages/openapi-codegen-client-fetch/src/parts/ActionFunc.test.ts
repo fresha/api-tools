@@ -6,7 +6,7 @@ import {
   RelationshipCardinality,
   setResourceSchema,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OperationModel } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OpenAPIModel, OperationModel } from '@fresha/openapi-model/build/3.0.3';
 
 import '@fresha/openapi-codegen-test-utils/build/matchers';
 
@@ -22,8 +22,13 @@ const createAction = (operation: OperationModel, filePath = 'src/index.ts'): Act
   return new ActionFunc(context);
 };
 
+let openapi: OpenAPIModel;
+
+beforeEach(() => {
+  openapi = OpenAPIFactory.create();
+});
+
 test('simple test', () => {
-  const openapi = OpenAPIFactory.create();
   buildEmployeeSchemasForTesting(openapi);
 
   openapi.components.setSecuritySchema('the_auth', 'apiKey');
@@ -79,8 +84,6 @@ test('simple test', () => {
 });
 
 test('specific naming convention for client library', () => {
-  const openapi = OpenAPIFactory.create();
-
   // construct a resource with kebab-case attributes
   const employee = openapi.components.setSchema('EmployeeResource');
   setResourceSchema(employee, 'employees');
@@ -134,8 +137,6 @@ test('specific naming convention for client library', () => {
 });
 
 test('action returns raw response', () => {
-  const openapi = OpenAPIFactory.create();
-
   const schema = openapi.components.setSchema('EmployeeResource');
   setResourceSchema(schema, 'employees');
 
@@ -173,7 +174,6 @@ test('action returns raw response', () => {
 });
 
 test('test optional header parameters', () => {
-  const openapi = OpenAPIFactory.create();
   buildEmployeeSchemasForTesting(openapi);
 
   openapi.components.setSecuritySchema('the_auth', 'apiKey');

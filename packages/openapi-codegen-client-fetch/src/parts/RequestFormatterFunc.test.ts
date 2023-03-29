@@ -5,7 +5,7 @@ import {
   RelationshipCardinality,
   setDataDocumentSchema,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
 import { createActionTestContext } from '../testHelpers';
 
@@ -13,10 +13,13 @@ import { DocumentType } from './DocumentType';
 import { NamedType } from './NamedType';
 import { RequestFormatterFunc } from './RequestFormatterFunc';
 
-import '@fresha/openapi-codegen-test-utils/build/matchers';
+let openapi: OpenAPIModel;
+
+beforeEach(() => {
+  openapi = OpenAPIFactory.create();
+});
 
 test('simple', () => {
-  const openapi = OpenAPIFactory.create();
   buildEmployeeSchemasForTesting(openapi);
 
   const operation = openapi.setPathItem('/employees').addOperation('post');
@@ -77,40 +80,7 @@ test('simple', () => {
   requestFormatter.collectData();
   requestFormatter.generateCode();
 
-  expect(requestFormatter.context.project.getSourceFile('src/formatters.ts'))
-    .toHaveFormattedTypeScriptText(`
-    import type { CreateEmployeeRequest } from './types';
-
-    export function formatCreateEmployeeRequest(params: {
-      fullName: string;
-      age: number;
-      gender?: 'male' | 'female';
-      manager: string;
-      subordinates?: string[];
-      mentor?: string | null;
-    }): CreateEmployeeRequest {
-      return {
-        jsonapi: { version: '1.0' },
-        data: {
-          type: 'employees',
-          attributes: {
-            'full-name': params.fullName,
-            age: params.age,
-            gender: params.gender,
-          },
-          relationships: {
-            manager: { data: { type: 'employees', id: manager, }, },
-            subordinates:
-              subordinates !== undefined
-                ? { data: subordinates.map(id => ({ type: 'employees', id })), }
-                : undefined,
-            mentor:
-              mentor !== undefined
-                ? { data: mentor == null ? { type: 'employees', id: mentor } : null }
-                : undefined,
-          },
-        },
-      };
-    };
-  `);
+  expect(
+    requestFormatter.context.project.getSourceFileOrThrow('src/formatters.ts').getText(),
+  ).toMatchSnapshot('src/formatters.ts');
 });

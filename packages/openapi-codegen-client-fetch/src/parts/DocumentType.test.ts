@@ -13,8 +13,6 @@ import { DocumentType } from './DocumentType';
 
 import type { NamedType } from './NamedType';
 
-import '@fresha/openapi-codegen-test-utils/build/matchers';
-
 const createDocumentType = (operation: OperationModel, name: string): DocumentType => {
   const context = createActionTestContext(operation, '/src/index.ts');
   const schema = getOperationDefaultResponseSchemaOrThrow(operation, true);
@@ -22,9 +20,9 @@ const createDocumentType = (operation: OperationModel, name: string): DocumentTy
   return new DocumentType(context, name, schema, false, true);
 };
 
-let operation = OpenAPIFactory.create().setPathItem('/hello').addOperation('get');
-let namedTypes = new Map<string, NamedType>();
-let generatedTypes = new Set<string>();
+let operation: OperationModel;
+let namedTypes: Map<string, NamedType>;
+let generatedTypes: Set<string>;
 
 beforeEach(() => {
   operation = OpenAPIFactory.create().setPathItem('/hello').addOperation('get');
@@ -40,22 +38,44 @@ test('generic', () => {
   documentType.collectData(namedTypes);
   documentType.generateCode(generatedTypes);
 
-  expect(documentType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
-    import type { JSONAPIDataDocument } from '@fresha/api-tools-core';
+  expect(
+    documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+  ).toMatchSnapshot('src/types.ts');
+});
 
-    /**
-     * This is a response resource
-     *
-     */
-    export type SimpleResponseDocument = JSONAPIDataDocument;
-  `);
+test('jsdocs', () => {
+  const responseSchema = operation
+    .setDefaultResponse('default response')
+    .setMediaType(MEDIA_TYPE_JSON_API)
+    .setSchema('object');
+  responseSchema.title = 'A simple object schema';
+  responseSchema.description =
+    'This is a description of the schema.\nThe schema represents a simple object.';
+  responseSchema.setProperties({
+    jsonapi: { type: 'object', required: true },
+    data: { type: 'object', required: true },
+  });
+
+  const employee = responseSchema.root.components.setSchema('Employee', 'object');
+  employee.setProperties({
+    type: { type: 'string', required: true, enum: ['employees'] },
+    id: { type: 'string', required: true },
+    attributes: { type: 'object', required: true },
+  });
+  responseSchema.setProperty('data', employee);
+
+  const documentType = createDocumentType(operation, 'SimpleResponseDocument');
+
+  documentType.collectData(namedTypes);
+  documentType.generateCode(generatedTypes);
+
+  expect(
+    documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+  ).toMatchSnapshot('src/types.ts');
 });
 
 describe('primary data', () => {
-  let responseSchema = operation
-    .setDefaultResponse('test')
-    .setMediaType(MEDIA_TYPE_JSON_API)
-    .setSchema('object');
+  let responseSchema: SchemaModel;
 
   beforeEach(() => {
     responseSchema = operation
@@ -82,28 +102,9 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/types.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import type {
-        JSONAPIServerResource,
-        JSONAPIDataDocument,
-      } from '@fresha/api-tools-core';
-
-      /**
-       * Employee
-       *
-       */
-      export type Employee = JSONAPIServerResource<'employees'>;
-
-      /**
-       * This is a response resource
-       *
-       * Primary data resources:
-       *  - Employee
-       *
-       */
-      export type SimpleResponseDocument = JSONAPIDataDocument<Employee>;
-    `);
+    expect(
+      documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+    ).toMatchSnapshot('src/types.ts');
   });
 
   test('single inline resource', () => {
@@ -119,24 +120,9 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/types.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import type {
-        JSONAPIServerResource,
-        JSONAPIDataDocument,
-      } from '@fresha/api-tools-core';
-
-      export type Unknown1 = JSONAPIServerResource<'employees'>;
-
-      /**
-       * This is a response resource
-       *
-       * Primary data resources:
-       *  - Unknown1
-       *
-       */
-      export type SimpleResponseDocument = JSONAPIDataDocument<Unknown1>;
-    `);
+    expect(
+      documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+    ).toMatchSnapshot('src/types.ts');
   });
 
   test('single resource of possibly multiple types', () => {
@@ -154,35 +140,9 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/types.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import type {
-        JSONAPIServerResource,
-        JSONAPIDataDocument,
-      } from '@fresha/api-tools-core';
-
-      /**
-       * EmployeeResource
-       *
-       */
-      export type EmployeeResource = JSONAPIServerResource<'employees'>;
-
-      /**
-       * OrganizationResource
-       *
-       */
-      export type OrganizationResource = JSONAPIServerResource<'organizations'>;
-
-      /**
-       * This is a response resource
-       *
-       * Primary data resources:
-       *  - EmployeeResource
-       *  - OrganizationResource
-       *
-       */
-      export type ResponseDocumentWithUnionTypes = JSONAPIDataDocument<EmployeeResource | OrganizationResource>;
-    `);
+    expect(
+      documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+    ).toMatchSnapshot('src/types.ts');
   });
 
   test('multiple resources of the same type', () => {
@@ -195,35 +155,14 @@ describe('primary data', () => {
 
     responseSchema.setProperty('data', 'array').setItems(employee);
 
-    debugger;
-
     const documentType = createDocumentType(operation, 'SimpleResponseDocument');
 
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/types.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import type {
-        JSONAPIServerResource,
-        JSONAPIDataDocument,
-      } from '@fresha/api-tools-core';
-
-      /**
-       * Employee
-       *
-       */
-      export type Employee = JSONAPIServerResource<'employees'>;
-
-      /**
-       * This is a response resource
-       *
-       * Primary data resources:
-       *  - Employee
-       *
-       */
-      export type SimpleResponseDocument = JSONAPIDataDocument<Employee[]>;
-    `);
+    expect(
+      documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+    ).toMatchSnapshot('src/types.ts');
   });
 
   test('skip resources that were generated before', () => {
@@ -244,19 +183,9 @@ describe('primary data', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/types.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import type { JSONAPIDataDocument } from '@fresha/api-tools-core';
-
-      /**
-       * This is a response resource
-       *
-       * Primary data resources:
-       *  - Employee
-       *
-       */
-      export type SimpleResponseDocument = JSONAPIDataDocument<Employee[]>;
-    `);
+    expect(
+      documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+    ).toMatchSnapshot('src/types.ts');
   });
 });
 
@@ -290,34 +219,9 @@ describe('included', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/types.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import type {
-        JSONAPIServerResource,
-        JSONAPIDataDocument,
-      } from '@fresha/api-tools-core';
-
-      /**
-       * Employee
-       *
-       */
-      export type Employee = JSONAPIServerResource<'employees'>;
-
-      /**
-       * This is a response resource
-       *
-       * Primary data resources:
-       *  - Employee
-       *
-       * Included resources:
-       *  - Employee
-       *
-       */
-      export type DocumentWithIncludedResources = JSONAPIDataDocument<
-        Employee,
-        Employee
-      >;
-    `);
+    expect(
+      documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+    ).toMatchSnapshot('src/types.ts');
   });
 
   test('includes resources of multiple types', () => {
@@ -347,40 +251,8 @@ describe('included', () => {
     documentType.collectData(namedTypes);
     documentType.generateCode(generatedTypes);
 
-    expect(documentType.context.project.getSourceFile('src/types.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import type {
-        JSONAPIServerResource,
-        JSONAPIDataDocument,
-      } from '@fresha/api-tools-core';
-
-      /**
-       * Employee
-       *
-       */
-      export type Employee = JSONAPIServerResource<'employees'>;
-
-      /**
-       * Organization
-       *
-       */
-      export type Organization = JSONAPIServerResource<'organizations'>;
-
-      /**
-       * This is a response resource
-       *
-       * Primary data resources:
-       *  - Employee
-       *
-       * Included resources:
-       *  - Organization
-       *  - Employee
-       *
-       */
-      export type DocumentWithIncludedResources = JSONAPIDataDocument<
-        Employee,
-        Organization | Employee
-      >;
-    `);
+    expect(
+      documentType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+    ).toMatchSnapshot('src/types.ts');
   });
 });

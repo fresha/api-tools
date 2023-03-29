@@ -1,0 +1,56 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`attributes 1`] = `
+"import type { JSONAPIServerResource } from "@fresha/api-tools-core";
+
+
+/**
+ * HelloResource
+ *
+ * Attributes:
+ * -  name
+ * -  age
+ * -  gender
+ * -  active
+ *
+ */
+export type HelloResource = JSONAPIServerResource<'hello', {
+        'name': string;
+        'age'?: number | null;
+        'gender': 'male' | 'female' | 'other' | null;
+        'active'?: boolean;
+}>;
+"
+`;
+
+exports[`relationships: src/types.ts 1`] = `
+"import type { JSONAPIServerResource, JSONAPIResourceRelationship1, JSONAPIResourceRelationship0, JSONAPIResourceRelationshipN } from "@fresha/api-tools-core";
+
+
+/**
+ * Employee resource
+ *
+ * This resource contains information about a single employee.
+ * It also links to other related resources.
+ *
+ * Relationships:
+ * -  manager relationship to the 'employees' resource
+ * -  buddy relationship to the 'employees' resource
+ * -  subordinates relationship to the 'employees' resource
+ *
+ */
+export type HelloResource = JSONAPIServerResource<'employees', {}, {
+        'manager': JSONAPIResourceRelationship1<'employees'>;
+        'buddy': JSONAPIResourceRelationship0<'employees'>;
+        'subordinates': JSONAPIResourceRelationshipN<'employees'>;
+}>;
+"
+`;
+
+exports[`simple, client resource: src/types.ts 1`] = `
+"import type { JSONAPIClientResource } from "@fresha/api-tools-core";
+
+
+export type SimpleResource = JSONAPIClientResource;
+"
+`;
