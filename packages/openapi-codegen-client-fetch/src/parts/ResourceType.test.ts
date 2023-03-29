@@ -14,8 +14,6 @@ import { createActionTestContext } from '../testHelpers';
 import { NamedType } from './NamedType';
 import { ResourceType } from './ResourceType';
 
-import '@fresha/openapi-codegen-test-utils/build/matchers';
-
 const createResourceType = (
   operation: OperationModel,
   name: string,
@@ -47,12 +45,9 @@ test('simple, client resource', () => {
   resourceType.collectData(namedTypes);
   resourceType.generateCode(generatedTypes);
 
-  expect(resourceType.context.project.getSourceFileOrThrow('src/types.ts'))
-    .toHaveFormattedTypeScriptText(`
-    import type { JSONAPIClientResource } from '@fresha/api-tools-core';
-
-    export type SimpleResource = JSONAPIClientResource;
-  `);
+  expect(
+    resourceType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+  ).toMatchSnapshot('src/types.ts');
 });
 
 test('attributes', () => {
@@ -75,29 +70,9 @@ test('attributes', () => {
   resourceType.collectData(namedTypes);
   resourceType.generateCode(generatedTypes);
 
-  expect(resourceType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
-    import type { JSONAPIServerResource } from '@fresha/api-tools-core';
-
-    /**
-     * HelloResource
-     *
-     * Attributes:
-     * -  name
-     * -  age
-     * -  gender
-     * -  active
-     *
-     */
-    export type HelloResource = JSONAPIServerResource<
-      'hello',
-      {
-        name: string;
-        age?: number | null;
-        gender: 'male' | 'female' | 'other' | null;
-        active?: boolean;
-      }
-    >;
-  `);
+  expect(
+    resourceType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+  ).toMatchSnapshot();
 });
 
 test('relationships', () => {
@@ -126,34 +101,7 @@ test('relationships', () => {
   resourceType.collectData(namedTypes);
   resourceType.generateCode(generatedTypes);
 
-  expect(resourceType.context.project.getSourceFile('src/types.ts')).toHaveFormattedTypeScriptText(`
-    import type {
-      JSONAPIServerResource,
-      JSONAPIResourceRelationship1,
-      JSONAPIResourceRelationship0,
-      JSONAPIResourceRelationshipN,
-    } from '@fresha/api-tools-core';
-
-    /**
-     * Employee resource
-     *
-     * This resource contains information about a single employee.
-     * It also links to other related resources.
-     *
-     * Relationships:
-     * -  manager relationship to the 'employees' resource
-     * -  buddy relationship to the 'employees' resource
-     * -  subordinates relationship to the 'employees' resource
-     *
-     */
-    export type HelloResource = JSONAPIServerResource<
-      'employees',
-      {},
-      {
-        manager: JSONAPIResourceRelationship1<'employees'>;
-        buddy: JSONAPIResourceRelationship0<'employees'>;
-        subordinates: JSONAPIResourceRelationshipN<'employees'>;
-      }
-    >;
-  `);
+  expect(
+    resourceType.context.project.getSourceFileOrThrow('src/types.ts').getText(),
+  ).toMatchSnapshot('src/types.ts');
 });

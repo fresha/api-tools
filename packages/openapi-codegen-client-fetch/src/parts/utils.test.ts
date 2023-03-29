@@ -1,11 +1,15 @@
-import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
 import { schemaToType } from './utils';
 
 describe('schemaToType', () => {
-  test('simple cases', () => {
-    const openapi = OpenAPIFactory.create();
+  let openapi: OpenAPIModel;
 
+  beforeEach(() => {
+    openapi = OpenAPIFactory.create();
+  });
+
+  test('simple cases', () => {
     expect(schemaToType(openapi.components.setSchema('Null'))).toMatch(/^Unknown\d+/);
     expect(schemaToType(openapi.components.setSchema('Boolean', 'boolean'))).toBe('boolean');
     expect(schemaToType(openapi.components.setSchema('Integer', 'integer'))).toBe('number');
@@ -26,8 +30,6 @@ describe('schemaToType', () => {
   });
 
   test('numeric enum', () => {
-    const openapi = OpenAPIFactory.create();
-
     const enumInteger = openapi.components.setSchema('EnumInt', 'integer');
     enumInteger.addAllowedValues(1, 3, 2, 8);
 
@@ -39,8 +41,6 @@ describe('schemaToType', () => {
   });
 
   test('string enum', () => {
-    const openapi = OpenAPIFactory.create();
-
     const enumString = openapi.components.setSchema('EnumString', 'string');
     enumString.addAllowedValues('val1', 'val2');
 

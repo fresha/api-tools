@@ -64,9 +64,7 @@ export class DocumentType extends NamedType {
     const primaryDataSchemas: SchemaModel[] = [];
 
     if (primaryDataSchema?.type === 'array') {
-      if (Array.isArray(primaryDataSchema.items)) {
-        primaryDataSchemas.push(...primaryDataSchema.items);
-      } else if (primaryDataSchema.items) {
+      if (primaryDataSchema.items) {
         primaryDataSchemas.push(primaryDataSchema.items);
       }
       this.primaryDataIsArray = true;
