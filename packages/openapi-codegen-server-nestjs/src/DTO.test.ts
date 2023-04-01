@@ -111,8 +111,9 @@ describe('serialization', () => {
 
     new DTO(context, 'Employee', resourceSchema).generateCode();
 
-    expect(context.project.getSourceFileOrThrow('/var/dto/Employee.dto.ts').getText())
-      .toMatchSnapshot();
+    expect(
+      context.project.getSourceFileOrThrow('/var/dto/Employee.dto.ts').getText(),
+    ).toMatchSnapshot();
   });
 
   test('array', () => {
