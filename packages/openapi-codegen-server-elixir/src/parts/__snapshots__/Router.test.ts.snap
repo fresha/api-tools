@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`multiple controllers and actions 1`] = `
+"
+#
+# ROUTER
+# In your router file, add the following lines
+#
+scope "/api", ApiToolsRouterWeb do
+  pipe_through :api
+
+  resources("/users", UsersController, only: [:index, :show])
+  resources("/users", TasksController, only: [:delete, :create])
+end
+"
+`;
+
+exports[`no paths 1`] = `
+"
+#
+# ROUTER
+# In your router file, add the following lines
+#
+scope "/api", ApiToolsRouterWeb do
+  pipe_through :api
+
+end
+"
+`;

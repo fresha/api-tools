@@ -8,8 +8,6 @@ import {
 } from '@fresha/openapi-codegen-utils';
 import { OpenAPIFactory, OpenAPIModel, OperationModel } from '@fresha/openapi-model/build/3.0.3';
 
-import '@fresha/openapi-codegen-test-utils/build/matchers';
-
 import { ActionContext } from '../context';
 import { createActionTestContext } from '../testHelpers';
 

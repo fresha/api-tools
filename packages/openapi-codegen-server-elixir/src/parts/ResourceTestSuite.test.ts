@@ -5,8 +5,6 @@ import { createTestContext } from '../testHelpers';
 
 import { ResourceTestSuite } from './ResourceTestSuite';
 
-import '@fresha/openapi-codegen-test-utils/build/matchers';
-
 test('simple resource', () => {
   const context = createTestContext('awesome_web');
 
@@ -44,43 +42,5 @@ test('simple resource', () => {
   generator.collectData();
   generator.generateCode();
 
-  expect(generator.sourceFile).toHaveFormattedElixirText(`
-    defmodule AwesomeWeb.TestResource do
-      @moduledoc false
-
-      use ExUnit.Case, async: false
-      import AwesomeWeb.Factory
-      alias AwesomeWeb.TestResource
-
-      test "build/1" do
-        config = build(
-          :resource_tests,
-          id: 884,
-          num1: 11.75,
-          num2: 11.6,
-          int1: 16,
-          int2: 10,
-        )
-
-        assert ResourceTestsResource.build(config) == %Jabbax.Document.Resource{
-          type: "resource-tests",
-          id: 884,
-          attributes: %{
-            num1: 11.75,
-            num2: 11.6,
-            int1: 16,
-            int2: 10,
-          },
-          relationships: %{},
-        }
-      end
-
-      test "link/1" do
-        assert ResourceTestsResource.link(%{ id: 3525 }) == %Jabbax.Document.ResourceId{
-          type: "resource-tests",
-          id: 3525,
-        }
-      end
-    end
-  `);
+  expect(generator.sourceFile.getText()).toMatchSnapshot();
 });
