@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`construction 1`] = `
+"import { Param } from "@nestjs/common";
+
+class X {
+      y(@Param('id') id: string) {}
+     }"
+`;
+
+exports[`typed parameters 1`] = `
+"import { Param, ParseBoolPipe } from "@nestjs/common";
+
+class X {
+      y(@Param('id', ParseBoolPipe) id: boolean) {}
+     }"
+`;

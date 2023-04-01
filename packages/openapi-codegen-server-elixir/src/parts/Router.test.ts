@@ -1,5 +1,3 @@
-import { poorMansElixirFormat } from '@fresha/code-morph-test-utils';
-
 import { createTestContext } from '../testHelpers';
 
 import { Router } from './Router';
@@ -15,18 +13,8 @@ test('no paths', () => {
 
   const { calls } = (context.console.log as jest.Mock).mock;
   expect(calls).toHaveLength(1);
-  expect(poorMansElixirFormat((calls as string[][])[0][0])).toBe(
-    poorMansElixirFormat(`
-    #
-    # ROUTER
-    # In your router file, add the following lines
-    #
-    scope "/api", ApiToolsRouterWeb do
-      pipe_through :api
 
-    end
-  `),
-  );
+  expect((calls as string[][])[0][0]).toMatchSnapshot();
 });
 
 test('multiple controllers and actions', () => {
@@ -92,18 +80,6 @@ test('multiple controllers and actions', () => {
 
   const { calls } = (context.console.log as jest.Mock).mock;
   expect(calls).toHaveLength(1);
-  expect(poorMansElixirFormat((calls as string[][])[0][0])).toBe(
-    poorMansElixirFormat(`
-    #
-    # ROUTER
-    # In your router file, add the following lines
-    #
-    scope "/api", ApiToolsRouterWeb do
-      pipe_through :api
 
-      resources("/users", UsersController, only: [:index, :show])
-      resources("/users", TasksController, only: [:delete, :create])
-    end
-  `),
-  );
+  expect((calls as string[][])[0][0]).toMatchSnapshot();
 });

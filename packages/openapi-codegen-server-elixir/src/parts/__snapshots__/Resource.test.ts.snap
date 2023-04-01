@@ -1,0 +1,88 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`empty resource 1`] = `
+"defmodule ApiToolsWeb.MicroNanoResource do
+  @moduledoc false
+
+  @resource_type "micro-nano"
+  use Jabbax.Document
+
+  def build(config) do
+    %Resource{
+      type: @resource_type,
+      id: config.id,
+      attributes: %{
+      },
+    }
+  end
+
+  def link(config) do
+    %ResourceId{
+      type: @resource_type,
+      id: config.id,
+    }
+  end
+end"
+`;
+
+exports[`for schema-less resources, only link/1 is generated 1`] = `
+"defmodule ApiToolsWeb.SchemaLessResource do
+  @moduledoc false
+
+  @resource_type "schema-less"
+  use Jabbax.Document
+
+  def link(config) do
+    %ResourceId{
+      type: @resource_type,
+      id: config.id,
+    }
+  end
+end"
+`;
+
+exports[`happy path 1`] = `
+"defmodule ApiToolsWeb.UsersResource do
+  @moduledoc false
+
+  @resource_type "users"
+  use Jabbax.Document
+  alias ApiToolsWeb.OrganizationsResource
+  alias ApiToolsWeb.UserAvatarsResource
+
+  def build(config) do
+    %Resource{
+      type: @resource_type,
+      id: config.id,
+      attributes: %{
+        name: config.name,
+        age: config.age,
+        email: config.email,
+      },
+      relationships:
+        %{}
+        |> link_relationship(:organization, config.organization)
+        |> link_relationship(:avatar, config.avatar)
+    }
+  end
+
+  def link(config) do
+    %ResourceId{
+      type: @resource_type,
+      id: config.id,
+    }
+  end
+
+  defp link_relationship(relationships, type, nil) do
+    Map.put(relationships, type, %Jabbax.Document.Relationship{data: nil})
+  end
+
+  defp link_relationship(relationships, :organization, organization) do
+    Map.put(relationships, :organization, OrganizationsResource.link(organization))
+  end
+
+  defp link_relationship(relationships, :avatar, avatar) do
+    Map.put(relationships, :avatar, UserAvatarsResource.link(avatar))
+  end
+end"
+`;

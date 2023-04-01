@@ -1,8 +1,6 @@
 import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 import { MethodDeclaration, Project } from 'ts-morph';
 
-import '@fresha/openapi-codegen-test-utils/build/matchers';
-
 import { ActionParam } from './ActionParam';
 
 import type { Context } from './context';
@@ -29,13 +27,7 @@ test('construction', () => {
   const param = new ActionParam({} as Context, { in: 'path', name: 'id', schema: null });
   param.generateCode(methodDecl);
 
-  expect(methodDecl.getSourceFile()).toHaveFormattedTypeScriptText(
-    `import { Param } from '@nestjs/common';
-
-    class X {
-      y(@Param('id') id: string) {}
-    }`,
-  );
+  expect(methodDecl.getSourceFile().getText()).toMatchSnapshot();
 });
 
 test('typed parameters', () => {
@@ -46,13 +38,7 @@ test('typed parameters', () => {
   });
   param.generateCode(methodDecl);
 
-  expect(methodDecl.getSourceFile()).toHaveFormattedTypeScriptText(
-    `import { Param, ParseBoolPipe } from '@nestjs/common';
-
-    class X {
-      y(@Param('id', ParseBoolPipe) id: boolean) {}
-    }`,
-  );
+  expect(methodDecl.getSourceFile().getText()).toMatchSnapshot();
 });
 
 test('does not support non-primitive parameter schema', () => {

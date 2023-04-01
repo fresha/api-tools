@@ -1,5 +1,3 @@
-import '@fresha/openapi-codegen-test-utils/build/matchers';
-
 import { DTO } from './DTO';
 import { createGenerator } from './testHelpers';
 
@@ -26,8 +24,8 @@ describe('serialization', () => {
     expect(context.project.getSourceFiles()).toHaveLength(2);
     expect(context.project.getSourceFileOrThrow('/var/app.module.ts')).toBeTruthy();
     expect(
-      context.project.getSourceFileOrThrow('/var/dto/SomeResponse2.dto.ts'),
-    ).toHaveFormattedTypeScriptText(`export class SomeResponse2 {}`);
+      context.project.getSourceFileOrThrow('/var/dto/SomeResponse2.dto.ts').getText(),
+    ).toMatchSnapshot();
   });
 
   test('primitive schemas + optionality', () => {
@@ -44,37 +42,8 @@ describe('serialization', () => {
     new DTO(context, 'Response', schema).generateCode();
 
     expect(
-      context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts'),
-    ).toHaveFormattedTypeScriptText(
-      `import { Expose } from 'class-transformer';
-      import { IsBoolean, IsInt, IsString } from 'class-validator';
-
-      export class Response {
-        @Expose()
-        @IsBoolean()
-        optionalBool?: boolean;
-
-        @Expose()
-        @IsBoolean()
-        requiredBool: boolean;
-
-        @Expose()
-        @IsInt()
-        numeric?: number;
-
-        @Expose()
-        @IsInt()
-        requiredNum: number;
-
-        @Expose()
-        @IsString()
-        textual?: string;
-
-        @Expose()
-        @IsString()
-        requiredText: string;
-      }`,
-    );
+      context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts').getText(),
+    ).toMatchSnapshot();
   });
 
   test('numeric limits', () => {
@@ -93,53 +62,8 @@ describe('serialization', () => {
     new DTO(context, 'Response', schema).generateCode();
 
     expect(
-      context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts'),
-    ).toHaveFormattedTypeScriptText(
-      `import { Expose } from 'class-transformer';
-      import { Min, Max, IsInt } from 'class-validator';
-
-      export class Response {
-        @Expose()
-        @Min(10)
-        @IsInt()
-        min?: number;
-
-        @Expose()
-        @Min(15)
-        @IsInt()
-        minExclusive?: number;
-
-        @Expose()
-        @Max(20)
-        @IsInt()
-        max?: number;
-
-        @Expose()
-        @Max(25)
-        @IsInt()
-        maxExclusive?: number;
-
-        @Expose()
-        @Min(10)
-        @IsInt()
-        intMin?: number;
-
-        @Expose()
-        @Min(16)
-        @IsInt()
-        intMinExclusive?: number;
-
-        @Expose()
-        @Max(20)
-        @IsInt()
-        intMax?: number;
-
-        @Expose()
-        @Max(24)
-        @IsInt()
-        intMaxExclusive?: number;
-      }`,
-    );
+      context.project.getSourceFileOrThrow('/var/dto/Response.dto.ts').getText(),
+    ).toMatchSnapshot();
   });
 
   test('string limits', () => {
@@ -152,23 +76,8 @@ describe('serialization', () => {
     new DTO(context, 'Response2', schema).generateCode();
 
     expect(
-      context.project.getSourceFileOrThrow('/var/dto/Response2.dto.ts'),
-    ).toHaveFormattedTypeScriptText(
-      `import { Expose } from 'class-transformer';
-      import { MinLength, MaxLength, IsString } from 'class-validator';
-
-      export class Response2 {
-        @Expose()
-        @MinLength(1)
-        @IsString()
-        minLen?: string;
-
-        @Expose()
-        @MaxLength(10)
-        @IsString()
-        maxLen?: string;
-      }`,
-    );
+      context.project.getSourceFileOrThrow('/var/dto/Response2.dto.ts').getText(),
+    ).toMatchSnapshot();
   });
 
   test('object', () => {
@@ -202,69 +111,8 @@ describe('serialization', () => {
 
     new DTO(context, 'Employee', resourceSchema).generateCode();
 
-    expect(context.project.getSourceFileOrThrow('/var/dto/Employee.dto.ts'))
-      .toHaveFormattedTypeScriptText(`
-      import { Expose, Type } from 'class-transformer';
-      import { IsInt, IsBoolean, IsString } from 'class-validator';
-
-      export class Employee {
-        @Expose()
-        @IsString()
-        type: string;
-
-        @Expose()
-        @IsString()
-        id: string;
-
-        @Expose()
-        @Type(() => EmployeeAttributes)
-        @ValidateNested()
-        attributes: EmployeeAttributes;
-
-        @Expose()
-        @Type(() => EmployeeRelationships)
-        @ValidateNested()
-        relationships: EmployeeRelationships;
-      }
-
-      export class EmployeeAttributes {
-        @Expose()
-        @IsString()
-        name: string;
-
-        @Expose()
-        @IsInt()
-        age?: number;
-
-        @Expose()
-        @IsBoolean()
-        active?: boolean;
-      }
-
-      export class EmployeeRelationships {
-        @Expose()
-        @Type(() => EmployeeRelationshipsProvider)
-        @ValidateNested()
-        provider: EmployeeRelationshipsProvider;
-      }
-
-      export class EmployeeRelationshipsProvider {
-        @Expose()
-        @Type(() => EmployeeRelationshipsProviderData)
-        @ValidateNested()
-        data: EmployeeRelationshipsProviderData;
-      }
-
-      export class EmployeeRelationshipsProviderData {
-        @Expose()
-        @IsString()
-        type: string;
-
-        @Expose()
-        @IsString()
-        id: string;
-      }
-    `);
+    expect(context.project.getSourceFileOrThrow('/var/dto/Employee.dto.ts').getText())
+      .toMatchSnapshot();
   });
 
   test('array', () => {
@@ -275,16 +123,7 @@ describe('serialization', () => {
     new DTO(context, 'AnotherResponse', schema).generateCode();
 
     expect(
-      context.project.getSourceFileOrThrow('/var/dto/AnotherResponse.dto.ts'),
-    ).toHaveFormattedTypeScriptText(
-      `import { Expose } from 'class-transformer';
-      import { IsArray } from 'class-validator';
-
-      export class AnotherResponse {
-        @Expose()
-        @IsArray()
-        intArray?: number[];
-      }`,
-    );
+      context.project.getSourceFileOrThrow('/var/dto/AnotherResponse.dto.ts').getText(),
+    ).toMatchSnapshot();
   });
 });
