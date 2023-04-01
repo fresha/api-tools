@@ -789,7 +789,7 @@ export class OpenAPIWriter {
   private writeHttpSecuritySchema(scheme: HTTPSecuritySchemaModel): HTTPSecuritySchemeObject {
     const result: HTTPSecuritySchemeObject = {
       type: scheme.type,
-      scheme: this.writeSchema(scheme.scheme, scheme),
+      scheme: scheme.scheme,
     };
     this.writeSecuritySchemaCommon(scheme, result);
     if (scheme.bearerFormat) {

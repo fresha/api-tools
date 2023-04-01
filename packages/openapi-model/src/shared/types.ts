@@ -147,9 +147,24 @@ export type APIKeySecuritySchemeObject = {
 } & _SecuritySchemeObjectCommon &
   SpecificationExtensions;
 
-export type HTTPSecuritySchemeObject<TScheme> = {
+/**
+ * @see https://www.iana.org/assignments/http-authschemes/http-authschemes.xhtml
+ */
+export type HTTPAuthSchema =
+  | 'basic'
+  | 'bearer'
+  | 'digest'
+  | 'hoba'
+  | 'mutual'
+  | 'negotiate'
+  | 'oauth'
+  | 'scram-sha-1'
+  | 'scram-sha-256'
+  | 'vapid';
+
+export type HTTPSecuritySchemeObject = {
   type: 'http';
-  scheme: TScheme;
+  scheme: HTTPAuthSchema;
   bearerFormat?: string;
 } & _SecuritySchemeObjectCommon &
   SpecificationExtensions;
@@ -170,11 +185,13 @@ export type OpenIdConnectSecuritySchemeObject = {
  * @see https://spec.openapis.org/oas/v3.0.3#security-scheme-object
  * @see https://spec.openapis.org/oas/v3.1.0#security-scheme-object
  */
-export type SecuritySchemeObject<TScheme> =
+export type SecuritySchemeObject =
   | APIKeySecuritySchemeObject
-  | HTTPSecuritySchemeObject<TScheme>
+  | HTTPSecuritySchemeObject
   | OAuth2SecuritySchemeObject
   | OpenIdConnectSecuritySchemeObject;
+
+export type SecuritySchemeType = SecuritySchemeObject['type'];
 
 /**
  * @see https://spec.openapis.org/oas/v3.0.3#example-object

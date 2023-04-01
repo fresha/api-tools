@@ -1,8 +1,8 @@
-import { Schema } from '../Schema';
+import assert from 'assert';
 
 import { SecuritySchemeBase } from './SecuritySchemeBase';
 
-import type { HTTPSecuritySchemaModel, SecuritySchemaModelParent } from '../types';
+import type { HTTPAuthSchema, HTTPSecuritySchemaModel, SecuritySchemaModelParent } from '../types';
 import type { Nullable } from '@fresha/api-tools-core';
 
 /**
@@ -12,20 +12,41 @@ export class HTTPSecurityScheme
   extends SecuritySchemeBase<'http'>
   implements HTTPSecuritySchemaModel
 {
-  #scheme: Schema;
+  #scheme: HTTPAuthSchema;
   #bearerFormat: Nullable<string>;
 
-  constructor(parent: SecuritySchemaModelParent, scheme?: Schema) {
+  constructor(parent: SecuritySchemaModelParent, scheme: HTTPAuthSchema) {
     super(parent, 'http');
-    this.#scheme = scheme ?? Schema.create(this, null);
+    this.#assertScheme(scheme);
+    this.#scheme = scheme;
     this.#bearerFormat = null;
   }
 
-  get scheme(): Schema {
+  // eslint-disable-next-line class-methods-use-this
+  #assertScheme(value: HTTPAuthSchema) {
+    assert(
+      [
+        'basic',
+        'bearer',
+        'digest',
+        'hoba',
+        'mutual',
+        'negotiate',
+        'oauth',
+        'scram-sha-1',
+        'scram-sha-256',
+        'vapid',
+      ].includes(value.toLowerCase()),
+      `Invalid HTTP Auth Schema: ${value}`,
+    );
+  }
+
+  get scheme(): HTTPAuthSchema {
     return this.#scheme;
   }
 
-  set scheme(value: Schema) {
+  set scheme(value: HTTPAuthSchema) {
+    this.#assertScheme(value);
     this.#scheme = value;
   }
 

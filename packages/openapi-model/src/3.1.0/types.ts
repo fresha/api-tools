@@ -11,7 +11,7 @@ import type {
   ResponseObject as ResponseObjectBase,
   ResponsesObject as ResponsesObjectBase,
   SecurityRequirementObject,
-  SecuritySchemeObject as SecuritySchemeObjectBase,
+  SecuritySchemeObject,
   ServerObject,
   SpecificationExtensions,
   TagObject,
@@ -22,7 +22,12 @@ import type {
 } from '../shared/types';
 import type { CommonMarkString, ObjectOrRef, URLString } from '@fresha/api-tools-core';
 
-export type { InfoObject, ContactObject, LicenseObject } from '../shared/types';
+export type {
+  InfoObject,
+  ContactObject,
+  LicenseObject,
+  SecuritySchemeObject,
+} from '../shared/types';
 
 /**
  * @see https://spec.openapis.org/oas/v3.1.0#openapi-object
@@ -145,8 +150,3 @@ export type ComponentsObject = {
   callbacks?: Record<string, ObjectOrRef<CallbackObject>>;
   pathItems?: Record<string, PathItemObject>;
 } & SpecificationExtensions;
-
-/**
- * @see https://spec.openapis.org/oas/v3.1.0#security-scheme-object
- */
-export type SecuritySchemeObject = SecuritySchemeObjectBase<SchemaObject>;

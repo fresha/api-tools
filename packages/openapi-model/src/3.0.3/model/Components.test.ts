@@ -366,8 +366,8 @@ describe('securitySchemes', () => {
   });
 
   test('setSecuritySchema', () => {
-    components.setSecuritySchema('httpToken', 'http');
-    components.setSecuritySchema('oid', 'openIdConnect');
+    components.setSecuritySchema('httpToken', 'http', 'digest');
+    components.setSecuritySchema('oid', 'openIdConnect', 'https://openid.example.com/');
 
     expect(components.securitySchemaCount).toBe(4);
 
