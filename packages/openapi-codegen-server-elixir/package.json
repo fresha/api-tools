@@ -62,7 +62,6 @@
     "memfs": "^3.4.7"
   },
   "devDependencies": {
-    "@fresha/code-morph-test-utils": "^0.3.0",
     "@fresha/eslint-config": "^0.3.0",
     "@fresha/openapi-codegen-test-utils": "^0.3.0",
     "@fresha/typescript-config": "^0.2.0",
