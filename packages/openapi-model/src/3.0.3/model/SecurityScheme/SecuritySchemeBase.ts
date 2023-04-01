@@ -1,6 +1,7 @@
 import { BasicNode } from '../BasicNode';
 
-import type { SecuritySchemaModelParent, SecuritySchemeType } from '../types';
+import type { SecuritySchemeType } from '../../types';
+import type { SecuritySchemaModelParent } from '../types';
 import type { Nullable } from '@fresha/api-tools-core';
 
 /**

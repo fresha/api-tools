@@ -6,7 +6,6 @@ import type {
   ExampleObject,
   ExternalDocumentationObject,
   HeaderParameterObject as HeaderParameterObjectBase,
-  HTTPSecuritySchemeObject as HTTPSecuritySchemeObjectBase,
   InfoObject,
   LinkObject,
   MediaTypeObject as MediaTypeObjectBase,
@@ -19,7 +18,7 @@ import type {
   ResponseObject as ResponseObjectBase,
   ResponsesObject as ResponsesObjectBase,
   SecurityRequirementObject,
-  SecuritySchemeObject as SecuritySchemeObjectBase,
+  SecuritySchemeObject,
   ServerObject,
   SpecificationExtensions,
   TagObject,
@@ -35,6 +34,8 @@ export type {
   ExampleObject,
   ExternalDocumentationObject,
   HeaderParameterSerializationStyle,
+  HTTPAuthSchema,
+  HTTPSecuritySchemeObject,
   InfoObject,
   LicenseObject,
   LinkObject,
@@ -43,6 +44,8 @@ export type {
   PathParameterSerializationStyle,
   QueryParameterSerializationStyle,
   SecurityRequirementObject,
+  SecuritySchemeObject,
+  SecuritySchemeType,
   ServerObject,
   ServerVariableObject,
   TagObject,
@@ -219,13 +222,3 @@ export type ComponentsObject = {
   links?: Record<string, ObjectOrRef<LinkObject>>;
   callbacks?: Record<string, ObjectOrRef<CallbackObject>>;
 } & SpecificationExtensions;
-
-/**
- * @see https://spec.openapis.org/oas/v3.0.3#security-scheme-object
- */
-export type HTTPSecuritySchemeObject = HTTPSecuritySchemeObjectBase<SchemaObject>;
-
-/**
- * @see https://spec.openapis.org/oas/v3.0.3#security-scheme-object
- */
-export type SecuritySchemeObject = SecuritySchemeObjectBase<SchemaObject>;

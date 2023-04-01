@@ -186,7 +186,7 @@ describe('security requirements', () => {
 
   test('overrides requirements defined globally', () => {
     openapi.components.setSecuritySchema('global', 'apiKey');
-    openapi.components.setSecuritySchema('custom', 'http');
+    openapi.components.setSecuritySchema('custom', 'http', 'negotiate');
     openapi.addSecurityRequirement().addSchema('global');
 
     const operation = openapi.setPathItem('/items').addOperation('get');
@@ -200,7 +200,7 @@ describe('security requirements', () => {
 
   test('disables globally defined requirements', () => {
     openapi.components.setSecuritySchema('global', 'apiKey');
-    openapi.components.setSecuritySchema('custom', 'http');
+    openapi.components.setSecuritySchema('custom', 'http', 'digest');
     openapi.addSecurityRequirement().addSchema('global');
 
     const operation = openapi.setPathItem('/items').addOperation('get');

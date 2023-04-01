@@ -8,6 +8,11 @@ export default {
       functions: 80,
       lines: 80,
     },
+    './src/**/*.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+    },
   },
   preset: 'ts-jest',
   reporters: [

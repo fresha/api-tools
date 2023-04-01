@@ -27,10 +27,11 @@ import type {
   ComponentsModel,
   ComponentsModelParent,
   CreateSchemaOptions,
+  HTTPAuthSchema,
   ParameterLocation,
-  SecuritySchemeType,
 } from './types';
-import type { CommonMarkString } from '@fresha/api-tools-core';
+import type { SecuritySchemeType } from '../types';
+import type { CommonMarkString, URLString } from '@fresha/api-tools-core';
 
 /**
  * @see http://spec.openapis.org/oas/v3.0.3#components-object
@@ -421,24 +422,33 @@ export class Components extends BasicNode<ComponentsModelParent> implements Comp
     this.#securitySchemes.set(name, model);
   }
 
-  setSecuritySchema(name: string, kind: 'http'): HTTPSecurityScheme;
+  setSecuritySchema(name: string, kind: 'http', ianaName: HTTPAuthSchema): HTTPSecurityScheme;
   setSecuritySchema(name: string, kind: 'apiKey'): APIKeySecurityScheme;
   setSecuritySchema(name: string, kind: 'oauth2'): OAuth2SecurityScheme;
-  setSecuritySchema(name: string, kind: 'openIdConnect'): OpenIdConnectSecurityScheme;
-  setSecuritySchema(name: string, kind: SecuritySchemeType): SecuritySchema {
+  setSecuritySchema(
+    name: string,
+    kind: 'openIdConnect',
+    url: URLString,
+  ): OpenIdConnectSecurityScheme;
+
+  setSecuritySchema(
+    name: string,
+    kind: SecuritySchemeType,
+    arg?: HTTPAuthSchema | URLString,
+  ): SecuritySchema {
     let result: SecuritySchema;
     switch (kind) {
       case 'apiKey':
         result = new APIKeySecurityScheme(this, name, 'header');
         break;
       case 'http':
-        result = new HTTPSecurityScheme(this, Schema.create(this));
+        result = new HTTPSecurityScheme(this, arg as HTTPAuthSchema);
         break;
       case 'oauth2':
         result = new OAuth2SecurityScheme(this);
         break;
       case 'openIdConnect':
-        result = new OpenIdConnectSecurityScheme(this, 'http://www.example.com');
+        result = new OpenIdConnectSecurityScheme(this, arg as URLString);
         break;
       default:
         assert.fail(`Unsupported security scheme type ${String(kind)}`);

@@ -9,11 +9,12 @@ beforeEach(() => {
   schema = openapi.components.setSecuritySchema(
     'key',
     'openIdConnect',
+    'https://oid.example.com/auth',
   ) as OpenIdConnectSecurityScheme;
 });
 
 test('defaults', () => {
-  expect(schema.openIdConnectUrl).toBe('http://www.example.com');
+  expect(schema.openIdConnectUrl).toBe('https://oid.example.com/auth');
 });
 
 test('mutations', () => {

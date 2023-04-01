@@ -252,7 +252,7 @@ describe('operations', () => {
   test('serializes security requirements', () => {
     openapi.components.setSecuritySchema('global', 'oauth2');
     openapi.components.setSecuritySchema('local', 'apiKey');
-    openapi.components.setSecuritySchema('alternative', 'http');
+    openapi.components.setSecuritySchema('alternative', 'http', 'bearer');
 
     openapi.addSecurityRequirement().addSchema('global');
     openapi.paths.setPathItem('/inherited').addOperation('post');
@@ -406,12 +406,14 @@ describe('security schemas', () => {
   test('basics', () => {
     openapi.components.setSecuritySchema('key1', 'apiKey').setExtension('1', 12);
 
-    const httpSchema = openapi.components.setSecuritySchema('key2', 'http');
+    const httpSchema = openapi.components.setSecuritySchema('key2', 'http', 'bearer');
     httpSchema.bearerFormat = 'JWT';
     httpSchema.setExtension('2', 'aaa');
 
     openapi.components.setSecuritySchema('key3', 'oauth2').setExtension('3', {});
-    openapi.components.setSecuritySchema('key4', 'openIdConnect').setExtension('4', []);
+    openapi.components
+      .setSecuritySchema('key4', 'openIdConnect', 'https://www.example.com')
+      .setExtension('4', []);
 
     const openapiObject = writer.write(openapi);
 
@@ -423,7 +425,7 @@ describe('security schemas', () => {
     });
     expect(openapiObject).toHaveProperty('components.securitySchemes.key2', {
       type: 'http',
-      scheme: {},
+      scheme: 'bearer',
       'x-2': 'aaa',
       bearerFormat: 'JWT',
     });
@@ -434,7 +436,7 @@ describe('security schemas', () => {
     });
     expect(openapiObject).toHaveProperty('components.securitySchemes.key4', {
       type: 'openIdConnect',
-      openIdConnectUrl: 'http://www.example.com',
+      openIdConnectUrl: 'https://www.example.com',
       'x-4': [],
     });
   });

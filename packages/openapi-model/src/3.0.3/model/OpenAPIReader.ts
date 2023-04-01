@@ -91,6 +91,7 @@ import type {
   HeaderObject,
   HeaderParameterObject,
   HeaderParameterSerializationStyle,
+  HTTPAuthSchema,
   HTTPSecuritySchemeObject,
   InfoObject,
   LicenseObject,
@@ -899,9 +900,6 @@ export class OpenAPIReader {
     json: PathParameterObject,
     parent: ParameterModelParent,
   ): PathParameter {
-    if (json.in !== 'path') {
-      throw new Error(`Wrong in parameter for HeaderParameter ${String(json.in)}`);
-    }
     const result = new PathParameter(parent, getStringAttribute(json, 'name') as string);
     this.parseParameterCommon(json, result);
     if (json.required != null && !json.required) {
@@ -918,9 +916,6 @@ export class OpenAPIReader {
     json: QueryParameterObject,
     parent: ParameterModelParent,
   ): QueryParameter {
-    if (json.in !== 'query') {
-      throw new Error(`Wrong in parameter for HeaderParameter ${String(json.in)}`);
-    }
     const result = new QueryParameter(parent, getStringAttribute(json, 'name') as string);
     this.parseParameterCommon(json, result);
     if (json.required) {
@@ -943,9 +938,6 @@ export class OpenAPIReader {
     json: HeaderParameterObject,
     parent: ParameterModelParent,
   ): HeaderParameter {
-    if (json.in !== 'header') {
-      throw new Error(`Wrong in parameter for HeaderParameter ${String(json.in)}`);
-    }
     const result = new HeaderParameter(parent, getStringAttribute(json, 'name') as string);
     this.parseParameterCommon(json, result);
     if (json.required) {
@@ -962,9 +954,6 @@ export class OpenAPIReader {
     json: CookieParameterObject,
     parent: ParameterModelParent,
   ): CookieParameter {
-    if (json.in !== 'cookie') {
-      throw new Error(`Wrong in parameter for CookieParameter ${String(json.in)}`);
-    }
     const result = new CookieParameter(parent, getStringAttribute(json, 'name') as string);
     this.parseParameterCommon(json, result);
     if (json.required) {
@@ -1085,9 +1074,6 @@ export class OpenAPIReader {
     json: APIKeySecuritySchemeObject,
     parent: SecuritySchemaModelParent,
   ): APIKeySecurityScheme {
-    if (json.type !== 'apiKey') {
-      throw new Error(`Incorrent type value ${String(json.type)}`);
-    }
     const result = new APIKeySecurityScheme(
       parent,
       getStringAttribute(json, 'name') as string,
@@ -1101,12 +1087,11 @@ export class OpenAPIReader {
     json: HTTPSecuritySchemeObject,
     parent: SecuritySchemaModelParent,
   ): HTTPSecurityScheme {
-    if (json.type !== 'http') {
-      throw new Error(`Incorrent type value ${String(json.type)}`);
-    }
-    const result = new HTTPSecurityScheme(parent);
+    const result = new HTTPSecurityScheme(
+      parent,
+      getStringAttribute(json, 'scheme', true) as HTTPAuthSchema,
+    );
     this.parseSecuritySchemeCommon(json, result);
-    result.scheme = this.parseSchema(json.scheme, result);
     result.bearerFormat = getStringAttribute(json, 'bearerFormat', false);
     return result;
   }
@@ -1115,10 +1100,6 @@ export class OpenAPIReader {
     json: OAuth2SecuritySchemeObject,
     parent: SecuritySchemaModelParent,
   ): OAuth2SecurityScheme {
-    if (json.type !== 'oauth2') {
-      throw new Error(`Incorrent type value ${String(json.type)}`);
-    }
-
     const result = new OAuth2SecurityScheme(parent);
     this.parseSecuritySchemeCommon(json, result);
 
@@ -1189,9 +1170,6 @@ export class OpenAPIReader {
     json: OpenIdConnectSecuritySchemeObject,
     parent: SecuritySchemaModelParent,
   ): OpenIdConnectSecurityScheme {
-    if (json.type !== 'openIdConnect') {
-      throw new Error(`Incorrent type value ${String(json.type)}`);
-    }
     const result = new OpenIdConnectSecurityScheme(
       parent,
       getStringAttribute(json, 'openIdConnectUrl') as string,
@@ -1280,9 +1258,7 @@ export class OpenAPIReader {
     parent: OperationModelParent,
     method: PathItemOperationKey,
   ): Operation {
-    if (json.responses && isEmpty(json.responses as JSONObject)) {
-      throw new Error(`Operation responses field cannot be empty`);
-    }
+    assert(!isEmpty(json.responses as JSONObject), 'Operation responses field cannot be empty');
 
     const result = parent.addOperation(method) as Operation;
     this.parseExtensionFields(result, json);
@@ -1387,7 +1363,7 @@ export class OpenAPIReader {
     if (json.prefix) {
       result.prefix = json.prefix;
     }
-    result.attribute = json.attribute as boolean;
-    result.wrapped = json.wrapped as boolean;
+    result.attribute = !!json.attribute;
+    result.wrapped = !!json.wrapped;
   }
 }

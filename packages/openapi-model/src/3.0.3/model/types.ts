@@ -5,6 +5,7 @@ import type {
   HeaderParameterSerializationStyle,
   SchemaFormat,
   SchemaType,
+  HTTPAuthSchema,
 } from '../types';
 import type {
   CommonMarkString,
@@ -20,6 +21,7 @@ import type {
 } from '@fresha/api-tools-core';
 
 export {
+  HTTPAuthSchema,
   PathParameterSerializationStyle,
   QueryParameterSerializationStyle,
   HeaderParameterSerializationStyle,
@@ -968,7 +970,7 @@ export interface APIKeySecuritySchemaModel extends SecuritySchemaBaseModel {
 export interface HTTPSecuritySchemaModel extends SecuritySchemaBaseModel {
   readonly type: 'http';
   description: Nullable<CommonMarkString>;
-  scheme: SchemaModel;
+  scheme: HTTPAuthSchema;
   bearerFormat: Nullable<string>;
 }
 
@@ -1085,8 +1087,6 @@ export type SecuritySchemaModel =
   | HTTPSecuritySchemaModel
   | OAuth2SecuritySchemaModel
   | OpenIDConnectSecuritySchemaModel;
-
-export type SecuritySchemeType = SecuritySchemaModel['type'];
 
 export type LinkModelParent = ComponentsModel | ResponseModel;
 
@@ -1247,10 +1247,14 @@ export interface ComponentsModel
   getSecuritySchema(name: string): SecuritySchemaModel | undefined;
   getSecuritySchemaOrThrow(name: string): SecuritySchemaModel;
   setSecuritySchemaModel(name: string, model: SecuritySchemaModel): void;
-  setSecuritySchema(name: string, kind: 'http'): HTTPSecuritySchemaModel;
+  setSecuritySchema(name: string, kind: 'http', ianaName: HTTPAuthSchema): HTTPSecuritySchemaModel;
   setSecuritySchema(name: string, kind: 'apiKey'): APIKeySecuritySchemaModel;
   setSecuritySchema(name: string, kind: 'oauth2'): OAuth2SecuritySchemaModel;
-  setSecuritySchema(name: string, kind: 'openIdConnect'): OpenIDConnectSecuritySchemaModel;
+  setSecuritySchema(
+    name: string,
+    kind: 'openIdConnect',
+    url: URLString,
+  ): OpenIDConnectSecuritySchemaModel;
   deleteSecuritySchema(name: string): void;
   clearSecuritySchemes(): void;
 }
