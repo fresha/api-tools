@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-diff",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Diffing/versioning tool for OpenAPI schemas",
   "main": "build/index.js",
   "bin": {
@@ -57,14 +57,14 @@
   "license": "MIT",
   "devDependencies": {
     "@fresha/eslint-config": "^0.3.0",
-    "@fresha/jest-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.1",
     "@fresha/typescript-config": "^0.2.0",
     "@types/semver": "^7.3.13",
     "typescript": "^5.0.2"
   },
   "dependencies": {
-    "@fresha/api-tools-core": "^0.6.0",
-    "@fresha/openapi-model": "^0.8.0",
+    "@fresha/api-tools-core": "^0.6.1",
+    "@fresha/openapi-model": "^0.8.1",
     "chalk": "^4.1.2",
     "semver": "^7.3.8",
     "yaml": "^2.2.1",

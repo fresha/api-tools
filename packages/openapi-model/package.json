@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-model",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "OpenAPI object model",
   "main": "build/index.js",
   "repository": {
@@ -51,13 +51,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/api-tools-core": "^0.6.0",
+    "@fresha/api-tools-core": "^0.6.1",
     "validator": "^13.9.0",
     "yaml": "^2.1.1"
   },
   "devDependencies": {
     "@fresha/eslint-config": "^0.3.0",
-    "@fresha/jest-config": "^0.3.0",
+    "@fresha/jest-config": "^0.3.1",
     "@fresha/typescript-config": "^0.2.0",
     "@types/node": "^18.0.0",
     "@types/validator": "^13.7.13",

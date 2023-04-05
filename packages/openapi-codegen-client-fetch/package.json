@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-client-fetch",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "OpenAPI code generation for Fetch API clients",
   "main": "build/index.js",
   "publishConfig": {
@@ -54,15 +54,15 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/api-tools-core": "^0.6.0",
-    "@fresha/code-morph-ts": "^0.3.0",
-    "@fresha/openapi-codegen-utils": "^0.3.0",
-    "@fresha/openapi-model": "^0.8.0",
+    "@fresha/api-tools-core": "^0.6.1",
+    "@fresha/code-morph-ts": "^0.3.1",
+    "@fresha/openapi-codegen-utils": "^0.3.1",
+    "@fresha/openapi-model": "^0.8.1",
     "ts-morph": "^17.0.1"
   },
   "devDependencies": {
     "@fresha/eslint-config": "^0.3.0",
-    "@fresha/openapi-codegen-test-utils": "^0.3.0",
+    "@fresha/openapi-codegen-test-utils": "^0.3.1",
     "@fresha/typescript-config": "^0.2.0",
     "@types/pluralize": "^0.0.29",
     "pluralize": "^8.0.0",
