@@ -10,7 +10,7 @@ export const autoFixable = false;
 
 export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
   if (!isDisabled(openapi, id)) {
-    if (!openapi.servers.length) {
+    if (!openapi.serverCount) {
       result.addError(`Server list must not be empty`);
     }
   }
