@@ -6,8 +6,17 @@ let i = 0;
 export const schemaToType = (schema: Nullable<SchemaModel>): string => {
   switch (schema?.type) {
     case undefined:
-    case null:
+    case null: {
+      if (schema?.oneOfCount) {
+        const elements: string[] = [];
+        for (const subSchema of schema.oneOf()) {
+          elements.push(schemaToType(subSchema));
+        }
+        return elements.join(' | ');
+      }
+
       return `Unknown${++i}`; // eslint-disable-line no-plusplus
+    }
     case 'boolean':
       return schema?.nullable ? 'boolean | null' : 'boolean';
     case 'integer':
@@ -40,6 +49,18 @@ export const schemaToType = (schema: Nullable<SchemaModel>): string => {
     case 'array': {
       const subtype = schemaToType(schema.items);
       return schema.nullable ? `${subtype}[] | null` : `${subtype}[]`;
+    }
+    case 'object': {
+      const elements: string[] = [];
+      for (const prop of schema.getProperties()) {
+        const maybeQuotedName = prop.name.match(/^[a-zA-Z_][a-zA-Z0-9_]*$/)
+          ? prop.name
+          : `'${prop.name}'`;
+        elements.push(
+          `${maybeQuotedName}${prop.required ? '' : '?'}: ${schemaToType(prop.schema)}`,
+        );
+      }
+      return schema.nullable ? `{ ${elements.join('; ')} } | null` : `{ ${elements.join('; ')} }`;
     }
     default:
       return `Unknown${++i}`; // eslint-disable-line no-plusplus
