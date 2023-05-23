@@ -217,7 +217,7 @@ export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>
 `;
 
 exports[`test optional header parameters: src/index.ts 1`] = `
-"import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams } from "./utils";
+"import { COMMON_HEADERS, makeUrl, callJsonApi, authorizeRequest, ExtraCallParams, applyExtraParams } from "./utils";
 
 /**
  * operation with an optional header
