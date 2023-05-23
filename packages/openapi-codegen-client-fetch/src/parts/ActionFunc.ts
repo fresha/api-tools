@@ -29,6 +29,7 @@ type HeaderName = string;
 export class ActionFunc {
   readonly context: ActionContext;
   readonly name: string;
+  protected hasQueryParams: boolean;
   protected readonly parameterVars: Map<VariableName, ParameterInfo>;
   protected readonly pathParametesVars: Map<string, VariableName>;
   protected readonly headerToSet: Map<HeaderName, VariableName>;
@@ -41,6 +42,7 @@ export class ActionFunc {
   constructor(context: ActionContext) {
     this.context = context;
     this.name = getOperationIdOrThrow(this.context.operation);
+    this.hasQueryParams = false;
     this.parameterVars = new Map<string, ParameterInfo>();
     this.pathParametesVars = new Map<string, string>();
     this.headerToSet = new Map<HeaderName, VariableName>();
@@ -70,6 +72,9 @@ export class ActionFunc {
 
       if (parameter.in === 'path') {
         this.pathParametesVars.set(parameter.name, paramName);
+      }
+      if (parameter.in === 'query') {
+        this.hasQueryParams = true;
       }
       if (parameter.in === 'header') {
         this.headerToSet.set(parameter.name, paramName);
@@ -142,7 +147,7 @@ export class ActionFunc {
       './utils': ['COMMON_HEADERS', 'makeUrl', this.parsesResponse ? 'callJsonApi' : 'callApi'],
     });
 
-    if (this.parameterVars.size) {
+    if (this.hasQueryParams) {
       addImportDeclaration(this.context.sourceFile, './utils', 'addQueryParam');
     }
 
