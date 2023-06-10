@@ -1,7 +1,8 @@
-import { OpenAPIModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
+import { getFileName } from '../utils';
 
-import type { LinterResult } from '../../LinterResult';
-import type { RuleFunc } from '../types';
+import type { Result } from '../../types';
+import type { RuleFunc, RuleOptions } from '../types';
+import type { OpenAPIModel, SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 export const id = 'no-unused-shared-components';
 
@@ -15,13 +16,7 @@ const removeReferenceSchema = (schema: SchemaModel, sharedSchemas: Set<SchemaMod
     removeReferenceSchema(schema.additionalProperties, sharedSchemas);
   }
   if (schema.items) {
-    if (Array.isArray(schema.items)) {
-      for (const item of schema.items) {
-        removeReferenceSchema(item, sharedSchemas);
-      }
-    } else {
-      removeReferenceSchema(schema.items, sharedSchemas);
-    }
+    removeReferenceSchema(schema.items, sharedSchemas);
   }
   if (schema.allOfCount) {
     for (const alt of schema.allOf()) {
@@ -97,10 +92,24 @@ const findUnusedSharedSchemas = (openapi: OpenAPIModel): Set<SchemaModel> => {
   return sharedSchemas;
 };
 
-export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
+export const run: RuleFunc = (
+  openapi: OpenAPIModel,
+  result: Result,
+  options: RuleOptions,
+): boolean => {
   const unusedSchemas = findUnusedSharedSchemas(openapi);
-  for (const schema of unusedSchemas) {
-    result.addWarning(`Shared schema ${schema.title ?? 'anonymous'} is unused`);
+
+  for (const [key, schema] of openapi.components.schemas()) {
+    if (unusedSchemas.has(schema)) {
+      result.addIssue({
+        ruleId: id,
+        severity: options.severity,
+        file: getFileName(openapi),
+        line: -1,
+        pointer: `#/components/schemas/${key}`,
+        message: `Shared schema ${schema.title ?? 'anonymous'} is unused`,
+      });
+    }
   }
 
   return false;

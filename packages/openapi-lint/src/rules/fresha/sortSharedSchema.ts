@@ -1,6 +1,6 @@
-import { arrayEqual, isDisabled } from '../utils';
+import { arrayEqual, getFileName, isDisabled } from '../utils';
 
-import type { LinterResult } from '../../LinterResult';
+import type { Result } from '../../types';
 import type { RuleFunc, RuleOptions } from '../types';
 import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
@@ -10,7 +10,7 @@ export const autoFixable = true;
 
 export const run: RuleFunc = (
   openapi: OpenAPIModel,
-  result: LinterResult,
+  result: Result,
   options: RuleOptions,
 ): boolean => {
   let modified = false;
@@ -27,7 +27,14 @@ export const run: RuleFunc = (
         );
         modified = true;
       } else {
-        result.addWarning('Shared schemas must be sorted according to their keys');
+        result.addIssue({
+          ruleId: id,
+          severity: options.severity,
+          file: getFileName(openapi),
+          line: -1,
+          pointer: '#/components/schemas',
+          message: 'Shared schemas must be sorted according to their keys',
+        });
       }
     }
   }

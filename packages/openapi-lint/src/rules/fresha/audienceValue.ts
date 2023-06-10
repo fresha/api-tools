@@ -1,7 +1,7 @@
-import { isDisabled } from '../utils';
+import { getFileName, isDisabled } from '../utils';
 
-import type { LinterResult } from '../../LinterResult';
-import type { RuleFunc } from '../types';
+import type { Result } from '../../types';
+import type { RuleFunc, RuleOptions } from '../types';
 import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
 const ALLOWED_AUDIENCE = [
@@ -15,13 +15,22 @@ export const id = 'schema-audience-is-set';
 
 export const autoFixable = false;
 
-export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
+export const run: RuleFunc = (
+  openapi: OpenAPIModel,
+  result: Result,
+  options: RuleOptions,
+): boolean => {
   if (!isDisabled(openapi.info, id)) {
     const audience = openapi.info.getExtension('audience');
-    if (!audience || typeof audience !== 'string') {
-      result.addError('x-audience property is missing');
-    } else if (!ALLOWED_AUDIENCE.includes(audience)) {
-      result.addError(`Audience property has illegal value: ${audience}`);
+    if (!audience || typeof audience !== 'string' || !ALLOWED_AUDIENCE.includes(audience)) {
+      result.addIssue({
+        ruleId: id,
+        severity: options.severity,
+        file: getFileName(openapi),
+        line: -1,
+        pointer: '#/info/x-audience',
+        message: 'Audience property is missing or has an illegal value',
+      });
     }
   }
   return false;
