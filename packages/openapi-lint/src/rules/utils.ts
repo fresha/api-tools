@@ -36,3 +36,21 @@ const isDisabledOnSelf = (obj: SpecificationExtensionsModel, ruleId: string): bo
 export const isDisabled = (obj: Node, ruleId: string): boolean => {
   return isDisabledOnSelf(obj, ruleId) || isDisabledOnSelf(obj.root, ruleId);
 };
+
+export const getFileName = (openapi: OpenAPIModel): string => {
+  const result = openapi.getExtension('__filename');
+  if (typeof result !== 'string') {
+    return 'unknown';
+  }
+  return result;
+};
+
+export const enumerate = function* enumerate<T>(
+  it: IterableIterator<T>,
+): IterableIterator<[T, number]> {
+  let i = 0;
+  for (const value of it) {
+    yield [value, i];
+    i += 1;
+  }
+};

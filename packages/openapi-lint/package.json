@@ -2,9 +2,15 @@
   "name": "@fresha/openapi-lint",
   "version": "0.3.1",
   "description": "Linting tool for OpenAPI schemas",
-  "main": "build/index.js",
   "bin": {
     "fresha-openapi-lint": "./bin/fresha-openapi-lint.js"
+  },
+  "main": "build/api.js",
+  "types": "build/api.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": "./build/api.js",
+    "./cli": "./build/cli.js"
   },
   "publishConfig": {
     "access": "public"
@@ -63,9 +69,11 @@
     "typescript": "^5.0.2"
   },
   "dependencies": {
+    "@fresha/api-tools-core": "^0.6.1",
     "@fresha/openapi-model": "^0.8.1",
     "chalk": "^4.1.0",
     "glob": "^8.0.3",
+    "yaml": "^2.3.1",
     "yargs": "^17.6.2"
   },
   "gitHead": "5830273395fc060b19d06814b9396ce07eea778d"

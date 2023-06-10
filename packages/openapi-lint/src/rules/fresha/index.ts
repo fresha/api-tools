@@ -7,9 +7,11 @@ import * as sortPathItem from './sortPathItem';
 import * as sortSharedSchema from './sortSharedSchema';
 import * as versionIsSemver from './versionIsSemver';
 
-import type { Rule } from '../types';
+import type { RuleModule } from '../types';
 
-export const preset: Rule[] = [
+export const id = 'fresha';
+
+export const rules: RuleModule[] = [
   audienceValue,
   contactProperties,
   identifierMustBeAnUuid,

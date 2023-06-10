@@ -1,5 +1,7 @@
 import * as jsonApiContentType from './jsonApiContentType';
 
-import type { Rule } from '../types';
+import type { RuleModule } from '../types';
 
-export const preset: Rule[] = [jsonApiContentType];
+export const id = 'json-api';
+
+export const rules: RuleModule[] = [jsonApiContentType];

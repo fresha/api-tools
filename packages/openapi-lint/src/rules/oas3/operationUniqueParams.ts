@@ -1,39 +1,51 @@
-import { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
+import { enumerate, getFileName } from '../utils';
 
-import { LinterResult } from '../../LinterResult';
-import { RuleFunc } from '../types';
-import { isDisabled } from '../utils';
+import type { Result } from '../../types';
+import type { RuleFunc, RuleOptions } from '../types';
+import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
 export const id = 'operation-params-unique';
 
 export const autoFixable = false;
 
-export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
+export const run: RuleFunc = (
+  openapi: OpenAPIModel,
+  result: Result,
+  options: RuleOptions,
+): boolean => {
   for (const [pathUrl, pathItem] of openapi.paths.pathItems()) {
     const pathItemParams = new Set<string>();
-    for (const param of pathItem.parameters()) {
-      if (!isDisabled(pathItem, id)) {
-        const key = `${param.in}:${param.name}`;
-        if (pathItemParams.has(key)) {
-          result.addError(`Duplicate parameter '${key}' in path item '${pathUrl}'`);
-        } else {
-          pathItemParams.add(key);
-        }
+    for (const [param, index] of enumerate(pathItem.parameters())) {
+      const key = `${param.in}:${param.name}`;
+      if (pathItemParams.has(key)) {
+        result.addIssue({
+          ruleId: id,
+          severity: options.severity,
+          file: getFileName(openapi),
+          line: -1,
+          pointer: `#/paths/${pathUrl}/parameters/${index}`,
+          message: `Duplicate parameter '${key}' in path item '${pathUrl}'`,
+        });
+      } else {
+        pathItemParams.add(key);
       }
     }
 
     for (const [httpMethod, operation] of pathItem.operations()) {
-      if (!isDisabled(operation, id)) {
-        const operationParams = new Set<string>();
-        for (const param of operation.parameters()) {
-          const key = `${param.in}:${param.name}`;
-          if (pathItemParams.has(key)) {
-            result.addError(
-              `Duplicate parameter ${key} in operation ${httpMethod.toLocaleUpperCase()} '${pathUrl}'`,
-            );
-          } else {
-            operationParams.add(key);
-          }
+      const operationParams = new Set<string>();
+      for (const [param, index] of enumerate(operation.parameters())) {
+        const key = `${param.in}:${param.name}`;
+        if (pathItemParams.has(key)) {
+          result.addIssue({
+            ruleId: id,
+            severity: options.severity,
+            file: getFileName(openapi),
+            line: -1,
+            pointer: `#/paths/${pathUrl}/${httpMethod}/parameters/${index}`,
+            message: `Duplicate parameter '${key}' in operation ${httpMethod.toLocaleUpperCase()} '${pathUrl}'`,
+          });
+        } else {
+          operationParams.add(key);
         }
       }
     }

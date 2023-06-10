@@ -1,9 +1,7 @@
-import { preset as freshaPreset } from './fresha';
-import { preset as jsonApiPreset } from './json-api';
-import { preset as openApiPreset } from './oas3';
+import * as freshaRuleset from './fresha';
+import * as jsonApiRuleset from './json-api';
+import * as openapiRuleset from './oas3';
 
-import type { Rule } from './types';
+import type { RulesetModule } from './types';
 
-export * from './types';
-
-export const preset: Rule[] = [...openApiPreset, ...jsonApiPreset, ...freshaPreset];
+export const rulesets: RulesetModule[] = [freshaRuleset, jsonApiRuleset, openapiRuleset];

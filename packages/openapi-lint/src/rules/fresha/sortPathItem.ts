@@ -1,6 +1,6 @@
-import { arrayEqual, isDisabled } from '../utils';
+import { arrayEqual, getFileName, isDisabled } from '../utils';
 
-import type { LinterResult } from '../../LinterResult';
+import type { Result } from '../../types';
 import type { RuleFunc, RuleOptions } from '../types';
 import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
@@ -10,15 +10,14 @@ export const autoFixable = true;
 
 export const run: RuleFunc = (
   openapi: OpenAPIModel,
-  result: LinterResult,
+  result: Result,
   options: RuleOptions,
 ): boolean => {
   let modified = false;
 
   if (!isDisabled(openapi, id)) {
     const pathUrls = Array.from(openapi.paths.pathItemUrls());
-    const sortedPathUrls = pathUrls.slice();
-    sortedPathUrls.sort();
+    const sortedPathUrls = pathUrls.slice().sort();
 
     if (!arrayEqual(pathUrls, sortedPathUrls)) {
       if (options.autoFix) {
@@ -27,7 +26,14 @@ export const run: RuleFunc = (
         );
         modified = true;
       } else {
-        result.addWarning('Path items must be sorted according to their URLs');
+        result.addIssue({
+          ruleId: id,
+          severity: options.severity,
+          file: getFileName(openapi),
+          line: -1,
+          pointer: '#/paths',
+          message: 'Path items must be sorted according to their URLs',
+        });
       }
     }
   }
