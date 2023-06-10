@@ -1,2 +1,2 @@
 #!/usr/bin/env node
-require('@fresha/openapi-lint/build/index');
+require('@fresha/openapi-lint/cli');

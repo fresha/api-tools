@@ -1,6 +1,6 @@
-import { isDisabled } from '../utils';
+import { getFileName, isDisabled } from '../utils';
 
-import type { LinterResult } from '../../LinterResult';
+import type { Result } from '../../types';
 import type { RuleFunc, RuleOptions } from '../types';
 import type { OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
 
@@ -10,7 +10,7 @@ export const autoFixable = true;
 
 export const run: RuleFunc = (
   openapi: OpenAPIModel,
-  result: LinterResult,
+  result: Result,
   options: RuleOptions,
 ): boolean => {
   let modified = false;
@@ -22,12 +22,24 @@ export const run: RuleFunc = (
           schema.title = key;
           modified = true;
         } else {
-          result.addError(`Schema title for key ${key} must not be empty`);
+          result.addIssue({
+            ruleId: id,
+            severity: options.severity,
+            file: getFileName(openapi),
+            line: -1,
+            pointer: `#/components/schemas/${key}`,
+            message: `Schema title for key '${key}' must not be empty`,
+          });
         }
       } else if (schema.title !== key) {
-        result.addWarning(
-          `Shared schema title (${String(schema.title)}) is different from key (${key})`,
-        );
+        result.addIssue({
+          ruleId: id,
+          severity: options.severity,
+          file: getFileName(openapi),
+          line: -1,
+          pointer: `#/components/schemas/${key}`,
+          message: `Shared schema title (${String(schema.title)}) is different from key (${key})`,
+        });
       }
     }
   }

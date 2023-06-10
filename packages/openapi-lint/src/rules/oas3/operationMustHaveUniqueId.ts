@@ -1,19 +1,23 @@
-import type { LinterResult } from '../../LinterResult';
-import type { RuleFunc } from '../types';
+import { getFileName } from '../utils';
+
+import type { Result } from '../../types';
+import type { RuleFunc, RuleOptions } from '../types';
 import type { OpenAPIModel, OperationModel } from '@fresha/openapi-model/build/3.0.3';
 
 export const id = 'operation-id-is-unique';
 
 export const autoFixable = false;
 
-export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): boolean => {
+export const run: RuleFunc = (
+  openapi: OpenAPIModel,
+  result: Result,
+  options: RuleOptions,
+): boolean => {
   const operationIds = new Map<string, Set<OperationModel>>();
 
-  for (const [pathUrl, pathItem] of openapi.paths.pathItems()) {
-    for (const [httpMethod, operation] of pathItem.operations()) {
-      if (!operation.operationId) {
-        result.addError(`Operation ${httpMethod.toUpperCase()} '${pathUrl}' has empty ID`);
-      } else {
+  for (const [, pathItem] of openapi.paths.pathItems()) {
+    for (const [, operation] of pathItem.operations()) {
+      if (operation.operationId) {
         let ops = operationIds.get(operation.operationId);
         if (!ops) {
           ops = new Set<OperationModel>();
@@ -26,7 +30,14 @@ export const run: RuleFunc = (openapi: OpenAPIModel, result: LinterResult): bool
 
   for (const [operationId, operations] of operationIds) {
     if (operations.size > 1) {
-      result.addError(`Operation ID '${operationId}' is used in ${operations.size} operations`);
+      result.addIssue({
+        ruleId: id,
+        severity: options.severity,
+        file: getFileName(openapi),
+        line: -1,
+        pointer: `#/paths/*/*`,
+        message: `Operation ID '${operationId}' is not unique`,
+      });
     }
   }
 
