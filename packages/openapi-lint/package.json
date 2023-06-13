@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-lint",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Linting tool for OpenAPI schemas",
   "main": "build/index.js",
   "bin": {
