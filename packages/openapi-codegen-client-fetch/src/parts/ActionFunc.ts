@@ -63,7 +63,7 @@ export class ActionFunc {
   protected collectParameters(): void {
     for (const parameter of getOperationParameters(this.context.operation)) {
       const paramName = camelCase(parameter.name);
-      const typeString = schemaToType(parameter.schema);
+      const typeString = schemaToType(parameter.schema, this.context.clientNaming);
 
       this.parameterVars.set(paramName, {
         typeString,

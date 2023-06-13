@@ -1,19 +1,12 @@
-import {
-  camelCase,
-  JSONValue,
-  kebabCase,
-  Nullable,
-  snakeCase,
-  titleCase,
-} from '@fresha/api-tools-core';
 import { addImportDeclaration, addTypeAlias } from '@fresha/code-morph-ts';
 import { assert, getSchemaMultiProperty } from '@fresha/openapi-codegen-utils';
 import { StructureKind, SyntaxKind, TypeAliasDeclaration } from 'ts-morph';
 
 import { NamedType } from './NamedType';
-import { schemaToType } from './utils';
+import { propertyName, schemaToType } from './utils';
 
 import type { ActionContext } from '../context';
+import type { JSONValue, Nullable } from '@fresha/api-tools-core';
 import type { SchemaModel } from '@fresha/openapi-model/build/3.0.3';
 
 enum RelationshipCardinality {
@@ -79,21 +72,23 @@ export class ResourceType extends NamedType {
 
     assert(typeSchema, `Missing 'type' property in resource ${this.name}`, this.context.operation);
 
+    if (!typeSchema.allowedValueCount) {
+      this.context.logger.warn(
+        `Expected resource schema to have only one allowed value, got none. ${this.context.operation.parent.pathUrl}`,
+      );
+      return;
+    }
     if (typeSchema.allowedValueCount !== 1) {
       this.context.logger.warn(
         `Expected resource schema to have only one allowed value, got ${String(
           typeSchema.allowedValueCount,
-        )} ${this.context.operation.parent.pathUrl}`,
+        )}, taking the first. ${this.context.operation.parent.pathUrl}`,
       );
-      // this.context.console.log(this.schema);
-      return;
     }
 
     assert(
-      typeSchema.allowedValueCount === 1,
-      `Expected resource schema to have only one allowed value, got ${String(
-        typeSchema.allowedValueCount,
-      )}`,
+      typeSchema.allowedValueCount > 0,
+      `Expected resource schema to have only one allowed value, got none`,
       this.context.operation,
     );
 
@@ -214,11 +209,11 @@ export class ResourceType extends NamedType {
     if (this.attributesSchema?.hasPropertiesDeep()) {
       const typeLiteral = typeAliasType.addTypeArgument('{}').asKindOrThrow(SyntaxKind.TypeLiteral);
       for (const { name, schema } of this.attributesSchema.getPropertiesDeep()) {
-        const typeName = schemaToType(schema);
+        const typeName = schemaToType(schema, this.context.clientNaming);
         if (!typeName.startsWith('Unknown')) {
           typeLiteral.addProperty({
             kind: StructureKind.PropertySignature,
-            name: `'${this.toClientName(name)}'`,
+            name: propertyName(name, this.context.clientNaming),
             type: typeName,
             hasQuestionToken: !this.attributesSchema.isPropertyRequired(name),
           });
@@ -237,7 +232,7 @@ export class ResourceType extends NamedType {
 
         typeLiteral.addProperty({
           kind: StructureKind.PropertySignature,
-          name: `'${this.toClientName(name)}'`,
+          name: propertyName(name, this.context.clientNaming),
           type: `${relName}<'${info.resourceType}'>`,
           hasQuestionToken: !info.required,
         });
@@ -299,20 +294,5 @@ export class ResourceType extends NamedType {
         }
       }
     });
-  }
-
-  protected toClientName(name: string): string {
-    switch (this.context.clientNaming) {
-      case 'camel':
-        return camelCase(name);
-      case 'kebab':
-        return kebabCase(name);
-      case 'title':
-        return titleCase(name);
-      case 'snake':
-        return snakeCase(name);
-      default:
-        return name;
-    }
   }
 }

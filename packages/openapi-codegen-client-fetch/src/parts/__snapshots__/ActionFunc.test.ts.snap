@@ -120,14 +120,14 @@ exports[`simple test: src/types.ts 1`] = `
  *
  */
 export type EmployeeResource = JSONAPIServerResource<'employees', {
-        'name': string;
-        'age'?: number | null;
-        'gender'?: 'male' | 'female' | 'other' | null;
-        'active'?: boolean;
+        name: string;
+        age?: number | null;
+        gender?: 'male' | 'female' | 'other' | null;
+        active?: boolean;
 }, {
-        'manager': JSONAPIResourceRelationship1<'employees'>;
-        'buddy': JSONAPIResourceRelationship0<'employees'>;
-        'subordinates': JSONAPIResourceRelationshipN<'employees'>;
+        manager: JSONAPIResourceRelationship1<'employees'>;
+        buddy: JSONAPIResourceRelationship0<'employees'>;
+        subordinates: JSONAPIResourceRelationshipN<'employees'>;
 }>;
 
 /**
@@ -197,12 +197,12 @@ exports[`specific naming convention for client library: src/types.ts 1`] = `
  *
  */
 export type EmployeeResource = JSONAPIServerResource<'employees', {
-        'oldName': string;
-        'newName': string;
-        'age'?: number | null;
-        'isActive'?: boolean;
+        oldName: string;
+        newName: string;
+        age?: number | null;
+        isActive?: boolean;
 }, {
-        'directManager': JSONAPIResourceRelationship1<'employees'>;
+        directManager: JSONAPIResourceRelationship1<'employees'>;
 }>;
 
 /**

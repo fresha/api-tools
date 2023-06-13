@@ -98,7 +98,7 @@ export class RequestFormatterFunc {
       for (const { name, schema } of primaryResource.attributesSchema.getPropertiesDeep()) {
         paramsType.addProperty({
           name: camelCase(name),
-          type: schemaToType(schema),
+          type: schemaToType(schema, this.context.clientNaming),
           hasQuestionToken: !primaryResource.attributesSchema.isPropertyRequired(name),
         });
       }

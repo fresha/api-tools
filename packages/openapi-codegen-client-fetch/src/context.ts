@@ -1,10 +1,9 @@
 import { createTSProjectContext, TSProjectContext } from '@fresha/openapi-codegen-utils';
 
+import type { NamingConvention } from './parts';
 import type { Nullable } from '@fresha/api-tools-core';
 import type { OperationModel } from '@fresha/openapi-model/build/3.0.3';
 import type { SourceFile } from 'ts-morph';
-
-export type NamingConvention = 'camel' | 'kebab' | 'snake' | 'title';
 
 export interface Context extends TSProjectContext {
   readonly includeDeprecated: boolean;
