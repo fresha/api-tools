@@ -264,10 +264,7 @@ export class ActionFunc {
             }, response)`,
           );
           writer.newLine();
-          addImportDeclaration(this.context.sourceFile, './utils', 'transformResponse');
-          writer.writeLine(
-            `return transformResponse<${this.responseType.name}>('${this.name}', response)`,
-          );
+          writer.writeLine(`return response as unknown as ${this.responseType.name};`);
         } else {
           writer.writeLine(`await callJsonApi(url, request);`);
           writer.newLine();

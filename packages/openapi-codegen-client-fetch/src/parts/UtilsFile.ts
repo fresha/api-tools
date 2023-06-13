@@ -36,18 +36,14 @@ export class UtilsFile {
 
       export type SuccessCallbackFunc = (actionName: string, params: unknown, response: JSONValue) => void;
 
-      export type TransformResponsePayloadFunc = (actionName: string, payload: JSONValue) => JSONValue;
-
       let rootUrl = '';
       let fetcher: FetchFunc = global.fetch;
       let successCallback: SuccessCallbackFunc | null = null;
-      let transformResponsePayload: TransformResponsePayloadFunc | null = null;
 
       export type InitParams = {
         rootUrl: string;
         fetcher?: FetchFunc;
         successCallback?: SuccessCallbackFunc;
-        transformResponsePayload?: TransformResponsePayloadFunc;
       };
 
       export const init = (params: InitParams): void => {
@@ -60,9 +56,6 @@ export class UtilsFile {
         }
         if (params.successCallback) {
           successCallback = params.successCallback;
-        }
-        if (params.transformResponsePayload) {
-          transformResponsePayload = params.transformResponsePayload;
         }
       };
 
@@ -175,11 +168,6 @@ export class UtilsFile {
         if (successCallback) {
           successCallback(actionName, params, response);
         }
-      };
-
-      export const transformResponse = <TResult>(actionName: string, payload: JSONValue): TResult => {
-        const result = transformResponsePayload ? transformResponsePayload(actionName, payload) : payload;
-        return result as unknown as TResult;
       };
     `,
     );
