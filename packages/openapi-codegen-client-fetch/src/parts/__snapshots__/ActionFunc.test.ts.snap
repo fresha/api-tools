@@ -52,7 +52,7 @@ export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>
 `;
 
 exports[`simple test: src/index.ts 1`] = `
-"import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess, transformResponse } from "./utils";
+"import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess } from "./utils";
 import type { ReadEmployeeListResponse } from "./types";
 
 /**
@@ -95,7 +95,7 @@ export async function readEmployeeList(params: {
 
     dispatchSuccess('readEmployeeList', params, response)
 
-    return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response)
+    return response as unknown as ReadEmployeeListResponse;
 }
 "
 `;
@@ -142,7 +142,7 @@ export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>
 `;
 
 exports[`specific naming convention for client library: src/index.ts 1`] = `
-"import { COMMON_HEADERS, makeUrl, callJsonApi, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess, transformResponse } from "./utils";
+"import { COMMON_HEADERS, makeUrl, callJsonApi, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess } from "./utils";
 import type { ReadEmployeeListResponse } from "./types";
 import { camelCaseDeep } from "@fresha/api-tools-core";
 
@@ -174,7 +174,7 @@ export async function readEmployeeList(extraParams?: ExtraCallParams): Promise<R
 
     dispatchSuccess('readEmployeeList', undefined, response)
 
-    return transformResponse<ReadEmployeeListResponse>('readEmployeeList', response)
+    return response as unknown as ReadEmployeeListResponse;
 }
 "
 `;
