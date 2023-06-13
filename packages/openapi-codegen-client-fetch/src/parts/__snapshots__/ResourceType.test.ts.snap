@@ -15,10 +15,10 @@ exports[`attributes 1`] = `
  *
  */
 export type HelloResource = JSONAPIServerResource<'hello', {
-        'name': string;
-        'age'?: number | null;
-        'gender': 'male' | 'female' | 'other' | null;
-        'active'?: boolean;
+        name: string;
+        age?: number | null;
+        gender: 'male' | 'female' | 'other' | null;
+        active?: boolean;
 }>;
 "
 `;
@@ -40,9 +40,9 @@ exports[`relationships: src/types.ts 1`] = `
  *
  */
 export type HelloResource = JSONAPIServerResource<'employees', {}, {
-        'manager': JSONAPIResourceRelationship1<'employees'>;
-        'buddy': JSONAPIResourceRelationship0<'employees'>;
-        'subordinates': JSONAPIResourceRelationshipN<'employees'>;
+        manager: JSONAPIResourceRelationship1<'employees'>;
+        buddy: JSONAPIResourceRelationship0<'employees'>;
+        subordinates: JSONAPIResourceRelationshipN<'employees'>;
 }>;
 "
 `;

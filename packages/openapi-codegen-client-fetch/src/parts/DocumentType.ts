@@ -93,7 +93,7 @@ export class DocumentType extends NamedType {
     primaryDataSchema: SchemaModel,
     namedTypes: Map<string, NamedType>,
   ): void {
-    const primaryDataSchemaName = determineSchemaName(primaryDataSchema);
+    const primaryDataSchemaName = determineSchemaName(primaryDataSchema, this.context.clientNaming);
 
     let existingNamedType = namedTypes.get(primaryDataSchemaName);
     assert(
@@ -160,9 +160,9 @@ export class DocumentType extends NamedType {
   ): void {
     let schemaName: string;
     if (schema.parent === schema.root.components) {
-      schemaName = schema.title ?? schemaToType(schema);
+      schemaName = schema.title ?? schemaToType(schema, this.context.clientNaming);
     } else {
-      schemaName = schemaToType(schema);
+      schemaName = schemaToType(schema, this.context.clientNaming);
     }
 
     let existingNamedType = namedTypes.get(schemaName);
