@@ -32,6 +32,12 @@ export const propertyName = (name: string, convention: Nullable<NamingConvention
   return result.match(/^[_A-Za-z][_0-9A-Za-z]*$/) ? result : `'${result}'`;
 };
 
+export const objectPropertyName = (objectName: string, propName: string): string => {
+  return propName.match(/^[_A-Za-z][_0-9A-Za-z]*$/)
+    ? `${objectName}.${propName}`
+    : `${objectName}[${propName}]`;
+};
+
 let i = 0;
 
 export const schemaToType = (

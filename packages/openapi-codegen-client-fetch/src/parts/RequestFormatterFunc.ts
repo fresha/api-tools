@@ -8,7 +8,7 @@ import {
 } from '@fresha/openapi-codegen-utils';
 import { CodeBlockWriter, FunctionDeclaration, SyntaxKind } from 'ts-morph';
 
-import { schemaToType } from './utils';
+import { objectPropertyName, propertyName, schemaToType } from './utils';
 
 import type { DocumentType } from './DocumentType';
 import type { ActionContext } from '../context';
@@ -96,8 +96,9 @@ export class RequestFormatterFunc {
 
     if (primaryResource.attributesSchema) {
       for (const { name, schema } of primaryResource.attributesSchema.getPropertiesDeep()) {
+        this.context.console.log('param', name);
         paramsType.addProperty({
-          name: camelCase(name),
+          name: propertyName(name, this.context.clientNaming),
           type: schemaToType(schema, this.context.clientNaming),
           hasQuestionToken: !primaryResource.attributesSchema.isPropertyRequired(name),
         });
@@ -121,8 +122,9 @@ export class RequestFormatterFunc {
             assert.fail(`Unsupported cardinality ${String(relDef.cardinality)}`);
         }
 
+        this.context.console.log('param', relName);
         paramsType.addProperty({
-          name: camelCase(relName),
+          name: propertyName(relName, this.context.clientNaming),
           type: paramType,
           hasQuestionToken: !relDef.required,
         });
@@ -139,7 +141,9 @@ export class RequestFormatterFunc {
       // properties in this schema and its allOf subschemas
       if (primaryResource.attributesSchema) {
         for (const { name } of primaryResource.attributesSchema.getPropertiesDeep()) {
-          writer.writeLine(`'${name}': params.${camelCase(name)},`);
+          this.context.console.log('attribute', name);
+          const propName = propertyName(name, this.context.clientNaming);
+          writer.writeLine(`${propName}: ${objectPropertyName('params', propName)},`);
         }
       }
     });
@@ -153,19 +157,21 @@ export class RequestFormatterFunc {
     writer.inlineBlock(() => {
       if (primaryResource.relationships.size) {
         for (const [relName, relDef] of primaryResource.relationships) {
-          const paramName = camelCase(relName);
+          this.context.console.log('relationship', relName);
+          const paramName = propertyName(relName, this.context.clientNaming);
+          const objPropName = objectPropertyName('params', paramName);
 
           let str = '';
 
           switch (relDef.cardinality) {
             case RelationshipCardinality.ZeroOrOne:
-              str = `{ data: ${paramName} == null ? { type: '${relDef.resourceType}', id: ${paramName} } : null }`;
+              str = `{ data: ${objPropName} == null ? { type: '${relDef.resourceType}', id: ${objPropName} } : null }`;
               break;
             case RelationshipCardinality.One:
-              str = `{ data: { type: '${relDef.resourceType}', id: ${paramName} } }`;
+              str = `{ data: { type: '${relDef.resourceType}', id: ${objPropName} } }`;
               break;
             case RelationshipCardinality.Many:
-              str = `{ data: ${paramName}.map(id => ({ type: '${relDef.resourceType}', id })) }`;
+              str = `{ data: ${objPropName}.map(id => ({ type: '${relDef.resourceType}', id })) }`;
               break;
             default:
               assert.fail(`Unsupported relationship cardinality ${String(relDef.cardinality)}`);
@@ -173,8 +179,8 @@ export class RequestFormatterFunc {
 
           writer.writeLine(
             relDef.required
-              ? `'${relName}': ${str},`
-              : `'${relName}': ${paramName} !== undefined ? ${str} : undefined,`,
+              ? `${paramName}: ${str},`
+              : `${paramName}: ${objPropName} !== undefined ? ${str} : undefined,`,
           );
         }
       }

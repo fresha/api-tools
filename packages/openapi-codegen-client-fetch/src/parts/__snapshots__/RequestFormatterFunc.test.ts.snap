@@ -1,14 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`simple: src/formatters.ts 1`] = `
+exports[`client naming = camel: src/formatters.ts 1`] = `
 "import type { CreateEmployeeRequest } from "./types";
 
 export function formatCreateEmployeeRequest(params: {
     fullName: string;
     age: number;
     gender?: 'male' | 'female';
-    manager: string;
-    subordinates?: string[];
+    isActive?: boolean;
+    lineManager: string;
+    subordinateList?: string[];
     mentor?: string | null;
 }): CreateEmployeeRequest {
     return {
@@ -18,15 +19,160 @@ export function formatCreateEmployeeRequest(params: {
             type: 'employees',
             attributes: 
             {
-                'full-name': params.fullName,
-                'age': params.age,
-                'gender': params.gender,
+                fullName: params.fullName,
+                age: params.age,
+                gender: params.gender,
+                isActive: params.isActive,
             },
             relationships: 
             {
-                'manager': { data: { type: 'employees', id: manager } },
-                'subordinates': subordinates !== undefined ? { data: subordinates.map(id => ({ type: 'employees', id })) } : undefined,
-                'mentor': mentor !== undefined ? { data: mentor == null ? { type: 'employees', id: mentor } : null } : undefined,
+                lineManager: { data: { type: 'employees', id: params.lineManager } },
+                subordinateList: params.subordinateList !== undefined ? { data: params.subordinateList.map(id => ({ type: 'employees', id })) } : undefined,
+                mentor: params.mentor !== undefined ? { data: params.mentor == null ? { type: 'employees', id: params.mentor } : null } : undefined,
+            }
+        }
+    }
+}
+"
+`;
+
+exports[`client naming = kebab: src/formatters.ts 1`] = `
+"import type { CreateEmployeeRequest } from "./types";
+
+export function formatCreateEmployeeRequest(params: {
+    'full-name': string;
+    age: number;
+    gender?: 'male' | 'female';
+    'is-active'?: boolean;
+    'line-manager': string;
+    'subordinate-list'?: string[];
+    mentor?: string | null;
+}): CreateEmployeeRequest {
+    return {
+        jsonapi: { version: '1.0' },
+        data: 
+        {
+            type: 'employees',
+            attributes: 
+            {
+                'full-name': params['full-name'],
+                age: params.age,
+                gender: params.gender,
+                'is-active': params['is-active'],
+            },
+            relationships: 
+            {
+                'line-manager': { data: { type: 'employees', id: params['line-manager'] } },
+                'subordinate-list': params['subordinate-list'] !== undefined ? { data: params['subordinate-list'].map(id => ({ type: 'employees', id })) } : undefined,
+                mentor: params.mentor !== undefined ? { data: params.mentor == null ? { type: 'employees', id: params.mentor } : null } : undefined,
+            }
+        }
+    }
+}
+"
+`;
+
+exports[`client naming = null: src/formatters.ts 1`] = `
+"import type { CreateEmployeeRequest } from "./types";
+
+export function formatCreateEmployeeRequest(params: {
+    'full-name': string;
+    age: number;
+    gender?: 'male' | 'female';
+    is_active?: boolean;
+    'Line-manager': string;
+    'subordinate-list'?: string[];
+    Mentor?: string | null;
+}): CreateEmployeeRequest {
+    return {
+        jsonapi: { version: '1.0' },
+        data: 
+        {
+            type: 'employees',
+            attributes: 
+            {
+                'full-name': params['full-name'],
+                age: params.age,
+                gender: params.gender,
+                is_active: params.is_active,
+            },
+            relationships: 
+            {
+                'Line-manager': { data: { type: 'employees', id: params['Line-manager'] } },
+                'subordinate-list': params['subordinate-list'] !== undefined ? { data: params['subordinate-list'].map(id => ({ type: 'employees', id })) } : undefined,
+                Mentor: params.Mentor !== undefined ? { data: params.Mentor == null ? { type: 'employees', id: params.Mentor } : null } : undefined,
+            }
+        }
+    }
+}
+"
+`;
+
+exports[`client naming = snake: src/formatters.ts 1`] = `
+"import type { CreateEmployeeRequest } from "./types";
+
+export function formatCreateEmployeeRequest(params: {
+    full_name: string;
+    age: number;
+    gender?: 'male' | 'female';
+    is_active?: boolean;
+    line_manager: string;
+    subordinate_list?: string[];
+    mentor?: string | null;
+}): CreateEmployeeRequest {
+    return {
+        jsonapi: { version: '1.0' },
+        data: 
+        {
+            type: 'employees',
+            attributes: 
+            {
+                full_name: params.full_name,
+                age: params.age,
+                gender: params.gender,
+                is_active: params.is_active,
+            },
+            relationships: 
+            {
+                line_manager: { data: { type: 'employees', id: params.line_manager } },
+                subordinate_list: params.subordinate_list !== undefined ? { data: params.subordinate_list.map(id => ({ type: 'employees', id })) } : undefined,
+                mentor: params.mentor !== undefined ? { data: params.mentor == null ? { type: 'employees', id: params.mentor } : null } : undefined,
+            }
+        }
+    }
+}
+"
+`;
+
+exports[`client naming = title: src/formatters.ts 1`] = `
+"import type { CreateEmployeeRequest } from "./types";
+
+export function formatCreateEmployeeRequest(params: {
+    FullName: string;
+    Age: number;
+    Gender?: 'male' | 'female';
+    IsActive?: boolean;
+    LineManager: string;
+    SubordinateList?: string[];
+    Mentor?: string | null;
+}): CreateEmployeeRequest {
+    return {
+        jsonapi: { version: '1.0' },
+        data: 
+        {
+            type: 'employees',
+            attributes: 
+            {
+                FullName: params.FullName,
+                Age: params.Age,
+                Gender: params.Gender,
+                IsActive: params.IsActive,
+            },
+            relationships: 
+            {
+                LineManager: { data: { type: 'employees', id: params.LineManager } },
+                SubordinateList: params.SubordinateList !== undefined ? { data: params.SubordinateList.map(id => ({ type: 'employees', id })) } : undefined,
+                Mentor: params.Mentor !== undefined ? { data: params.Mentor == null ? { type: 'employees', id: params.Mentor } : null } : undefined,
             }
         }
     }
