@@ -16,6 +16,7 @@ describe('kebabCase', () => {
 describe('camelCase', () => {
   it('should convert strings to camel case', () => {
     expect(camelCase('test-ident')).toBe('testIdent');
+    expect(camelCase('Test-Ident')).toBe('testIdent');
     expect(camelCase('test-123-ident')).toBe('test123Ident');
     expect(camelCase('test_123__iDent')).toBe('test123IDent');
     expect(camelCase('-almostCamel_case')).toBe('almostCamelCase');
