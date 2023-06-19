@@ -33,7 +33,7 @@ export const camelCase: KeyTransformFunc = str => {
   return str
     .split(RE_WORD_SEPARATOR)
     .filter(Boolean)
-    .map((s, index) => (index > 0 ? s.slice(0, 1).toUpperCase() + s.slice(1) : s))
+    .map((s, index) => s.slice(0, 1)[index > 0 ? 'toUpperCase' : 'toLowerCase']() + s.slice(1))
     .join('');
 };
 
