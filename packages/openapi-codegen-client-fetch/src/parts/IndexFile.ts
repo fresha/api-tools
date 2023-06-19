@@ -17,7 +17,7 @@ export class IndexFile {
     this.sourceFile.addStatements(`export * from './types';`);
     this.sourceFile.addStatements(`export * from './actions';`);
     if (this.context.withFormatters) {
-      this.sourceFile.addStatements(`export * from './fromatters';`);
+      this.sourceFile.addStatements(`export * from './formatters';`);
     }
     this.sourceFile.addStatements(
       `export { init, setAuthCookie, APIClientErrorKind, APIClientError } from './utils';`,
