@@ -1,3 +1,4 @@
+import { Nullable } from '@fresha/api-tools-core';
 import { buildEmployeeSchemasForTesting } from '@fresha/openapi-codegen-test-utils';
 import {
   addResourceRelationships,
@@ -5,82 +6,87 @@ import {
   RelationshipCardinality,
   setDataDocumentSchema,
 } from '@fresha/openapi-codegen-utils';
-import { OpenAPIFactory, OpenAPIModel } from '@fresha/openapi-model/build/3.0.3';
+import { OpenAPIFactory } from '@fresha/openapi-model/build/3.0.3';
 
+import { ActionContext } from '../context';
 import { createActionTestContext } from '../testHelpers';
 
 import { DocumentType } from './DocumentType';
 import { NamedType } from './NamedType';
 import { RequestFormatterFunc } from './RequestFormatterFunc';
+import { NamingConvention } from './utils';
 
-let openapi: OpenAPIModel;
+test.each([[null], ['camel'], ['snake'], ['kebab'], ['title']] as [Nullable<NamingConvention>][])(
+  'client naming = %s',
+  (clientNaming: Nullable<NamingConvention>) => {
+    const openapi = OpenAPIFactory.create();
 
-beforeEach(() => {
-  openapi = OpenAPIFactory.create();
-});
+    buildEmployeeSchemasForTesting(openapi);
 
-test('simple', () => {
-  buildEmployeeSchemasForTesting(openapi);
+    const operation = openapi.setPathItem('/employees').addOperation('post');
+    operation.operationId = 'createEmployee';
 
-  const operation = openapi.setPathItem('/employees').addOperation('post');
-  operation.operationId = 'createEmployee';
+    const requestBodySchema = operation
+      .setRequestBody()
+      .setMediaType(MEDIA_TYPE_JSON_API)
+      .setSchema('object');
+    requestBodySchema.title = 'CreateEmployeeRequest';
+    setDataDocumentSchema(requestBodySchema, 'employees');
 
-  const requestBodySchema = operation
-    .setRequestBody()
-    .setMediaType(MEDIA_TYPE_JSON_API)
-    .setSchema('object');
-  requestBodySchema.title = 'CreateEmployeeRequest';
-  setDataDocumentSchema(requestBodySchema, 'employees');
+    requestBodySchema
+      .getPropertyDeepOrThrow('data')
+      .getPropertyDeepOrThrow('attributes')
+      .setProperties({
+        'full-name': { type: 'string', required: true },
+        age: { type: 'integer', required: true },
+        gender: { type: 'string', enum: ['male', 'female'] },
+        is_active: 'boolean',
+      });
 
-  requestBodySchema
-    .getPropertyDeepOrThrow('data')
-    .getPropertyDeepOrThrow('attributes')
-    .setProperties({
-      'full-name': { type: 'string', required: true },
-      age: { type: 'integer', required: true },
-      gender: { type: 'string', enum: ['male', 'female'] },
+    addResourceRelationships(requestBodySchema.getPropertyDeepOrThrow('data'), {
+      'Line-manager': {
+        resourceType: 'employees',
+        cardinality: RelationshipCardinality.One,
+        required: true,
+      },
+      'subordinate-list': {
+        resourceType: 'employees',
+        cardinality: RelationshipCardinality.Many,
+        required: false,
+      },
+      Mentor: {
+        resourceType: 'employees',
+        cardinality: RelationshipCardinality.ZeroOrOne,
+        required: false,
+      },
     });
 
-  addResourceRelationships(requestBodySchema.getPropertyDeepOrThrow('data'), {
-    manager: {
-      resourceType: 'employees',
-      cardinality: RelationshipCardinality.One,
-      required: true,
-    },
-    subordinates: {
-      resourceType: 'employees',
-      cardinality: RelationshipCardinality.Many,
-      required: false,
-    },
-    mentor: {
-      resourceType: 'employees',
-      cardinality: RelationshipCardinality.ZeroOrOne,
-      required: false,
-    },
-  });
+    const namedTypes = new Map<string, NamedType>();
+    const generatedTypes = new Set<string>();
 
-  const namedTypes = new Map<string, NamedType>();
-  const generatedTypes = new Set<string>();
+    const context: ActionContext = {
+      ...createActionTestContext(operation, 'src/index.ts'),
+      clientNaming,
+    };
+    const requestType = new DocumentType(
+      context,
+      'CreateEmployeeRequest',
+      requestBodySchema,
+      true,
+      true,
+    );
+    requestType.collectData(namedTypes);
 
-  const context = createActionTestContext(operation, 'src/index.ts');
-  const requestType = new DocumentType(
-    context,
-    'CreateEmployeeRequest',
-    requestBodySchema,
-    true,
-    true,
-  );
-  requestType.collectData(namedTypes);
+    for (const namedType of namedTypes.values()) {
+      namedType.generateCode(generatedTypes);
+    }
 
-  for (const namedType of namedTypes.values()) {
-    namedType.generateCode(generatedTypes);
-  }
+    const requestFormatter = new RequestFormatterFunc(requestType);
+    requestFormatter.collectData();
+    requestFormatter.generateCode();
 
-  const requestFormatter = new RequestFormatterFunc(requestType);
-  requestFormatter.collectData();
-  requestFormatter.generateCode();
-
-  expect(
-    requestFormatter.context.project.getSourceFileOrThrow('src/formatters.ts').getText(),
-  ).toMatchSnapshot('src/formatters.ts');
-});
+    expect(
+      requestFormatter.context.project.getSourceFileOrThrow('src/formatters.ts').getText(),
+    ).toMatchSnapshot('src/formatters.ts');
+  },
+);

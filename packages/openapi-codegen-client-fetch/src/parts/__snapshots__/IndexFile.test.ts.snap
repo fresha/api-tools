@@ -3,7 +3,7 @@
 exports[`simple: src/index.ts 1`] = `
 "export * from './types';
 export * from './actions';
-export * from './fromatters';
+export * from './formatters';
 export { init, setAuthCookie, APIClientErrorKind, APIClientError } from './utils';
 "
 `;

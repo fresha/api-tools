@@ -225,7 +225,7 @@ exports[`test optional header parameters: src/index.ts 1`] = `
  * This operation has an optional header parameter
  *
  * @param params call parameters
- * @param [params.OptionalHeaderParameter] optional header parameter
+ * @param [params.optionalHeaderParameter] optional header parameter
  *
  * @param [extraParams] additional parameters
  * @param [extraParams.authCookieName] name of the authorization cookie for this request
@@ -235,13 +235,13 @@ exports[`test optional header parameters: src/index.ts 1`] = `
  * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
  */
 export async function test(params: {
-    OptionalHeaderParameter?: string;
+    optionalHeaderParameter?: string;
 }, extraParams?: ExtraCallParams): Promise<void> {
     const url = makeUrl(\`/test-endpoint\`);
 
     const headerParameters: Record<string, string> = {};
 
-    if (params.OptionalHeaderParameter) headerParameters['Optional-Header-Parameter'] = params.OptionalHeaderParameter
+    if (params.optionalHeaderParameter) headerParameters['Optional-Header-Parameter'] = params.optionalHeaderParameter
 
     const request = {
         headers: {...COMMON_HEADERS, ...headerParameters},
