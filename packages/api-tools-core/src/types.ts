@@ -386,7 +386,7 @@ export interface JSONAPITopLevelLinks {
  * @see https://jsonapi.org/format/#document-top-level
  */
 interface JSONAPIDocumentBase {
-  jsonapi: JSONAPIImplementationInfo;
+  jsonapi?: JSONAPIImplementationInfo;
   links?: JSONAPITopLevelLinks;
   meta?: JSONAPIMeta;
 }
