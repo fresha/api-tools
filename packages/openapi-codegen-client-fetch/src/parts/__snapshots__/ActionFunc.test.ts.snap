@@ -5,12 +5,8 @@ exports[`action returns raw response: src/index.ts 1`] = `
 import type { ReadEmployeeListResponse } from "./types";
 
 /**
- * @param [extraParams] additional parameters
- * @param [extraParams.authCookieName] name of the authorization cookie for this request
- * @param [extraParams.authCookie] value of the authorization cookie for this request
- * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
- * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
- * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ * @see {@link ExtraCallParams}
+ *
  */
 export async function readEmployeeList(extraParams?: ExtraCallParams): Promise<Response> {
     const url = makeUrl(\`/employees\`);
@@ -66,12 +62,8 @@ import type { ReadEmployeeListResponse } from "./types";
  * @param params.offset Index of the first employee to retrieve
  * @param [params.limit] Maximal number of employee resources to retrieve
  *
- * @param [extraParams] additional parameters
- * @param [extraParams.authCookieName] name of the authorization cookie for this request
- * @param [extraParams.authCookie] value of the authorization cookie for this request
- * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
- * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
- * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ * @see {@link ExtraCallParams}
+ *
  */
 export async function readEmployeeList(params: {
     offset: number;
@@ -147,12 +139,8 @@ import type { ReadEmployeeListResponse } from "./types";
 import { camelCaseDeep } from "@fresha/api-tools-core";
 
 /**
- * @param [extraParams] additional parameters
- * @param [extraParams.authCookieName] name of the authorization cookie for this request
- * @param [extraParams.authCookie] value of the authorization cookie for this request
- * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
- * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
- * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ * @see {@link ExtraCallParams}
+ *
  */
 export async function readEmployeeList(extraParams?: ExtraCallParams): Promise<ReadEmployeeListResponse> {
     const url = makeUrl(\`/employees\`);
@@ -227,12 +215,8 @@ exports[`test optional header parameters: src/index.ts 1`] = `
  * @param params call parameters
  * @param [params.optionalHeaderParameter] optional header parameter
  *
- * @param [extraParams] additional parameters
- * @param [extraParams.authCookieName] name of the authorization cookie for this request
- * @param [extraParams.authCookie] value of the authorization cookie for this request
- * @param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value
- * @param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value
- * @param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value
+ * @see {@link ExtraCallParams}
+ *
  */
 export async function test(params: {
     optionalHeaderParameter?: string;

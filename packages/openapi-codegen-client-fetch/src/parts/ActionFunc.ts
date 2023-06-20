@@ -318,22 +318,7 @@ export class ActionFunc {
       }
 
       writer.newLine();
-      writer.writeLine('@param [extraParams] additional parameters');
-      writer.writeLine(
-        '@param [extraParams.authCookieName] name of the authorization cookie for this request',
-      );
-      writer.writeLine(
-        '@param [extraParams.authCookie] value of the authorization cookie for this request',
-      );
-      writer.writeLine(
-        '@param [extraParams.xForwardedFor] sends X-Forwarded-For header with specified value',
-      );
-      writer.writeLine(
-        '@param [extraParams.xForwardedHost] sends X-Forwarded-Host header with specified value',
-      );
-      writer.write(
-        '@param [extraParams.xForwardedProto] sends X-Forwarded-Proto header with specified value',
-      );
+      writer.writeLine('@see {@link ExtraCallParams}');
     });
   }
 
