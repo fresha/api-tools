@@ -77,11 +77,20 @@ export class UtilsFile {
         authCookie = value;
       };
 
+      /**
+       * These parameters allow to change the default behavior of an action for each
+       * individual call.
+       */
       export type ExtraCallParams = {
+        /** name of the authorization cookie for this request */
         authCookieName?: string;
+        /** value of the authorization cookie for this request */
         authCookie?: string;
+        /** sends X-Forwarded-For header with specified value */
         xForwardedFor?: string;
+        /** sends X-Forwarded-Host header with specified value */
         xForwardedHost?: string;
+        /** sends X-Forwarded-Proto header with specified value */
         xForwardedProto?: string;
       };
 
