@@ -1,6 +1,6 @@
 {
   "name": "@fresha/openapi-codegen-server-nestjs",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "OpenAPI code generation for NestJS servers",
   "main": "build/index.js",
   "publishConfig": {
@@ -54,10 +54,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@fresha/api-tools-core": "^0.6.1",
+    "@fresha/api-tools-core": "^0.7.0",
     "@fresha/code-morph-ts": "^0.3.1",
-    "@fresha/openapi-codegen-utils": "^0.3.1",
-    "@fresha/openapi-model": "^0.8.1",
+    "@fresha/openapi-codegen-utils": "^0.4.0",
+    "@fresha/openapi-model": "^0.9.0",
     "lodash.camelcase": "^4.3.0",
     "lodash.get": "^4.4.2",
     "lodash.kebabcase": "^4.1.1",
@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@fresha/eslint-config": "^0.3.0",
-    "@fresha/openapi-codegen-test-utils": "^0.3.1",
+    "@fresha/openapi-codegen-test-utils": "^0.4.0",
     "@fresha/typescript-config": "^0.2.0",
     "@types/lodash.camelcase": "^4.3.7",
     "@types/lodash.get": "^4.4.7",
