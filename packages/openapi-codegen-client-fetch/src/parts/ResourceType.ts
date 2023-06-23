@@ -66,7 +66,6 @@ export class ResourceType extends NamedType {
       this.context.logger.warn(
         `Cannot find type field in schema ${this.context.operation.parent.pathUrl}`,
       );
-      // this.context.console.log(this.schema);
       return;
     }
 

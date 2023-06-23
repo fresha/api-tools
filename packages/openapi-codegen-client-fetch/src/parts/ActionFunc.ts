@@ -1,4 +1,4 @@
-import { camelCase, Nullable, titleCase } from '@fresha/api-tools-core';
+import { Nullable, titleCase } from '@fresha/api-tools-core';
 import { addFunction, addImportDeclaration, addImportDeclarations } from '@fresha/code-morph-ts';
 import {
   assert,
@@ -11,7 +11,7 @@ import {
 import { CodeBlockWriter, SyntaxKind } from 'ts-morph';
 
 import { DocumentType } from './DocumentType';
-import { schemaToType } from './utils';
+import { propertyName, schemaToType } from './utils';
 
 import type { NamedType } from './NamedType';
 import type { ActionContext } from '../context';
@@ -62,7 +62,7 @@ export class ActionFunc {
 
   protected collectParameters(): void {
     for (const parameter of getOperationParameters(this.context.operation)) {
-      const paramName = camelCase(parameter.name);
+      const paramName = propertyName(parameter.name, this.context.clientNaming);
       const typeString = schemaToType(parameter.schema, this.context.clientNaming);
 
       this.parameterVars.set(paramName, {
@@ -357,7 +357,7 @@ export class ActionFunc {
 
   protected generateCallUrl(): string {
     const { pathUrl } = this.context.operation.parent;
-    const str = pathUrl.replace(/\{\w+\}/g, match => {
+    const str = pathUrl.replace(/\{[^}/]+\}/g, match => {
       const argName = this.pathParametesVars.get(match.slice(1, -1));
       assert(
         argName,

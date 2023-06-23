@@ -16,7 +16,10 @@ import { ActionFunc } from './ActionFunc';
 import type { NamedType } from './NamedType';
 
 const createAction = (operation: OperationModel, filePath = 'src/index.ts'): ActionFunc => {
-  const context = createActionTestContext(operation, filePath);
+  const context: ActionContext = {
+    ...createActionTestContext(operation, filePath),
+    clientNaming: 'camel',
+  };
   return new ActionFunc(context);
 };
 
