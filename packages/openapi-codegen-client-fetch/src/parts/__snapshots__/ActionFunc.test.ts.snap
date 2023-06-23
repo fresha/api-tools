@@ -50,6 +50,7 @@ export type ReadEmployeeListResponse = JSONAPIDataDocument<(EmployeeResource)[]>
 exports[`simple test: src/index.ts 1`] = `
 "import { COMMON_HEADERS, makeUrl, callJsonApi, addQueryParam, authorizeRequest, ExtraCallParams, applyExtraParams, dispatchSuccess } from "./utils";
 import type { ReadEmployeeListResponse } from "./types";
+import { camelCaseDeep } from "@fresha/api-tools-core";
 
 /**
  * Reads employee list
@@ -83,7 +84,9 @@ export async function readEmployeeList(params: {
 
     applyExtraParams(request, extraParams)
 
-    const response = await callJsonApi(url, request);
+    let response = await callJsonApi(url, request);
+
+    response = camelCaseDeep(response);
 
     dispatchSuccess('readEmployeeList', params, response)
 

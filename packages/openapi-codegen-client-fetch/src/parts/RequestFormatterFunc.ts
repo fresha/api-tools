@@ -96,7 +96,6 @@ export class RequestFormatterFunc {
 
     if (primaryResource.attributesSchema) {
       for (const { name, schema } of primaryResource.attributesSchema.getPropertiesDeep()) {
-        this.context.console.log('param', name);
         paramsType.addProperty({
           name: propertyName(name, this.context.clientNaming),
           type: schemaToType(schema, this.context.clientNaming),
@@ -122,7 +121,6 @@ export class RequestFormatterFunc {
             assert.fail(`Unsupported cardinality ${String(relDef.cardinality)}`);
         }
 
-        this.context.console.log('param', relName);
         paramsType.addProperty({
           name: propertyName(relName, this.context.clientNaming),
           type: paramType,
@@ -141,7 +139,6 @@ export class RequestFormatterFunc {
       // properties in this schema and its allOf subschemas
       if (primaryResource.attributesSchema) {
         for (const { name } of primaryResource.attributesSchema.getPropertiesDeep()) {
-          this.context.console.log('attribute', name);
           const propName = propertyName(name, this.context.clientNaming);
           writer.writeLine(`${propName}: ${objectPropertyName('params', propName)},`);
         }
@@ -157,7 +154,6 @@ export class RequestFormatterFunc {
     writer.inlineBlock(() => {
       if (primaryResource.relationships.size) {
         for (const [relName, relDef] of primaryResource.relationships) {
-          this.context.console.log('relationship', relName);
           const paramName = propertyName(relName, this.context.clientNaming);
           const objPropName = objectPropertyName('params', paramName);
 
